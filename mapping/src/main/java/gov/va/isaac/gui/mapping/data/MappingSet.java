@@ -63,71 +63,57 @@ public class MappingSet
 	private RefexDynamicVersionBI<?> mappingRefexData_;
 	
 	//cached values
-	private String name, inverseName, description;
+	private String name, inverseName, description, purpose;
+	private UUID editorStatus;
+	private boolean active;
+//	
+//	/**
+//	 * 
+//	 *  Construct a MappingSset by passing in a RefexDyanmicChronicle
+//	 * 
+//	 * @param refex RefexDynamicChronicleBI<?>
+//	 */
+//	protected MappingSet(RefexDynamicChronicleBI<?> refex)
+//	{
+//		try
+//		{
+//			mappingConcept_ = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
+//			mappingRefexData_ = refex.getVersion(OTFUtility.getViewCoordinate());
+//		}
+//		catch (ContradictionException e)
+//		{
+//			throw new RuntimeException(e);
+//		}
+//	}
+//	
 	
-	protected MappingSet(RefexDynamicChronicleBI<?> refex)
-	{
-		try
-		{
-			mappingConcept_ = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
-			mappingRefexData_ = refex.getVersion(OTFUtility.getViewCoordinate());
-		}
-		catch (ContradictionException e)
-		{
-			throw new RuntimeException(e);
-		}
+	protected MappingSet() {
+		
 	}
 	
-	protected MappingSet (String mappingName, String inverseName, String purpose, String description, UUID editorStatus) throws IOException
+	/**
+	 * 
+	 * Alternatively construct a Mapping Set by creating a new concept and passing in the set name, inverse name, purpose, description
+	 *  and the UUID of the editor 
+	 * 
+	 * @param mappingName Mapping Set Name
+	 * @param inverseName Inverse Mapping Set Name
+	 * @param purpose Mapping Set Purpose
+	 * @param description Mapping Set Description
+	 * @param editorStatus UUID editor
+	 * @throws IOException
+	 */
+	protected MappingSet (String mappingNameInput, 
+							String inverseNameInput,
+							String purposeInput, 
+							String descriptionInput, 
+							UUID editorStatusInput) throws IOException
 	{
-		try
-		{
-			//We need to create a new concept - which itself is defining a dynamic refex - so set that up here.
-			RefexDynamicUsageDescription rdud = RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(mappingName, mappingName, description, 
-					new RefexDynamicColumnInfo[] {
-						new RefexDynamicColumnInfo(0, ISAAC.REFEX_COLUMN_TARGET_COMPONENT.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, null, null),
-						new RefexDynamicColumnInfo(1, MappingConstants.MAPPING_QUALIFIERS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
-								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_QUALIFIERS.getPrimodialUuid())),
-						new RefexDynamicColumnInfo(2, MappingConstants.MAPPING_STATUS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
-								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_STATUS.getPrimodialUuid()))}, 
-					null, true, ComponentType.CONCEPT);
-			
-			//TODO background thread this
-			LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2}, true);
-			
-			//Then, annotate the concept created above as a member of the MappingSet dynamic refex, and add the inverse name, if present.
-			ConceptVersionBI createdConcept = OTFUtility.getConceptVersion(rdud.getRefexUsageDescriptorNid());
-			if (!StringUtils.isBlank(inverseName))
-			{
-				DescriptionCAB dCab = new DescriptionCAB(createdConcept.getNid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getNid(), LanguageCode.EN, inverseName,
-						false, IdDirective.GENERATE_HASH);
-				dCab.addAnnotationBlueprint(new RefexDynamicCAB(dCab.getComponentUuid(), ISAAC.ASSOCIATION_INVERSE_NAME.getPrimodialUuid()));
-				OTFUtility.getBuilder().construct(dCab);
-			}
-			
-			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), MappingConstants.MAPPING_SEMEME_TYPE.getNid());
-			mappingAnnotation.setData(new RefexDynamicDataBI[] {
-					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus)),
-					(StringUtils.isBlank(purpose) ? null : new RefexDynamicString(purpose))}, OTFUtility.getViewCoordinate());
-			OTFUtility.getBuilder().construct(mappingAnnotation);
-			
-			RefexDynamicCAB associationAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), ISAAC.ASSOCIATION_REFEX.getNid());
-			associationAnnotation.setData(new RefexDynamicDataBI[] {}, null);
-			OTFUtility.getBuilder().construct(associationAnnotation);
-			
-			ExtendedAppContext.getDataStore().addUncommitted(createdConcept);
-			ExtendedAppContext.getDataStore().commit(createdConcept);
-			
-			//reread
-			mappingConcept_ = OTFUtility.getConceptVersion(rdud.getRefexUsageDescriptorNid());
-			
-			//Find the constructed dynamic refset
-			mappingRefexData_ = (RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate());
-		}
-		catch (ContradictionException | InvalidCAB | PropertyVetoException e)
-		{
-			throw new RuntimeException("Unexpected error creating mapping", e);
-		}
+		this.setName(mappingNameInput);
+		this.setInverseName(inverseNameInput);
+		this.setPurpose(purposeInput);
+		this.setDescription(descriptionInput);
+		this.setEditorStatus(editorStatusInput);
 	}
 	
 	/**
@@ -138,10 +124,19 @@ public class MappingSet
 		return mappingConcept_;
 	}
 	
+	public void setActive(boolean activeInput)
+	{
+		active = activeInput;
+	}
+	
+	public boolean getActive(){
+		return active;
+	}
+	
 	/**
 	 * Is this mapping active or retired?
 	 */
-	public boolean isActive()
+	public boolean isActive2()
 	{
 		try
 		{
@@ -153,23 +148,39 @@ public class MappingSet
 		}
 	}
 	
+	public void setEditorStatus(UUID statusInput)
+	{
+		editorStatus = statusInput;
+	}
+	
+	public void setStatus2(UUID statusInput)
+	{
+		if(statusInput == null)
+		{
+			RefexDynamicDataBI[] data = mappingRefexData_.getData();
+			if (data.length > 0)
+			{
+				editorStatus = ((RefexDynamicUUID)data[0]).getDataUUID();
+			}
+		} 
+		else
+		{
+			editorStatus = statusInput;
+		}
+	}
+	
 	/**
 	 * @return The UUID of the concept that represents the editor selected status of the mapping set.  May return null.
 	 */
-	public UUID getStatus()
+	public UUID getEditorStatus()
 	{
-		RefexDynamicDataBI[] data = mappingRefexData_.getData();
-		if (data.length > 0)
-		{
-			return ((RefexDynamicUUID)data[0]).getDataUUID();
-		}
-		return null;
+		return editorStatus;
 	}
 	
 	/**
 	 * @return The 'purpose' of the mapping set.  May return null.
 	 */
-	public String getPurpose()
+	public String getPurpose2()
 	{
 		RefexDynamicDataBI[] data = mappingRefexData_.getData();
 		if (data.length > 1)
@@ -179,22 +190,43 @@ public class MappingSet
 		return null;
 	}
 	
+	public void setPurpose(String purposeInput) {
+		purpose = purposeInput;
+	}
+	
+	public String getPurpose() 
+	{
+		return purpose;
+	}
+	
 	public String getName()
 	{
-		readDescriptions();
 		return name;
 	}
 	
 	public String getInverseName()
 	{
-		readDescriptions();
 		return inverseName;
 	}
 	
 	public String getDescription()
 	{
-		readDescriptions();
 		return description;
+	}
+	
+	public void setName(String nameInput) 
+	{
+		name = nameInput;
+	}
+	
+	public void setInverseName(String invNameInput) 
+	{
+		inverseName = invNameInput;
+	}
+	
+	public void setDescription(String descInput) 
+	{
+		description = descInput;
 	}
 	
 	/**
@@ -205,53 +237,6 @@ public class MappingSet
 		return mappingConcept_.getPrimordialUuid();
 	}
 	
-	private void readDescriptions()
-	{
-		try
-		{
-			if (name == null)
-			{
-				for (DescriptionVersionBI<?> desc : mappingConcept_.getDescriptionsActive())
-				{
-					if (desc.getTypeNid() == Snomed.SYNONYM_DESCRIPTION_TYPE.getNid())
-					{
-						if (OTFUtility.isPreferred(desc.getAnnotations()))
-						{
-							name = desc.getText();
-						}
-						else //see if it is the inverse name
-						{
-							for (RefexDynamicChronicleBI<?> annotation : desc.getRefexDynamicAnnotations())
-							{
-								if (annotation.getAssemblageNid() == ISAAC.ASSOCIATION_INVERSE_NAME.getNid())
-								{
-									inverseName = desc.getText();
-									break;
-								}
-							}
-						}
-					}
-					else if (desc.getTypeNid() == Snomed.DEFINITION_DESCRIPTION_TYPE.getNid())
-					{
-						if (OTFUtility.isPreferred(desc.getAnnotations()))
-						{
-							description = desc.getText();
-						}
-					}
-					
-					if (name != null && inverseName != null && description != null)
-					{
-						//Found everything we are looking for.
-						break;
-					}
-				}
-			}
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException("Unexpected error reading descriptions", e);
-		}
-	}
 	
 	/**
 	 * @return Any comments attached to this mapping set.
@@ -261,6 +246,86 @@ public class MappingSet
 		//TODO implement
 		return new ArrayList<>();
 	}
+	
+	/**
+	 * Updates the name, inverse name and description variables
+	 */
+	private void updateMappingSetVariables() 
+	{
+		updateMappingSetVariables("all");
+	}
+	
+	/**
+	 * Pass in either eiter name, inverseName or description to update that variable. Or pass in
+	 *  all to update all of them
+	 * @param updateVariable all, name, inverseName, or description to update desired variable
+	 */
+	private void updateMappingSetVariables(String updateVariable)
+	{
+		String nameFound, inverseNameFound, descFound;
+		nameFound = inverseNameFound = descFound = null;
+		
+		try
+		{
+			for (DescriptionVersionBI<?> desc : mappingConcept_.getDescriptionsActive())
+			{
+				if (desc.getTypeNid() == Snomed.SYNONYM_DESCRIPTION_TYPE.getNid())
+				{
+					if (OTFUtility.isPreferred(desc.getAnnotations()))
+					{
+						nameFound = desc.getText();
+					}
+					else //see if it is the inverse name
+					{
+						for (RefexDynamicChronicleBI<?> annotation : desc.getRefexDynamicAnnotations())
+						{
+							if (annotation.getAssemblageNid() == ISAAC.ASSOCIATION_INVERSE_NAME.getNid())
+							{
+								inverseNameFound = desc.getText();
+								break;
+							}
+						}
+					}
+				}
+				else if (desc.getTypeNid() == Snomed.DEFINITION_DESCRIPTION_TYPE.getNid())
+				{
+					if (OTFUtility.isPreferred(desc.getAnnotations()))
+					{
+						descFound = desc.getText();
+					}
+				}
+				
+				
+				//Did we find what we were looking for?
+				if(updateVariable.toLowerCase().equals("all") && nameFound != null && inverseNameFound != null && descFound != null)
+				{
+					name = nameFound;
+					inverseName = inverseNameFound;
+					description = descFound;
+					break;
+				}
+				else if(nameFound != null && updateVariable.toLowerCase().equals("name")) 
+				{
+					name = nameFound;
+					break;
+				} 
+				else if(inverseNameFound != null && updateVariable.toLowerCase().equals("inversename"))
+				{
+					inverseName = inverseNameFound;
+					break;
+				} else if(descFound != null && updateVariable.toLowerCase().equals("description")) {
+					description = descFound;
+					break;
+				}
+			}
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Unexpected error reading descriptions", e);
+		}
+	}
+	
+	
 	
 	//TODO implement retire and edit?  methods
 }
