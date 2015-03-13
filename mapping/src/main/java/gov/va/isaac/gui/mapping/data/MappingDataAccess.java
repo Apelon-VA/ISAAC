@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * @deprecated
  * {@link MappingDataAccess}
  *
  * Various utility methods to read and write Mapping related data
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MappingDataAccess
 {
-	private static final Logger LOG = LoggerFactory.getLogger(MappingDataAccess.class);
+	private static final Logger logger = LoggerFactory.getLogger(MappingDataAccess.class);
 	/**
 	 * Convenience method to fetch all mappings (defined as instances of the sememe @{link {@link MappingConstants#MAPPING_SEMEME_TYPE}
 	 * @return the mappings.  Will not return null.
@@ -53,6 +54,9 @@ public class MappingDataAccess
 		return getMappingSets(false);
 	}
 	
+	/**
+	 * @deprecated
+	 */
 	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException
 	{
 		//TODO implement Active Only
@@ -76,7 +80,7 @@ public class MappingDataAccess
 		}
 		catch (NumberFormatException | ParseException e)
 		{
-			LOG.error("Unexpected error reading mappings", e);
+			logger.error("Unexpected error reading mappings", e);
 			throw new IOException("Error reading mappings", e);
 		}
 	}

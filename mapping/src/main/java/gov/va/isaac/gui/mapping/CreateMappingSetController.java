@@ -2,6 +2,8 @@ package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.mapping.data.MappingDataAccess;
+import gov.va.isaac.gui.mapping.data.MappingSet;
+import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.ValidBooleanBinding;
@@ -20,6 +22,7 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,7 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 
 public class CreateMappingSetController {
-	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
+	private static final Logger logger = LoggerFactory.getLogger(MappingController.class);
 	
 	@FXML private BorderPane	mainPane;
 	@FXML private TextField		nameInput;
@@ -108,7 +111,15 @@ public class CreateMappingSetController {
 			
 			try
 			{
-				MappingDataAccess.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), null);
+				// Option 1
+				MappingSet mappingSet = new MappingSet();
+				mappingSet.setName(nameInput.getText());
+				mappingSet.setDescription(descInput.getText());
+				mappingSet.setPurpose(purposeInput.getText());
+				MappingSet newMappingSet = MappingSetDAO.createMappingSet(mappingSet);
+				
+				//TOOD: Pass the new map back to the previous window
+				
 				AppContext.getService(Mapping.class).refresh();
 				createButton.getScene().getWindow().hide();
 			}

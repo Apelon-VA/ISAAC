@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.mapping.data;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.constants.MappingConstants;
@@ -8,10 +9,13 @@ import gov.va.isaac.util.OTFUtility;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.lucene.queryparser.classic.ParseException;
+import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
@@ -33,6 +37,9 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
+import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link MappingSet}
@@ -43,10 +50,13 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
  */
 public class MappingSetDAO
 {
-	public static RefexDynamicVersionBI<?> createmappingSet(MappingSet mappingSet) throws IOException
+	private static final Logger logger = LoggerFactory.getLogger(MappingDataAccess.class);
+	
+	public static MappingSet createMappingSet(MappingSet mappingSet) throws IOException
 	{
-		ConceptVersionBI mappingConcept_;
-		RefexDynamicVersionBI<?> mappingRefexData_;
+		
+		ConceptVersionBI mappingConcept_= mappingSet.getMappingSetConcept();
+		RefexDynamicVersionBI<?> mappingRefexData_ = mappingSet.getMappingSetRefexData();
 		
 		try
 		{
@@ -92,15 +102,62 @@ public class MappingSetDAO
 			//Find the constructed dynamic refset
 			mappingRefexData_ = (RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate());
 		
-			
+			mappingSet.setMappingRefexData(mappingRefexData_);
+			mappingSet.setMappingConcept(mappingConcept_);
 		}
 		catch (ContradictionException | InvalidCAB | PropertyVetoException e)
 		{
 			throw new RuntimeException("Unexpected error creating mapping", e);
 		}
-		return null;
+		return mappingSet;
 	}
 	
+	
+	public static List<MappingSet> getMappingSets() throws IOException {
+		return getMappingSets(false);
+	}
+	
+	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException
+	{
+		//TODO implement Active Only
+		try
+		{
+			ArrayList<MappingSet> result = new ArrayList<>();
+			
+			LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
+			if (indexer == null)
+			{
+				throw new RuntimeException("Required index is not available");
+			}
+			List<SearchResult> refexes = indexer.queryAssemblageUsage(MappingConstants.MAPPING_SEMEME_TYPE.getNid(), 5000, Long.MAX_VALUE);
+			for (SearchResult sr : refexes)
+			{
+				RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
+				result.add(new MappingSet(rc));
+			}
+			
+			return result;
+		}
+		catch (NumberFormatException | ParseException e)
+		{
+			logger.error("Unexpected error reading mappings", e);
+			throw new IOException("Error reading mappings", e);
+		}
+	}
+	
+	public static boolean retireMappingSet(MappingSet mappingSet)
+	{
+		//TODO: retire mapping set
+		
+		return true; //Maybe Void insetad? Or return true on succesfull concept retire
+	}
+	
+	public static boolean unRetireMapping(MappingSet mappingSet)
+	{
+		//TODO: un-retire mapping set
+		
+		return true; //Maybe Void insetad? Or return true on succesfull concept un-retire
+	}
 	
 	
 }
