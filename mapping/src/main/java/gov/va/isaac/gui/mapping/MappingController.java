@@ -201,7 +201,7 @@ public class MappingController {
 		ObservableList<MappingItem> mappingItems;
 		try
 		{
-			mappingItems = FXCollections.observableList(MappingDataAccess.getMappings(mappingSetId));
+			mappingItems = FXCollections.observableList(MappingDataAccess.getMappingItems(mappingSetId));
 		}
 		catch (IOException e)
 		{
@@ -221,7 +221,7 @@ public class MappingController {
 		ObservableList<MappingSet> mappingSets;
 		try
 		{
-			mappingSets = FXCollections.observableList(MappingDataAccess.getMaps());
+			mappingSets = FXCollections.observableList(MappingDataAccess.getMappingSets());
 		}
 		catch (IOException e)
 		{

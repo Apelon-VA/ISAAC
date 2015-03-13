@@ -18,15 +18,21 @@
  */
 package gov.va.isaac.gui.mapping.data;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.util.OTFUtility;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.UUID;
+
+import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
+import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -36,6 +42,7 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT5Generator;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
+import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 
 /**
  * {@link MappingItem}
@@ -45,6 +52,7 @@ import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 public class MappingItem
 {
 	private RefexDynamicVersionBI<?> refex_;
+	private UUID mappingItemUUID_;
 
 	protected MappingItem(RefexDynamicChronicleBI<?> refex)
 	{
@@ -71,18 +79,18 @@ public class MappingItem
 					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinate());
 			
 			
-			UUID mappingUUID = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
+			mappingItemUUID_ = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
 					sourceConcept.toString() + "|" 
 					+ mappingSetID.toString() + "|"
 					+ targetConcept.toString() + "|" 
 					+ qualifier.toString());
 			
-			if (ExtendedAppContext.getDataStore().hasUuid(mappingUUID))
+			if (ExtendedAppContext.getDataStore().hasUuid(mappingItemUUID_))
 			{
 				throw new IOException("A mapping with the specified source, target and qualifier already exists in this set.  Please edit that mapping.");
 			}
 			
-			mappingAnnotation.setComponentUuidNoRecompute(mappingUUID);
+			mappingAnnotation.setComponentUuidNoRecompute(mappingItemUUID_);
 			
 			OTFUtility.getBuilder().construct(mappingAnnotation);
 			
@@ -94,6 +102,13 @@ public class MappingItem
 			throw new RuntimeException("Unexpected error", e);
 		}
 		
+	}
+
+	/**
+	 * @return the identifier of this mapping set
+	 */
+	public UUID getID()	{
+		return mappingItemUUID_;
 	}
 
 	public UUID getSourceConcept()
@@ -153,11 +168,89 @@ public class MappingItem
 	/**
 	 * @return Any comments attached to this mapping set.
 	 */
-	public List<Object> getComments()
+	public List<MappingItemComment> getComments()
 	{
 		//TODO implement
-		return new ArrayList<>();
+		return new ArrayList<MappingItemComment>();
 	}
 	
-	//TODO implement edit / retire methods
+	
+	public MappingItemComment addComment(String commentText) throws IOException {
+		//TODO Extract author name from current user? 
+		String authorName = "Current User";
+		Date commentDate = new Date();
+		MappingItemComment comment;
+		
+		try {
+			comment = new MappingItemComment(this.getID(), authorName, commentText, commentDate); 
+		} catch (IOException e) {
+			throw new RuntimeException("Unexpected error", e);
+		}
+		 
+		
+		return comment;
+	}
+	
+	public void update() {
+		//TODO implement
+	}
+	
+	public void retire() {
+		//TODO implement
+	}
+	
+	public void unRetire() {
+		//TODO implement
+	}
+	
+	/*
+	 * Static methods 
+	 */
+	
+	/**
+	 * 
+	 * @param mappingSetID
+	 * @return List<MappingItem>
+	 * @throws IOException
+	 */
+	public static List<MappingItem> getMappingItems(UUID mappingSetID) throws IOException {
+		List<MappingItem> mappingItems;
+		try {
+			mappingItems = MappingItemDAO.getMappingItems(mappingSetID);
+		} catch (IOException e) {
+			throw new RuntimeException("Unexpected error", e);
+		}
+		return mappingItems;
+	}
+
+	public static void generateRandomMappingItems(MappingSet ms) throws IOException {
+		try
+		{
+			LuceneDescriptionIndexer ldi = AppContext.getService(LuceneDescriptionIndexer.class);
+			List<SearchResult> result = ldi.query("acetaminophen", ComponentProperty.DESCRIPTION_TEXT, 100);
+
+			for (int i = 0; i < 10; i++)
+			{
+				UUID source;
+				UUID target = null;
+				
+				int index =  (int)(Math.random() * 100);
+				source = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
+				
+				while (target == null || target.equals(source))
+				{
+					index =  (int)(Math.random() * 100);
+					target = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
+				}
+				
+				MappingItem mi = new MappingItem(source, ms.getID(), target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+				
+			}
+		}
+		catch (Exception e)
+		{
+			LOG.error("oops", e);
+		}
+	}
+
 }
