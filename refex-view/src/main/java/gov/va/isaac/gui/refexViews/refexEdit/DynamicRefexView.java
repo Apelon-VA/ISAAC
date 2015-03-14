@@ -115,6 +115,7 @@ public class DynamicRefexView implements RefexViewI
 	private TreeTableView<RefexDynamicGUI> ttv_;
 	private TreeItem<RefexDynamicGUI> treeRoot_;
 	private Button retireButton_, addButton_, commitButton_, cancelButton_, editButton_, viewUsageButton_;
+	private Label summary_ = new Label("");
 	private ToggleButton stampButton_, activeOnlyButton_, historyButton_;
 	private UpdateableBooleanBinding currentRowSelected_, selectedRowIsActive_;
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_, showViewUsageButton_;
@@ -389,6 +390,8 @@ public class DynamicRefexView implements RefexViewI
 			viewUsageButton_.visibleProperty().bind(showViewUsageButton_);
 			t.getItems().add(viewUsageButton_);
 			
+			t.getItems().add(summary_);
+			
 			//fill to right
 			Region r = new Region();
 			HBox.setHgrow(r, Priority.ALWAYS);
@@ -563,6 +566,16 @@ public class DynamicRefexView implements RefexViewI
 			});
 			
 			rootNode_.getChildren().add(t);
+			
+			Platform.runLater(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					//TODO hack for bug in javafx - need to start as true, then later toggle to false.
+					stampButton_.setSelected(false);
+				}
+			});
 		}
 	}
 
@@ -681,6 +694,7 @@ public class DynamicRefexView implements RefexViewI
 		treeRoot_.setExpanded(true);
 		ttv_.setShowRoot(false);
 		ttv_.setRoot(treeRoot_);
+		summary_.setText("");
 
 		ttv_.setPlaceholder(progressBar_);
 		progressBar_.setProgress(-1);
@@ -1135,15 +1149,17 @@ public class DynamicRefexView implements RefexViewI
 				{
 					rowData = getDataRows(setFromType_.getAssemblyNid());
 				}
+				
+				Utility.execute(() ->
+				{
+					checkForUncommittedRefexes(rowData);
+				});
 
 				Platform.runLater(() ->
 				{
 					addButton_.setDisable(false);
-					for (TreeItem<RefexDynamicGUI> rd : rowData)
-					{
-						treeRoot_.getChildren().add(rd);
-					}
-					checkForUncommittedRefexes(rowData);
+					treeRoot_.getChildren().addAll(rowData);
+					summary_.setText(rowData.size() + " entries");
 					ttv_.setPlaceholder(placeholderText);
 					ttv_.getSelectionModel().clearAndSelect(0);
 				});
@@ -1379,7 +1395,11 @@ public class DynamicRefexView implements RefexViewI
 		{
 			if (item.getValue() != null && item.getValue().getRefex().isUncommitted())
 			{
-				hasUncommitted_.set(true);
+				//TODO add some indication that this is either running / finished
+				Platform.runLater(() ->
+				{
+					hasUncommitted_.set(true);
+				});
 				return;
 			}
 			checkForUncommittedRefexes(item.getChildren());
