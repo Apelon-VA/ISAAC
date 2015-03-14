@@ -31,6 +31,7 @@ import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.UUID;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -282,6 +283,16 @@ public class SnomedConceptViewController {
         v.getView().setMinHeight(100.0);
         VBox.setVgrow(v.getView(), Priority.ALWAYS);
         annotationsRegion.getChildren().add(v.getView());
+        
+        //TODO this is a hack - I want these off by default, but there is a bug in javafx that messes up the table
+        Platform.runLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                stampToggle.setSelected(false);
+            }
+        });
 
         // Load the inner tree view.
         try {
