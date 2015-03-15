@@ -66,6 +66,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -1159,6 +1160,21 @@ public class OTFUtility {
 		RefexVersionBI<?> newest = null;;
 		long newestTime = Long.MIN_VALUE;
 		for (RefexVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
+	}
+	
+	public static RefexDynamicVersionBI<?> getLatestDynamicRefexVersion(@SuppressWarnings("rawtypes") Collection<? extends RefexDynamicVersionBI> collection)
+	{
+		RefexDynamicVersionBI<?> newest = null;;
+		long newestTime = Long.MIN_VALUE;
+		for (RefexDynamicVersionBI<?> x : collection)
 		{
 			if (x.getTime() > newestTime)
 			{
