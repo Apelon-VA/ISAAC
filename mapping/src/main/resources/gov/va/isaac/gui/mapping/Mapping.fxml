@@ -18,7 +18,8 @@
                     <columns>
                       <TableColumn minWidth="50.0" prefWidth="218.0" text="Name" />
                       <TableColumn prefWidth="313.0" text="Purpose" />
-                        <TableColumn prefWidth="298.0" text="Description" />
+                      <TableColumn prefWidth="100" text="Status" />
+                      <TableColumn prefWidth="298.0" text="Description" />
                     </columns>
                   </TableView>
                   <Button fx:id="editMappingButton" layoutX="104.0" layoutY="161.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="E" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
