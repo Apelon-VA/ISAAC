@@ -1,7 +1,6 @@
 package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.mapping.data.MappingDataAccess;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.FxUtils;
@@ -161,7 +160,7 @@ public class MappingController {
 			{
 				if (c.getList().size() == 1)
 				{
-					updateItemsList(c.getList().get(0).getID());
+					updateItemsList((MappingSet) c.getList().get(0));
 				}
 			}
 		});
@@ -195,13 +194,14 @@ public class MappingController {
 			});
 		}
 	}
-	
-	private void updateItemsList(UUID mappingSetId)
+		
+	private void updateItemsList(MappingSet mappingSet)
 	{
 		ObservableList<MappingItem> mappingItems;
 		try
 		{
-			mappingItems = FXCollections.observableList(MappingDataAccess.getMappingItems(mappingSetId));
+			//mappingItems = FXCollections.observableList(MappingDataAccess.getMappingItems(mappingSetId));
+			mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
 		}
 		catch (IOException e)
 		{
@@ -219,9 +219,11 @@ public class MappingController {
 	protected void readData()
 	{
 		ObservableList<MappingSet> mappingSets;
+		boolean activeOnly = false;
+		//TODO retrieve active only flag
 		try
 		{
-			mappingSets = FXCollections.observableList(MappingDataAccess.getMappingSets());
+			mappingSets = FXCollections.observableList(MappingSet.getMappingSets(activeOnly));
 		}
 		catch (IOException e)
 		{

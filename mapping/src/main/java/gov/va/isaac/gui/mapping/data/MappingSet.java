@@ -64,7 +64,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MappingSet
 {
-	private static final Logger logger = LoggerFactory.getLogger(MappingController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MappingSet.class);
 	
 	private ConceptVersionBI mappingConcept_;
 	private RefexDynamicVersionBI<?> mappingRefexData_;
@@ -73,10 +73,6 @@ public class MappingSet
 	private String name, inverseName, description, purpose;
 	private UUID editorStatus;
 	private boolean active;
-	
-	public MappingSet() {
-		
-	}
 	
 	/**
 	 * 
@@ -113,13 +109,12 @@ public class MappingSet
 	 * @throws IOException
 	 */
 	public MappingSet (String mappingNameInput, 
-							String inverseNameInput,
 							String purposeInput, 
 							String descriptionInput, 
 							UUID editorStatusInput) throws IOException
 	{
 		this.setName(mappingNameInput);
-		this.setInverseName(inverseNameInput);
+		//this.setInverseName(inverseNameInput);
 		this.setPurpose(purposeInput);
 		this.setDescription(descriptionInput);
 		this.setEditorStatus(editorStatusInput);
@@ -131,6 +126,10 @@ public class MappingSet
 		//TODO any pre-save cleanup?
 		
 		MappingSetDAO.updateMappingSet(this);
+	}
+	
+	public List<MappingItem> getMappingItems() throws IOException {
+		return MappingItem.getMappingItems(this.getID());
 	}
 	
 	public void setMappingRefexData(RefexDynamicVersionBI<?> inputRefexData)
@@ -364,7 +363,7 @@ public class MappingSet
 			else 
 			{
 				String error = "cannot initialize name, inverseName and/or description without a mapping set concept defined";
-				logger.error(error);
+				LOG.error(error);
 				throw new RuntimeException(error);
 			}
 		}
@@ -374,7 +373,22 @@ public class MappingSet
 		}
 	}
 	
+	public void retire() {
+		MappingSetDAO.retireMappingSet(this);
+	}
 	
+	public void unRetire() {
+		MappingSetDAO.unRetireMappingSet(this);
+	}
 	
-	//TODO implement retire and edit?  methods
+	/*
+	 * Static Methods
+	 */
+	public static List<MappingSet> getMappingSets() throws IOException {
+		return MappingSet.getMappingSets(false);
+	}
+	
+	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException {
+		return MappingSetDAO.getMappingSets(activeOnly);
+	}
 }

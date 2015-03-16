@@ -21,6 +21,7 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.MappingConstants;
+import gov.va.isaac.gui.mapping.MappingController;
 import gov.va.isaac.util.OTFUtility;
 
 import java.beans.PropertyVetoException;
@@ -43,6 +44,8 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT5Generator;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link MappingItem}
@@ -51,6 +54,8 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
  */
 public class MappingItem
 {
+	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
+
 	private RefexDynamicVersionBI<?> refex_;
 	private UUID mappingItemUUID_;
 

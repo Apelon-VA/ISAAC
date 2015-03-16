@@ -1,7 +1,6 @@
 package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.gui.mapping.data.MappingDataAccess;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
@@ -112,11 +111,7 @@ public class CreateMappingSetController {
 			try
 			{
 				// Option 1
-				MappingSet mappingSet = new MappingSet();
-				mappingSet.setName(nameInput.getText());
-				mappingSet.setDescription(descInput.getText());
-				mappingSet.setPurpose(purposeInput.getText());
-				MappingSet newMappingSet = MappingSetDAO.createMappingSet(mappingSet);
+				MappingSet mappingSet = new MappingSet(nameInput.getText(), purposeInput.getText(), descInput.getText(), null);
 				
 				//TOOD: Pass the new map back to the previous window
 				

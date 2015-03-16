@@ -117,10 +117,6 @@ public class MappingSetDAO
 		
 	}
 	
-	public static List<MappingSet> getMappingSets() throws IOException {
-		return getMappingSets(false);
-	}
-	
 	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException
 	{
 		//TODO implement Active Only
