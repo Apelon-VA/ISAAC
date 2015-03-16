@@ -123,7 +123,14 @@ public class MappingSet
 		this.setPurpose(purposeInput);
 		this.setDescription(descriptionInput);
 		this.setEditorStatus(editorStatusInput);
+		MappingSetDAO.createMappingSet(this);
+	}
+	
+	public void save() {
+		// Dan - Confer with Vas if you think this is unnecessary 
+		//TODO any pre-save cleanup?
 		
+		MappingSetDAO.updateMappingSet(this);
 	}
 	
 	public void setMappingRefexData(RefexDynamicVersionBI<?> inputRefexData)

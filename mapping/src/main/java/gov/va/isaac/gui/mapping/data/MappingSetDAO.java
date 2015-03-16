@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MappingSetDAO
 {
-	private static final Logger logger = LoggerFactory.getLogger(MappingDataAccess.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MappingSetDAO.class);
 	
 	public static MappingSet createMappingSet(MappingSet mappingSet) throws IOException
 	{
@@ -112,6 +112,10 @@ public class MappingSetDAO
 		return mappingSet;
 	}
 	
+	public static void updateMappingSet(MappingSet mappingSet) {
+		//TODO persist mapping set changes to DB
+		
+	}
 	
 	public static List<MappingSet> getMappingSets() throws IOException {
 		return getMappingSets(false);
@@ -140,7 +144,7 @@ public class MappingSetDAO
 		}
 		catch (NumberFormatException | ParseException e)
 		{
-			logger.error("Unexpected error reading mappings", e);
+			LOG.error("Unexpected error reading mappings", e);
 			throw new IOException("Error reading mappings", e);
 		}
 	}
@@ -152,7 +156,7 @@ public class MappingSetDAO
 		return true; //Maybe Void insetad? Or return true on succesfull concept retire
 	}
 	
-	public static boolean unRetireMapping(MappingSet mappingSet)
+	public static boolean unRetireMappingSet(MappingSet mappingSet)
 	{
 		//TODO: un-retire mapping set
 		
