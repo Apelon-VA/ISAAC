@@ -145,8 +145,10 @@ public class AboutViewController {
 
 		dbGridPane_.getChildren().clear();
 		int dbGridPaneRowCount = 0;
-		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Type"), new CopyableLabel(appConfig.getDbType()));
+		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Group"), new CopyableLabel(appConfig.getDbGroupId()));
+		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Artifact"), new CopyableLabel(appConfig.getDbArtifactId()));
 		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Version"), new CopyableLabel(appConfig.getDbVersion()));
+		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Type"), new CopyableLabel(appConfig.getDbType()));
 		dbGridPane_.addRow(dbGridPaneRowCount++, new Label("DB Classifier"), new CopyableLabel(appConfig.getDbClassifier()));
 
 		// DB Licenses
