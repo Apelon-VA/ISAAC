@@ -140,6 +140,10 @@ public class MappingController {
 					{
 						return new SimpleStringProperty(param.getValue().getPurpose());
 					}
+					else if (param.getTableColumn().getText().equals("Status"))
+					{
+						return new SimpleStringProperty(param.getValue().getEditorStatus().toString().trim());
+					}
 					else if (param.getTableColumn().getText().equals("Description"))
 					{
 						return new SimpleStringProperty(param.getValue().getDescription());
