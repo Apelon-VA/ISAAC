@@ -1,6 +1,7 @@
 package gov.va.isaac.request.uscrs;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.ContentRequestHandlerI;
@@ -261,7 +262,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					break;
 				case Justification:
 					//Probably not correct because justification needs to be specific to that row
-					bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+					bt.addStringCell(column, "Developed as part of extension namespace " + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getExtensionNamespace());
 					break;
 				case Note:
 					StringBuilder sb = new StringBuilder();
@@ -523,7 +524,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addNumericCell(column, relVersion.getGroup());
 					break;
 				case Justification:
-					bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+					bt.addStringCell(column, "Developed as part of extension namespace " + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getExtensionNamespace());
 					break;
 				case Note:
 					bt.addStringCell(column, "This is a defining relationship expressed for the corresponding new concept request in the other tab");
