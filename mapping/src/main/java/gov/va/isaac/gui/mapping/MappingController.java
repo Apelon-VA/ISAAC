@@ -26,6 +26,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -225,7 +226,7 @@ public class MappingController {
 		{
 			mappingSets = FXCollections.observableList(MappingSet.getMappingSets(activeOnly));
 		}
-		catch (IOException e)
+		catch (IOException | ContradictionException e)
 		{
 			LOG.error("unexpected", e);
 			//TODO GUI prompt;

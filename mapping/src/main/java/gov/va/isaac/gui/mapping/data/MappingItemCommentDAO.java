@@ -14,7 +14,7 @@ public class MappingItemCommentDAO {
 	public static List<MappingItemComment> getComments(UUID mappingItemUUID) {
 		List<MappingItemComment> comments = new ArrayList<MappingItemComment>();
 		
-		//TODO implement get comments for mapping item, populate comments list
+		//TODO  DAN implement get comments for mapping item, populate comments list
 		
 		return comments;
 	}

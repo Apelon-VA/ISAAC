@@ -5,14 +5,10 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.util.OTFUtility;
-
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.UUID;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
@@ -23,11 +19,9 @@ import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
 import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
@@ -54,10 +48,6 @@ public class MappingSetDAO
 	
 	public static MappingSet createMappingSet(MappingSet mappingSet) throws IOException
 	{
-		
-		ConceptVersionBI mappingConcept_= mappingSet.getMappingSetConcept();
-		RefexDynamicVersionBI<?> mappingRefexData_ = mappingSet.getMappingSetRefexData();
-		
 		try
 		{
 			//We need to create a new concept - which itself is defining a dynamic refex - so set that up here.
@@ -70,7 +60,7 @@ public class MappingSetDAO
 								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_STATUS.getPrimodialUuid()))}, 
 					null, true, ComponentType.CONCEPT);
 			
-			//TODO background thread this
+			//TODO DAN background thread this
 			LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2}, true);
 			
 			//Then, annotate the concept created above as a member of the MappingSet dynamic refex, and add the inverse name, if present.
@@ -96,30 +86,26 @@ public class MappingSetDAO
 			ExtendedAppContext.getDataStore().addUncommitted(createdConcept);
 			ExtendedAppContext.getDataStore().commit(createdConcept);
 			
-			//reread
-			mappingConcept_ = OTFUtility.getConceptVersion(rdud.getRefexUsageDescriptorNid());
+			//TODO remove this
+			MappingItem.generateRandomMappingItems(createdConcept.getPrimordialUuid());
 			
 			//Find the constructed dynamic refset
-			mappingRefexData_ = (RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate());
+			return new MappingSet((RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate()));
 		
-			mappingSet.setMappingRefexData(mappingRefexData_);
-			mappingSet.setMappingConcept(mappingConcept_);
 		}
 		catch (ContradictionException | InvalidCAB | PropertyVetoException e)
 		{
 			throw new RuntimeException("Unexpected error creating mapping", e);
 		}
-		return mappingSet;
 	}
 	
 	public static void updateMappingSet(MappingSet mappingSet) {
-		//TODO persist mapping set changes to DB
+		//TODO DAN persist mapping set changes to DB
 		
 	}
 	
-	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException
+	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException, ContradictionException
 	{
-		//TODO implement Active Only
 		try
 		{
 			ArrayList<MappingSet> result = new ArrayList<>();
@@ -132,8 +118,16 @@ public class MappingSetDAO
 			List<SearchResult> refexes = indexer.queryAssemblageUsage(MappingConstants.MAPPING_SEMEME_TYPE.getNid(), 5000, Long.MAX_VALUE);
 			for (SearchResult sr : refexes)
 			{
-				RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
-				result.add(new MappingSet(rc));
+				RefexDynamicVersionBI<?> rc = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().
+						getComponentVersion(OTFUtility.getViewCoordinate(), sr.getNid());
+				if (rc != null)
+				{
+					if (activeOnly && !rc.isActive())
+					{
+						continue;
+					}
+					result.add(new MappingSet(rc));
+				}
 			}
 			
 			return result;
@@ -147,14 +141,14 @@ public class MappingSetDAO
 	
 	public static boolean retireMappingSet(MappingSet mappingSet)
 	{
-		//TODO: retire mapping set
+		//TODO: DAN retire mapping set
 		
 		return true; //Maybe Void insetad? Or return true on succesfull concept retire
 	}
 	
 	public static boolean unRetireMappingSet(MappingSet mappingSet)
 	{
-		//TODO: un-retire mapping set
+		//TODO: DAN un-retire mapping set
 		
 		return true; //Maybe Void insetad? Or return true on succesfull concept un-retire
 	}

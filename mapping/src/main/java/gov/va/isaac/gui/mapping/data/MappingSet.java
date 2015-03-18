@@ -18,38 +18,18 @@
  */
 package gov.va.isaac.gui.mapping.data;
 
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
-import gov.va.isaac.constants.MappingConstants;
-import gov.va.isaac.gui.mapping.MappingController;
 import gov.va.isaac.util.OTFUtility;
-
-import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import org.apache.commons.lang3.StringUtils;
-import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
-import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
-import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.slf4j.Logger;
@@ -66,39 +46,26 @@ public class MappingSet
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingSet.class);
 	
-	private ConceptVersionBI mappingConcept_;
-	private RefexDynamicVersionBI<?> mappingRefexData_;
-	
-	//cached values
 	private String name, inverseName, description, purpose;
-	private UUID editorStatus;
+	private UUID primordialUUID, editorStatus;
 	private boolean active;
 	
 	/**
 	 * 
-	 *  Construct a MappingSset by passing in a RefexDyanmicChronicle
+	 *  Read an existing mapping set from the database
 	 * 
 	 * @param refex RefexDynamicChronicleBI<?>
 	 * @throws IOException 
 	 */
-	public MappingSet(RefexDynamicChronicleBI<?> refex) throws IOException
+	public MappingSet(RefexDynamicVersionBI<?> refex) throws IOException
 	{
-		try
-		{
-			this.setMappingConcept(OTFUtility.getConceptVersion(refex.getReferencedComponentNid()));
-			this.setMappingRefexData(refex.getVersion(OTFUtility.getViewCoordinate()));
-			this.updateMappingSetVariables(); //Sets Name, inverseName and Description
-		}
-		catch (ContradictionException e)
-		{
-			throw new RuntimeException(e);
-		}
+		this.readFromRefex(refex); //Sets Name, inverseName and Description, etc
 	}
 	
 	
 	/**
 	 * 
-	 * Alternatively construct a Mapping Set by creating a new concept and passing in the set name, inverse name, purpose, description
+	 * Construct a NEW Mapping Set by creating a new concept and passing in the set name, inverse name, purpose, description
 	 *  and the UUID of the editor 
 	 * 
 	 * @param mappingName Mapping Set Name
@@ -122,69 +89,14 @@ public class MappingSet
 	}
 	
 	public void save() {
-		// Dan - Confer with Vas if you think this is unnecessary 
-		//TODO any pre-save cleanup?
-		
 		MappingSetDAO.updateMappingSet(this);
 	}
 	
 	public List<MappingItem> getMappingItems() throws IOException {
-		return MappingItem.getMappingItems(this.getID());
+		return MappingItem.getMappingItems(this.getPrimordialUUID());
 	}
 	
-	public void setMappingRefexData(RefexDynamicVersionBI<?> inputRefexData)
-	{
-		mappingRefexData_ = inputRefexData;
-		
-		RefexDynamicDataBI[] data = mappingRefexData_.getData();
-		if (data.length > 0)
-		{
-			UUID thisEditorStatus = ((RefexDynamicUUID) data[0]).getDataUUID();
-			this.setEditorStatus(thisEditorStatus);
-			
-			if (data.length > 1)
-			{
-				this.setPurpose(data[1] == null ? null : ((RefexDynamicString)data[1]).getDataString());
-			}
-			
-		}
-		
-
-	}
-	
-	/**
-	 * TODO: vk - all of these javadocs
-	 * 
-	 * @param conceptInput
-	 */
-	public void setMappingConcept(ConceptVersionBI conceptInput)
-	{
-		mappingConcept_ = conceptInput;
-		
-		try
-		{
-			this.setActive(mappingConcept_.isActive());
-			this.updateMappingSetVariables();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-		
-	}
-	
-	public RefexDynamicVersionBI<?> getMappingSetRefexData() 
-	{
-		return mappingRefexData_;
-	}
-	
-	/**
-	 * Access to the underlying concept
-	 */
-	public ConceptVersionBI getMappingSetConcept()
-	{
-		return mappingConcept_;
-	}
+	//TODO: vk - all of these javadocs
 	
 	public void setActive(boolean activeInput)
 	{
@@ -192,19 +104,11 @@ public class MappingSet
 	}
 	
 	/**
-	 * Alias for {@link #isActive()}
-	 * @return
-	 */
-	public boolean getActive(){
-		return active;
-	}
-	
-	/**
 	 * Is this mapping concept active or retired?
 	 */
 	public boolean isActive()
 	{
-		return getActive();
+		return active;
 	}
 	
 	public void setEditorStatus(UUID thisEditorStatus)
@@ -223,12 +127,6 @@ public class MappingSet
 	/**
 	 * @return The 'purpose' of the mapping set.  May return null.
 	 */
-	public String getPurpose2()
-	{
-		
-		return null;
-	}
-	
 	public void setPurpose(String purposeInput) {
 		purpose = purposeInput;
 	}
@@ -271,9 +169,9 @@ public class MappingSet
 	/**
 	 * @return the identifier of this mapping set
 	 */
-	public UUID getID()
+	public UUID getPrimordialUUID()
 	{
-		return mappingConcept_.getPrimordialUuid();
+		return primordialUUID;
 	}
 	
 	/**
@@ -288,32 +186,31 @@ public class MappingSet
 	/**
 	 * Updates the name, inverse name and description variables
 	 */
-	private void updateMappingSetVariables() 
+	private void readFromRefex(RefexDynamicVersionBI<?> refex) 
 	{
-		updateMappingSetVariables("all");
-	}
-	
-	/**
-	 * Pass in either eiter name, inverseName or description to update that variable. Or pass in
-	 *  all to update all of them
-	 * @param updateVariable all, name, inverseName, or description to update desired variable
-	 */
-	private void updateMappingSetVariables(String updateVariable)
-	{
-		String nameFound, inverseNameFound, descFound;
-		nameFound = inverseNameFound = descFound = null;
-		
 		try
 		{
-			if(mappingConcept_ != null) 
+			ConceptVersionBI mappingConcept = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
+			if(mappingConcept != null) 
 			{
-				for (DescriptionVersionBI<?> desc : mappingConcept_.getDescriptionsActive())
+				primordialUUID = mappingConcept.getPrimordialUuid();
+				active = mappingConcept.isActive();
+				if (refex.getData().length > 0  && refex.getData()[0] != null)
+				{
+					editorStatus = ((RefexDynamicUUID)refex.getData()[0]).getDataUUID();
+				}
+				if (refex.getData().length > 1  && refex.getData()[1] != null)
+				{
+					purpose = ((RefexDynamicString)refex.getData()[1]).getDataString();
+				}
+				
+				for (DescriptionVersionBI<?> desc : mappingConcept.getDescriptionsActive())
 				{
 					if (desc.getTypeNid() == Snomed.SYNONYM_DESCRIPTION_TYPE.getNid())
 					{
 						if (OTFUtility.isPreferred(desc.getAnnotations()))
 						{
-							nameFound = desc.getText();
+							name = desc.getText();
 						}
 						else //see if it is the inverse name
 						{
@@ -321,7 +218,7 @@ public class MappingSet
 							{
 								if (annotation.getAssemblageNid() == ISAAC.ASSOCIATION_INVERSE_NAME.getNid())
 								{
-									inverseNameFound = desc.getText();
+									inverseName= desc.getText();
 									break;
 								}
 							}
@@ -331,38 +228,21 @@ public class MappingSet
 					{
 						if (OTFUtility.isPreferred(desc.getAnnotations()))
 						{
-							descFound = desc.getText();
+							description = desc.getText();
 						}
 					}
 					
 					
-					//Did we find what we were looking for?
-					if(updateVariable.toLowerCase().equals("all") && nameFound != null && inverseNameFound != null && descFound != null)
+					if (name != null && description != null && inverseName != null)
 					{
-						this.setName(nameFound);
-						this.setInverseName(inverseNameFound);
-						this.setDescription(descFound);
-						break;
-					}
-					else if(nameFound != null && updateVariable.toLowerCase().equals("name")) 
-					{
-						this.setName(nameFound);
-						break;
-					} 
-					else if(inverseNameFound != null && updateVariable.toLowerCase().equals("inversename"))
-					{
-						this.setInverseName(inverseNameFound);
-						break;
-					} else if(descFound != null && updateVariable.toLowerCase().equals("description")) 
-					{
-						this.setDescription(descFound);
+						//found everything we are looking for
 						break;
 					}
 				}
 			}
 			else 
 			{
-				String error = "cannot initialize name, inverseName and/or description without a mapping set concept defined";
+				String error = "cannot read mapping concept!";
 				LOG.error(error);
 				throw new RuntimeException(error);
 			}
@@ -384,11 +264,11 @@ public class MappingSet
 	/*
 	 * Static Methods
 	 */
-	public static List<MappingSet> getMappingSets() throws IOException {
+	public static List<MappingSet> getMappingSets() throws IOException, ContradictionException {
 		return MappingSet.getMappingSets(false);
 	}
 	
-	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException {
+	public static List<MappingSet> getMappingSets(boolean activeOnly) throws IOException, ContradictionException {
 		return MappingSetDAO.getMappingSets(activeOnly);
 	}
 }

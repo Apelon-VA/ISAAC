@@ -21,17 +21,13 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.MappingConstants;
-import gov.va.isaac.gui.mapping.MappingController;
 import gov.va.isaac.util.OTFUtility;
-
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
-
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
@@ -57,7 +53,6 @@ public class MappingItem
 	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
 
 	private RefexDynamicVersionBI<?> refex_;
-	private UUID mappingItemUUID_;
 
 	protected MappingItem(RefexDynamicChronicleBI<?> refex)
 	{
@@ -84,36 +79,37 @@ public class MappingItem
 					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinate());
 			
 			
-			mappingItemUUID_ = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
+			UUID mappingItemUUID = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
 					sourceConcept.toString() + "|" 
 					+ mappingSetID.toString() + "|"
 					+ targetConcept.toString() + "|" 
 					+ qualifier.toString());
 			
-			if (ExtendedAppContext.getDataStore().hasUuid(mappingItemUUID_))
+			if (ExtendedAppContext.getDataStore().hasUuid(mappingItemUUID))
 			{
 				throw new IOException("A mapping with the specified source, target and qualifier already exists in this set.  Please edit that mapping.");
 			}
 			
-			mappingAnnotation.setComponentUuidNoRecompute(mappingItemUUID_);
+			mappingAnnotation.setComponentUuidNoRecompute(mappingItemUUID);
 			
 			OTFUtility.getBuilder().construct(mappingAnnotation);
 			
 			ExtendedAppContext.getDataStore().addUncommitted(cv);
 			ExtendedAppContext.getDataStore().commit(cv);
+			
+			refex_ = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponent(mappingItemUUID);
 		}
 		catch (InvalidCAB | ContradictionException | PropertyVetoException | NoSuchAlgorithmException e)
 		{
 			throw new RuntimeException("Unexpected error", e);
 		}
-		
 	}
 
 	/**
 	 * @return the identifier of this mapping set
 	 */
 	public UUID getID()	{
-		return mappingItemUUID_;
+		return refex_.getPrimordialUuid();
 	}
 
 	public UUID getSourceConcept()
@@ -175,19 +171,16 @@ public class MappingItem
 	 */
 	public List<MappingItemComment> getComments()
 	{
-		//TODO implement
+		//TODO  DAN implement
 		return new ArrayList<MappingItemComment>();
 	}
 	
 	
 	public MappingItemComment addComment(String commentText) throws IOException {
-		//TODO Extract author name from current user? 
-		String authorName = "Current User";
-		Date commentDate = new Date();
 		MappingItemComment comment;
 		
 		try {
-			comment = new MappingItemComment(this.getID(), authorName, commentText, commentDate); 
+			comment = new MappingItemComment(this.getID(), commentText); 
 		} catch (IOException e) {
 			throw new RuntimeException("Unexpected error", e);
 		}
@@ -197,15 +190,15 @@ public class MappingItem
 	}
 	
 	public void update() {
-		//TODO implement
+		//TODO  DAN implement
 	}
 	
 	public void retire() {
-		//TODO implement
+		//TODO  DAN implement
 	}
 	
 	public void unRetire() {
-		//TODO implement
+		//TODO  DAN implement
 	}
 	
 	/*
@@ -228,7 +221,7 @@ public class MappingItem
 		return mappingItems;
 	}
 
-	public static void generateRandomMappingItems(MappingSet ms) throws IOException {
+	public static void generateRandomMappingItems(UUID mappingSetUUID) throws IOException {
 		try
 		{
 			LuceneDescriptionIndexer ldi = AppContext.getService(LuceneDescriptionIndexer.class);
@@ -248,7 +241,7 @@ public class MappingItem
 					target = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
 				}
 				
-				MappingItem mi = new MappingItem(source, ms.getID(), target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+				MappingItem mi = new MappingItem(source, mappingSetUUID, target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
 				
 			}
 		}
