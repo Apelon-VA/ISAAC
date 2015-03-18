@@ -16,10 +16,10 @@
                   <Label layoutX="10.0" layoutY="11.0" text="Mapping Sets" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="11.0" />
                   <TableView fx:id="mappingTableView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
                     <columns>
-                      <TableColumn minWidth="50.0" prefWidth="218.0" text="Name" />
-                      <TableColumn prefWidth="313.0" text="Purpose" />
-                      <TableColumn prefWidth="100" text="Status" />
-                      <TableColumn prefWidth="298.0" text="Description" />
+                      <TableColumn minWidth="50.0" prefWidth="187.0" text="Name" />
+                      <TableColumn prefWidth="287.0" text="Purpose" />
+                      <TableColumn prefWidth="324.0" text="Description" />
+                      <TableColumn prefWidth="131.0" text="Status" />
                     </columns>
                   </TableView>
                   <Button fx:id="editMappingButton" layoutX="104.0" layoutY="161.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="E" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
@@ -41,8 +41,8 @@
                       <TableColumn prefWidth="200.0" text="Source Concept Name" />
                         <TableColumn prefWidth="200.0" text="Target Concept Name" />
                         <TableColumn minWidth="0.0" prefWidth="182.0" text="Qualifier" />
-                        <TableColumn prefWidth="136.0" text="Status" />
                         <TableColumn prefWidth="179.0" text="Comments" />
+                        <TableColumn prefWidth="136.0" text="Status" />
                     </columns>
                   </TableView>
                   <Button fx:id="commentButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="C" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />

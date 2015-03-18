@@ -67,7 +67,7 @@ public class CreateMappingSetController {
 //		descInput.setPromptText("CURRENT DESC"); TODO: VK EDIT MAPPING FILLS THS OUT
 //		promptInput.setPromptText("CURRENT PROMPT") TODO: VK EDIT MAPPING FILLS THIS OUT 
 		
-		title.setText("Create new Mapping Refset");;
+		title.setText("Create Mapping Set");;
 		
 		final ValidBooleanBinding nameInputValid = new ValidBooleanBinding() {
 			{
