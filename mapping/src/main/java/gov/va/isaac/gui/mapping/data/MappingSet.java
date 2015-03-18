@@ -20,10 +20,12 @@ package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.util.OTFUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
@@ -85,7 +87,15 @@ public class MappingSet
 		this.setPurpose(purposeInput);
 		this.setDescription(descriptionInput);
 		this.setEditorStatus(editorStatusInput);
-		MappingSetDAO.createMappingSet(this);
+		RefexDynamicVersionBI<?> refex = MappingSetDAO.createMappingSetRefex(this);
+		
+		// Read UUID and Active flag from refex
+		this.readFromRefex(refex);
+
+		// TODO Remove for primetime
+		// Generate random mapping items
+		MappingItem.generateRandomMappingItems(this.getPrimordialUUID());
+		
 	}
 	
 	public void save() {
@@ -172,6 +182,10 @@ public class MappingSet
 	public UUID getPrimordialUUID()
 	{
 		return primordialUUID;
+	}
+	
+	public void setPrimordialUUID(UUID id) {
+		primordialUUID = id;
 	}
 	
 	/**

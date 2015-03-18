@@ -5,10 +5,13 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.util.OTFUtility;
+
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
@@ -46,7 +49,8 @@ public class MappingSetDAO
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingSetDAO.class);
 	
-	public static MappingSet createMappingSet(MappingSet mappingSet) throws IOException
+	//public static MappingSet createMappingSetRefex(MappingSet mappingSet) throws IOException
+	public static RefexDynamicVersionBI<?> createMappingSetRefex(MappingSet mappingSet) throws IOException
 	{
 		try
 		{
@@ -86,11 +90,10 @@ public class MappingSetDAO
 			ExtendedAppContext.getDataStore().addUncommitted(createdConcept);
 			ExtendedAppContext.getDataStore().commit(createdConcept);
 			
-			//TODO remove this
-			MappingItem.generateRandomMappingItems(createdConcept.getPrimordialUuid());
-			
 			//Find the constructed dynamic refset
-			return new MappingSet((RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate()));
+			// (and return the refset, not instantiate a new Mapping Set - DNT)
+			return (RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate());
+			//return new MappingSet((RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate()));
 		
 		}
 		catch (ContradictionException | InvalidCAB | PropertyVetoException e)
