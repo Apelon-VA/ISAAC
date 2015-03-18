@@ -184,10 +184,6 @@ public class MappingSet
 		return primordialUUID;
 	}
 	
-	public void setPrimordialUUID(UUID id) {
-		primordialUUID = id;
-	}
-	
 	/**
 	 * @return Any comments attached to this mapping set.
 	 */
