@@ -57,7 +57,7 @@ public class DynamicReferencedItemsView implements PopupViewI
 		title.setPadding(new Insets(5, 5, 5, 5));
 		root_.setTop(title);
 		
-		drv_ = AppContext.getService(DynamicRefexView.class, "DynamicSememeView");
+		drv_ = AppContext.getService(DynamicRefexView.class);
 		root_.setCenter(drv_.getView());
 	}
 	
@@ -78,6 +78,6 @@ public class DynamicReferencedItemsView implements PopupViewI
 		stage.setWidth(800);
 		stage.setHeight(600);
 		stage.show();
-		drv_.setAssemblage(assemblageConcept_.getNid(), null, null, null);
+		drv_.setAssemblage(assemblageConcept_.getNid(), null, null, null, true);
 	}
 }
