@@ -20,6 +20,7 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileBindings;
 import gov.va.isaac.config.profiles.UserProfileManager;
@@ -33,28 +34,20 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.util.CommonlyUsedConcepts;
 import gov.va.isaac.util.OTFUtility;
-import java.util.ArrayList;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
-import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.SplitPane;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableColumn.CellDataFeatures;
-import javafx.scene.control.TableView;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
@@ -64,15 +57,11 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.text.Text;
-import javafx.util.Callback;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.attribute.ConceptAttributesVersionDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.identifier.IdentifierDdo;
-import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
-import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipVersionDdo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,6 +69,7 @@ import org.slf4j.LoggerFactory;
  * Controller class for {@link ConceptView}.
  *
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 public class SnomedConceptViewController {
 
@@ -91,7 +81,7 @@ public class SnomedConceptViewController {
 	@FXML private VBox descriptionsTableHolder;
 	@FXML private Label fsnLabel;
 	@FXML private VBox idVBox;
-	@FXML private TableView<RelRow> relationshipsTable;
+	@FXML private VBox relationshipsTableHolder;
 	@FXML private SplitPane splitPane;
 	@FXML private VBox splitRight;
 	@FXML private Label uuidLabel;
@@ -100,6 +90,7 @@ public class SnomedConceptViewController {
 	@FXML private ToggleButton historyToggle;
 	@FXML private ToggleButton activeOnlyToggle;
 	@FXML private Button descriptionTypeButton;
+	@FXML private HBox sourceRelTitleHBox;
 
 	private Button showInTreeButton;
 	private ProgressIndicator treeViewProgress;
@@ -117,6 +108,7 @@ public class SnomedConceptViewController {
 
 	public void setConcept(ConceptChronicleDdo concept) {
 		conceptUuid = concept.getPrimordialUuid();
+		splitPane.setDividerPositions(0.7);
 
 		// Update text of labels.
 		ConceptAttributesChronicleDdo attributeChronicle = concept.getConceptAttributes();
@@ -165,7 +157,6 @@ public class SnomedConceptViewController {
 		historyToggle.setText("");
 		historyToggle.setGraphic(Images.HISTORY.createImageView());
 		historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
-		//TODO (artf231887) make the other view tables aware of the show/hide stamp call
 		
 		descriptionTypeButton.setText("");
 		ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
@@ -199,84 +190,6 @@ public class SnomedConceptViewController {
 		ConceptVersionBI conceptVersionBI = OTFUtility.getConceptVersion(concept.getPrimordialUuid());
 		AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
 
-		Callback<TableColumn.CellDataFeatures<RelRow, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory =
-				new Callback<TableColumn.CellDataFeatures<RelRow, StringWithRef>, ObservableValue<StringWithRef>>() {
-
-			@Override
-			public ObservableValue<StringWithRef> call(CellDataFeatures<RelRow, StringWithRef> param) {
-				int index = Integer.parseInt(param.getTableColumn().getId());
-				RelRow refList = param.getValue();
-				StringWithRef ref = refList.get(index);
-				return new SimpleObjectProperty<SnomedConceptViewController.StringWithRef>(ref);
-			}
-		};
-
-		Callback<TableColumn<RelRow, StringWithRef>, TableCell<RelRow, StringWithRef>> cellFactory =
-				new Callback<TableColumn<RelRow, StringWithRef>, TableCell<RelRow, StringWithRef>>() {
-
-			@Override
-			public TableCell<RelRow, StringWithRef> call(TableColumn<RelRow, StringWithRef> param) {
-				return new TableCell<RelRow, StringWithRef>() {
-
-					@Override
-					public void updateItem(final StringWithRef ref, boolean empty) {
-						super.updateItem(ref, empty);
-
-						if (! isEmpty()) {
-							Text text = new Text(ref.text);
-							text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
-							setGraphic(text);
-
-							ContextMenu cm = new ContextMenu();
-							setContextMenu(cm);
-
-							// Menu item to copy cell text.
-							MenuItem mi0 = new MenuItem("Copy");
-							mi0.setOnAction(new EventHandler<ActionEvent>() {
-
-								@Override
-								public void handle(ActionEvent arg0) {
-									CustomClipboard.set(ref.text);
-								}
-							});
-							cm.getItems().add(mi0);
-
-							// Menu item to view concept.
-							if (ref.uuid != null) {
-								MenuItem mi1 = new MenuItem("View Concept");
-								mi1.setOnAction(new EventHandler<ActionEvent>() {
-
-									@Override
-									public void handle(ActionEvent ignored) {
-										AppContext.getCommonDialogs().showConceptDialog(ref.uuid);
-									}
-								});
-								cm.getItems().add(mi1);
-							}
-						}
-						else
-						{
-							setText("");
-							setGraphic(null);
-						}
-					}
-				};
-			}
-		};
-		
-		
-		try
-		{
-			DescriptionTableView dtv = new DescriptionTableView(stampToggle.selectedProperty(), historyToggle.selectedProperty(), activeOnlyToggle.selectedProperty());
-			dtv.setConcept(conceptVersionBI);
-			descriptionsTableHolder.getChildren().add(dtv.getNode());
-			VBox.setVgrow(dtv.getNode(), Priority.ALWAYS);
-		}
-		catch (Exception e)
-		{
-			LOG.error("Error configuring description view", e);
-			descriptionsTableHolder.getChildren().add(new Label("Unexpected error configuring descriptions view"));
-		}
 		// Add context menu items for additional identifiers.
 		for (final IdentifierDdo id : attributeChronicle.getAdditionalIds()) {
 
@@ -299,18 +212,83 @@ public class SnomedConceptViewController {
 
 			idVBox.getChildren().add(hbox);
 		}
-
-		// Populate relationship table data model.
-		for (RelationshipChronicleDdo chronicle : concept.getOriginRelationships()) {
-			RelationshipVersionDdo relationship = chronicle.getVersions().get(chronicle.getVersions().size() - 1);
-			StringWithRef typeRef = new StringWithRef(relationship.getTypeReference().getText(), relationship.getTypeReference().getUuid());
-			StringWithRef destRef = new StringWithRef(relationship.getDestinationReference().getText(), relationship.getDestinationReference().getUuid());
-			RelRow row = new RelRow(typeRef, destRef);
-			relationshipsTable.getItems().add(row);
+		
+		try
+		{
+			DescriptionTableView dtv = new DescriptionTableView(stampToggle.selectedProperty(), historyToggle.selectedProperty(), activeOnlyToggle.selectedProperty());
+			dtv.setConcept(conceptVersionBI);
+			descriptionsTableHolder.getChildren().add(dtv.getNode());
+			VBox.setVgrow(dtv.getNode(), Priority.ALWAYS);
 		}
-
-		setupTable(new String[] { "Type", "Destination" }, relationshipsTable,
-				cellValueFactory, cellFactory);
+		catch (Exception e)
+		{
+			LOG.error("Error configuring description view", e);
+			descriptionsTableHolder.getChildren().add(new Label("Unexpected error configuring descriptions view"));
+		}
+		
+		//rel table section
+		try
+		{
+			Button taxonomyViewMode = new Button();
+			taxonomyViewMode.setPadding(new Insets(2.0));
+			ImageView taxonomyInferred = Images.TAXONOMY_INFERRED.createImageView();
+			taxonomyInferred.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().isEqualTo(StatedInferredOptions.INFERRED));
+			Tooltip.install(taxonomyInferred, new Tooltip("Displaying the Inferred view- click to display the Inferred then Stated view"));
+			ImageView taxonomyStated = Images.TAXONOMY_STATED.createImageView();
+			taxonomyStated.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().isEqualTo(StatedInferredOptions.STATED));
+			Tooltip.install(taxonomyStated, new Tooltip("Displaying the Stated view- click to display the Inferred view"));
+			ImageView taxonomyInferredThenStated = Images.TAXONOMY_INFERRED_THEN_STATED.createImageView();
+			taxonomyInferredThenStated.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().isEqualTo(StatedInferredOptions.INFERRED_THEN_STATED));
+			Tooltip.install(taxonomyInferredThenStated, new Tooltip("Displaying the Inferred then Stated view- click to display the Stated view"));
+			taxonomyViewMode.setGraphic(new StackPane(taxonomyInferred, taxonomyStated, taxonomyInferredThenStated));
+			taxonomyViewMode.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					try
+					{
+						UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+						StatedInferredOptions sip = null;
+						if (AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().get() == StatedInferredOptions.STATED)
+						{
+							sip = StatedInferredOptions.INFERRED;
+						}
+						else if (AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().get() == StatedInferredOptions.INFERRED)
+						{
+							sip = StatedInferredOptions.INFERRED_THEN_STATED;
+						}
+						else if (AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().get() == StatedInferredOptions.INFERRED_THEN_STATED)
+						{
+							sip = StatedInferredOptions.STATED;
+						}
+						else
+						{
+							LOG.error("Unexpected error!");
+							return;
+						}
+						up.setStatedInferredPolicy(sip);
+						ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+					}
+					catch (Exception e)
+					{
+						LOG.error("Unexpected error storing pref change", e);
+					}
+				}
+			});
+			HBox.setMargin(taxonomyViewMode, new Insets(0, 0, 0, 5.0));
+			sourceRelTitleHBox.getChildren().add(taxonomyViewMode);
+			
+			RelationshipTableView rtv = new RelationshipTableView(stampToggle.selectedProperty(), historyToggle.selectedProperty(), activeOnlyToggle.selectedProperty());
+			rtv.setConcept(conceptVersionBI);
+			relationshipsTableHolder.getChildren().add(rtv.getNode());
+			VBox.setVgrow(rtv.getNode(), Priority.ALWAYS);
+		}
+		catch (Exception e)
+		{
+			LOG.error("Error configuring relationship view", e);
+			descriptionsTableHolder.getChildren().add(new Label("Unexpected error configuring descriptions view"));
+		}
 		
 		RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
 		v.setComponent(conceptVersionBI.getNid(), stampToggle.selectedProperty(), activeOnlyToggle.selectedProperty(), historyToggle.selectedProperty(), false);
@@ -378,64 +356,5 @@ public class SnomedConceptViewController {
 		}
 		
 		return conceptNid;
-	}
-
-	private void setupTable(String[] columns, TableView<RelRow> tableView,
-			Callback<TableColumn.CellDataFeatures<RelRow, StringWithRef>, ObservableValue<StringWithRef>> cellValueFactory,
-			Callback<TableColumn<RelRow, StringWithRef>, TableCell<RelRow, StringWithRef>> cellFactory) {
-
-		// Configure table columns.
-		for (int i = 0; i < columns.length; i++) {
-			TableColumn<RelRow, StringWithRef> tc =
-					new TableColumn<RelRow, StringWithRef>(columns[i]);
-			tc.setId(i + "");
-			tc.setCellValueFactory(cellValueFactory);
-			tc.setCellFactory(cellFactory);
-
-			// Bind preferred column width to function of column count.
-			float colWidth = 1.0f / columns.length;
-			tc.prefWidthProperty().bind(tableView.widthProperty().multiply(colWidth).subtract(5.0));
-
-			tableView.getColumns().add(tc);
-		}
-
-		tableView.setPrefHeight(tableView.getMinHeight() + (20.0 * tableView.getItems().size()));
-		tableView.setPlaceholder(new Label());
-	}
-
-	/**
-	 * A class encapsulating a List of StringWithRef objects.
-	 */
-	private static final class RelRow {
-
-		private final ArrayList<StringWithRef> items = new ArrayList<StringWithRef>();
-
-		private RelRow(StringWithRef... items) {
-			for (StringWithRef item : items) {
-				this.items.add(item);
-			}
-		}
-
-		public StringWithRef get(int index) {
-			return items.get(index);
-		}
-	}
-
-	/**
-	 * A class encapsulating text and a UUID.
-	 */
-	private static final class StringWithRef {
-
-		private final String text;
-		private final UUID uuid;
-
-		private StringWithRef(String text) {
-			this(text, null);
-		}
-
-		private StringWithRef(String text, UUID uuid) {
-			this.text = text;
-			this.uuid = uuid;
-		}
 	}
 }
