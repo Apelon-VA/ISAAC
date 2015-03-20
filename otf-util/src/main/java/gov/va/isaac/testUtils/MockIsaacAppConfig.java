@@ -217,38 +217,6 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 	}
 
 	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getPreviousReleaseVersion()
-	 */
-	@Override
-	public String getPreviousReleaseVersion() {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentReleaseVersion()
-	 */
-	@Override
-	public String getCurrentReleaseVersion() {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentExtensionNamespace()
-	 */
-	@Override
-	public String getCurrentExtensionNamespace() {
-		return null;
-	}
-
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getModuleId()
-	 */
-	@Override
-	public String getModuleId() {
-		return null;
-	}
-
-	/* (non-Javadoc)
 	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultEditPathName()
 	 */
 	@Override
@@ -310,23 +278,6 @@ public class MockIsaacAppConfig implements IsaacAppConfigI
 		return null;
 	}
 
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultReleaseVersion()
-	 */
-	@Override
-	public String getDefaultReleaseVersion()
-	{
-		return null;
-	}
-	
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultExtensionNamespace()
-	 */
-	@Override
-	public String getDefaultExtensionNamespace()
-	{
-		return null;
-	}
 	
 	/**
 	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultChangeSetUrl()

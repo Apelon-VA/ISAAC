@@ -26,10 +26,6 @@ package gov.va.isaac.config.profiles;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
-
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.UUID;
 
 /**
@@ -86,10 +82,10 @@ public final class UserProfileDefaults {
 	}
 	
 	public static String getDefaultReleaseVersion() {
-		return AppContext.getAppConfiguration().getDefaultReleaseVersion();
+		return "";
 	}
 	
 	public static String getDefaultExtensionNamespace() {
-		return AppContext.getAppConfiguration().getDefaultExtensionNamespace();
+		return "";
 	}
 }

@@ -350,10 +350,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 		setArchetypeGroupId(read.getArchetypeGroupId());
 		setArchetypeArtifactId(read.getArchetypeArtifactId());
 		setArchetypeVersion(read.getArchetypeVersion());
-		setPreviousReleaseVersion(read.getPreviousReleaseVersion());
-		setReleaseVersion(read.getReleaseVersion());
-		setExtensionNamespace(read.getExtensionNamespace());
-		setModuleId(read.getModuleId());
 		setChangeSetUrl(read.getChangeSetUrl());
 		setChangeSetUrlType(read.getChangeSetUrlType());
 		setWorkflowServerUrl(read.getWorkflowServerUrl());
@@ -397,42 +393,6 @@ public class IsaacAppConfigWrapper extends IsaacAppConfig implements IsaacAppCon
 	public String getChangeSetUrlTypeName()
 	{
 		return getChangeSetUrlType() == null ? null : getChangeSetUrlType().name();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultReleaseVersion()
-	 */
-	@Override
-	public String getDefaultReleaseVersion()
-	{
-		return getReleaseVersion();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentReleaseVersion()
-	 */
-	@Override
-	public String getCurrentReleaseVersion()
-	{
-		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getReleaseVersion();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getDefaultExtensionNamespace()
-	 */
-	@Override
-	public String getDefaultExtensionNamespace()
-	{
-		return getExtensionNamespace();
-	}
-
-	/**
-	 * @see gov.va.isaac.interfaces.config.IsaacAppConfigI#getCurrentExtensionNamespace()
-	 */
-	@Override
-	public String getCurrentExtensionNamespace()
-	{
-		return AppContext.getService(UserProfileManager.class).getCurrentlyLoggedInUserProfile().getExtensionNamespace();
 	}
 
 	/**

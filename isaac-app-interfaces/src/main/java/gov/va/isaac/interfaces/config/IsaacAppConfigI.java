@@ -39,7 +39,7 @@ import org.jvnet.hk2.annotations.Contract;
 public interface IsaacAppConfigI {
 
   /**
-   * Archetype group id.
+   * An optional field the specifies what archetype artifact produced this application bundle.
    * 
    * @return possible object is {@link String }
    * 
@@ -47,7 +47,7 @@ public interface IsaacAppConfigI {
   public String getArchetypeGroupId();
 
   /**
-   * Archetype artifact id.
+   * An optional field the specifies what archetype artifact produced this application bundle.
    * 
    * @return possible object is {@link String }
    * 
@@ -55,7 +55,7 @@ public interface IsaacAppConfigI {
   public String getArchetypeArtifactId();
 
   /**
-   * Archetype version.
+   * An optional field the specifies what archetype artifact produced this application bundle.
    * 
    * @return possible object is {@link String }
    * 
@@ -142,57 +142,6 @@ public interface IsaacAppConfigI {
    */
   public String getApplicationTitle();
 
-  /**
-   * Previous release version.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getPreviousReleaseVersion();
-
-  /**
-   * The Default Release version.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDefaultReleaseVersion();
-  
-  /**
-   * The Current Release version, which may differ from {@link #getDefaultReleaseVersion()}
-   * if the user has changed the value.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getCurrentReleaseVersion();
-
-  /**
-   * get Default Extension namespace.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getDefaultExtensionNamespace();
-  
-  /**
-   * get Current Extension namespace, which may differ from {@link #getDefaultExtensionNamespace()}
-   * if the user has changed the value.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  public String getCurrentExtensionNamespace();
-
-  /**
-   * Module id.
-   * 
-   * @return possible object is {@link String }
-   * 
-   */
-  //TODO figure out what this is supposed to be used for... is it supposed to be a UUID?  Brian added it, 
-  //but never used it, never populated it with something reasonable.
-  public String getModuleId();
 
   /**
    * The default SVN or GIT URL that will be used to synchronize user profiles and
