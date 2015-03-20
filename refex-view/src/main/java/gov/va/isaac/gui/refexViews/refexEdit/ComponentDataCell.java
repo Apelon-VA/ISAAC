@@ -229,6 +229,11 @@ public class ComponentDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynam
 			protected void succeeded()
 			{
 				//default text is a label, which doesn't wrap properly.
+				if (isEmpty() || getItem() == null)
+				{
+					//We are updating a cell that has sense been changed to empty - abort!
+					return;
+				}
 				setText(null);
 				Text textHolder = new Text(text);
 				textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));

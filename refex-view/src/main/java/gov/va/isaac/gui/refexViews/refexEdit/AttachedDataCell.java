@@ -184,6 +184,11 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 
 			Platform.runLater(() ->
 			{
+				if (isEmpty() || getItem() == null)
+				{
+					//We are updating a cell that has sense been changed to empty - abort!
+					return;
+				}
 				if (value.getValue() != null && value.getValue().length() > 0)
 				{
 					setTooltip(new Tooltip(value.getValue()));
