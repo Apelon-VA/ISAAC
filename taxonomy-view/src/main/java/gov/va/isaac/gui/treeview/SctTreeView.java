@@ -22,24 +22,21 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileBindings;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.OTFUtility;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import gov.va.isaac.util.UpdateableBooleanBinding;
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -103,8 +100,9 @@ class SctTreeView implements ShutdownBroadcastListenerI {
     private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
-    private SimpleBooleanProperty displayFSN = new SimpleBooleanProperty(true);
-    private SimpleIntegerProperty inferredStatedMode = new SimpleIntegerProperty(StatedInferredOptions.STATED.ordinal());
+    
+    @SuppressWarnings("unused")
+	private UpdateableBooleanBinding refreshRequiredListenerHack;
 
     SctTreeView() {
         treeView_ = new TreeView<>();
@@ -115,9 +113,9 @@ class SctTreeView implements ShutdownBroadcastListenerI {
         descriptionType.setPadding(new Insets(2.0));
         ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
         Tooltip.install(displayFsn, new Tooltip("Displaying the Fully Specified Name - click to display the Preferred Term"));
-        displayFsn.visibleProperty().bind(displayFSN);
+        displayFsn.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayFSN());
         ImageView displayPreferred = Images.DISPLAY_PREFERRED.createImageView();
-        displayPreferred.visibleProperty().bind(displayFSN.not());
+        displayPreferred.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayFSN().not());
         Tooltip.install(displayPreferred, new Tooltip("Displaying the Preferred Term - click to display the Fully Specified Name"));
         descriptionType.setGraphic(new StackPane(displayFsn, displayPreferred));
         descriptionType.setOnAction(new EventHandler<ActionEvent>()
@@ -128,9 +126,8 @@ class SctTreeView implements ShutdownBroadcastListenerI {
                 try
                 {
                     UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
-                    up.setDisplayFSN(displayFSN.not().get());
+                    up.setDisplayFSN(AppContext.getService(UserProfileBindings.class).getDisplayFSN().not().get());
                     ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
-                    displayFSN.set(up.getDisplayFSN());
                 }
                 catch (Exception e)
                 {
@@ -144,13 +141,13 @@ class SctTreeView implements ShutdownBroadcastListenerI {
         Button taxonomyViewMode = new Button();
         taxonomyViewMode.setPadding(new Insets(2.0));
         ImageView taxonomyInferred = Images.TAXONOMY_INFERRED.createImageView();
-        taxonomyInferred.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.INFERRED.ordinal()));
+        taxonomyInferred.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().isEqualTo(StatedInferredOptions.INFERRED));
         Tooltip.install(taxonomyInferred, new Tooltip("Displaying the Inferred view- click to display the Inferred then Stated view"));
         ImageView taxonomyStated = Images.TAXONOMY_STATED.createImageView();
-        taxonomyStated.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.STATED.ordinal()));
+        taxonomyStated.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().isEqualTo(StatedInferredOptions.STATED));
         Tooltip.install(taxonomyStated, new Tooltip("Displaying the Stated view- click to display the Inferred view"));
         ImageView taxonomyInferredThenStated = Images.TAXONOMY_INFERRED_THEN_STATED.createImageView();
-        taxonomyInferredThenStated.visibleProperty().bind(inferredStatedMode.isEqualTo(StatedInferredOptions.INFERRED_THEN_STATED.ordinal()));
+        taxonomyInferredThenStated.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().isEqualTo(StatedInferredOptions.INFERRED_THEN_STATED));
         Tooltip.install(taxonomyInferredThenStated, new Tooltip("Displaying the Inferred then Stated view- click to display the Stated view"));
         taxonomyViewMode.setGraphic(new StackPane(taxonomyInferred, taxonomyStated, taxonomyInferredThenStated));
         taxonomyViewMode.setOnAction(new EventHandler<ActionEvent>()
@@ -162,15 +159,15 @@ class SctTreeView implements ShutdownBroadcastListenerI {
                 {
                     UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
                     StatedInferredOptions sip = null;
-                    if (inferredStatedMode.get() == StatedInferredOptions.STATED.ordinal())
+                    if (AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().get() == StatedInferredOptions.STATED)
                     {
                         sip = StatedInferredOptions.INFERRED;
                     }
-                    else if (inferredStatedMode.get() == StatedInferredOptions.INFERRED.ordinal())
+                    else if (AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().get() == StatedInferredOptions.INFERRED)
                     {
                         sip = StatedInferredOptions.INFERRED_THEN_STATED;
                     }
-                    else if (inferredStatedMode.get() == StatedInferredOptions.INFERRED_THEN_STATED.ordinal())
+                    else if (AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy().get() == StatedInferredOptions.INFERRED_THEN_STATED)
                     {
                         sip = StatedInferredOptions.STATED;
                     }
@@ -181,7 +178,6 @@ class SctTreeView implements ShutdownBroadcastListenerI {
                     }
                     up.setStatedInferredPolicy(sip);
                     ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
-                    inferredStatedMode.set(up.getStatedInferredPolicy().ordinal());
                 }
                 catch (Exception e)
                 {
@@ -317,33 +313,24 @@ class SctTreeView implements ShutdownBroadcastListenerI {
 
                 ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
-
-                UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
-                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.statedInferredPolicy, new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                        inferredStatedMode.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getStatedInferredPolicy().ordinal());
-                        SctTreeView.this.refresh();
+                
+                refreshRequiredListenerHack = new UpdateableBooleanBinding()
+                {
+                    {
+                        setComputeOnInvalidate(true);
+                        addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(), 
+                                AppContext.getService(UserProfileBindings.class).getDisplayFSN(),
+                                AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy());
                     }
-                });
-                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.viewCoordinatePath, new PropertyChangeListener() {
+                    
                     @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+                    protected boolean computeValue()
+                    {
+                        LOG.info("Kicking off refresh() due to change of an observed user property}");
                         SctTreeView.this.refresh();
+                        return false;
                     }
-                });
-                userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.displayFSN, new PropertyChangeListener() {
-                    @Override
-                    public void propertyChange(PropertyChangeEvent evt) {
-                        LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                        displayFSN.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN());
-                        SctTreeView.this.refresh();
-                    }
-                });
-                displayFSN.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getDisplayFSN());
-                inferredStatedMode.set(ExtendedAppContext.getCurrentlyLoggedInUserProfile().getStatedInferredPolicy().ordinal());
+                };
             }
 
             @Override

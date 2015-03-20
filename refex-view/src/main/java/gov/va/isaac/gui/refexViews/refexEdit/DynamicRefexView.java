@@ -20,6 +20,9 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileBindings;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
@@ -55,6 +58,8 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -67,9 +72,11 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -117,6 +124,7 @@ public class DynamicRefexView implements RefexViewI
 	private Button retireButton_, addButton_, commitButton_, cancelButton_, editButton_, viewUsageButton_;
 	private Label summary_ = new Label("");
 	private ToggleButton stampButton_, activeOnlyButton_, historyButton_;
+	private Button displayFSNButton_;
 	private UpdateableBooleanBinding currentRowSelected_, selectedRowIsActive_;
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_, showViewUsageButton_;
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
@@ -137,6 +145,9 @@ public class DynamicRefexView implements RefexViewI
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
 	private volatile boolean noRefresh_ = false;
+	
+	@SuppressWarnings("unused")
+	private UpdateableBooleanBinding refreshRequiredListenerHack;
 
 	private final ObservableMap<ColumnId, Filter<?>> filterCache_ = new ObservableMapWrapper<>(new WeakHashMap<>());
 	
@@ -478,6 +489,35 @@ public class DynamicRefexView implements RefexViewI
 				}
 			};
 			
+			displayFSNButton_ = new Button("");
+			ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
+			Tooltip.install(displayFsn, new Tooltip("Displaying the Fully Specified Name - click to display the Preferred Term"));
+			displayFsn.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayFSN());
+			ImageView displayPreferred = Images.DISPLAY_PREFERRED.createImageView();
+			displayPreferred.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayFSN().not());
+			Tooltip.install(displayPreferred, new Tooltip("Displaying the Preferred Term - click to display the Fully Specified Name"));
+			displayFSNButton_.setGraphic(new StackPane(displayFsn, displayPreferred));
+			displayFSNButton_.prefHeightProperty().bind(historyButton_.heightProperty());
+			displayFSNButton_.prefWidthProperty().bind(historyButton_.widthProperty());
+			displayFSNButton_.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					try
+					{
+						UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+						up.setDisplayFSN(AppContext.getService(UserProfileBindings.class).getDisplayFSN().not().get());
+						ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+					}
+					catch (Exception e)
+					{
+						logger_.error("Unexpected error storing pref change", e);
+					}
+				}
+			});
+			t.getItems().add(displayFSNButton_);
+			
 			cancelButton_ = new Button("Cancel");
 			cancelButton_.disableProperty().bind(hasUncommitted_.not());
 			t.getItems().add(cancelButton_);
@@ -576,6 +616,23 @@ public class DynamicRefexView implements RefexViewI
 					stampButton_.setSelected(false);
 				}
 			});
+			
+			refreshRequiredListenerHack = new UpdateableBooleanBinding()
+			{
+				{
+					setComputeOnInvalidate(true);
+					addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(),
+							AppContext.getService(UserProfileBindings.class).getDisplayFSN());
+				}
+
+				@Override
+				protected boolean computeValue()
+				{
+					logger_.info("Kicking off refresh() due to change of an observed user property}");
+					refresh();
+					return false;
+				}
+			};
 		}
 	}
 
@@ -593,17 +650,18 @@ public class DynamicRefexView implements RefexViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty))
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setComponent(int, javafx.beans.property.ReadOnlyBooleanProperty, 
+	 * javafx.beans.property.ReadOnlyBooleanProperty, javafx.beans.property.ReadOnlyBooleanProperty, boolean)
 	 */
 	@Override
 	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory)
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		//disable refresh, as the bindings mucking causes many refresh calls
 		noRefresh_ = true;
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
-		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
+		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		showViewUsageButton_.invalidate();
 		newComponentHint_ = null;
 		noRefresh_ = false;
@@ -611,24 +669,25 @@ public class DynamicRefexView implements RefexViewI
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setAssemblage(int, javafx.beans.property.ReadOnlyBooleanProperty, 
+	 * javafx.beans.property.ReadOnlyBooleanProperty, javafx.beans.property.ReadOnlyBooleanProperty, boolean)
 	 */
 	@Override
 	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory)
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		//disable refresh, as the bindings mucking causes many refresh calls
 		noRefresh_ = true;
 		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
-		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
+		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		newComponentHint_ = null;
 		noRefresh_ = false;
 		refresh();
 	}
 	
 	private void handleExternalBindings(ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory)
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		showStampColumns_.clearBindings();
 		showActiveOnly_.clearBindings();
@@ -665,6 +724,16 @@ public class DynamicRefexView implements RefexViewI
 		{
 			historyButton_.setVisible(false);
 			showFullHistory_.addBinding(showFullHistory);
+		}
+		
+		if (displayFSNButton)
+		{
+			//Use our own button
+			displayFSNButton_.setVisible(true);
+		}
+		else
+		{
+			displayFSNButton_.setVisible(false);
 		}
 	}
 	

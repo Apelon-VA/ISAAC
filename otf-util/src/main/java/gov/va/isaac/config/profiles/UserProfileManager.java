@@ -18,15 +18,14 @@
  */
 package gov.va.isaac.config.profiles;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.NewUserDefaults;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.User;
 import gov.va.isaac.config.users.GenerateUsers;
 import gov.va.isaac.config.users.InvalidUserException;
-import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
 import gov.va.isaac.util.Utility;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -117,8 +116,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
 		
 		loggedInUser_ = temp;
-
-		fireUserProfilePropertyChanges(old, loggedInUser_);
+		AppContext.getService(UserProfileBindings.class).update(loggedInUser_);
 	}
 	
 	/**
@@ -133,6 +131,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		}
 		
 		loggedInUser_ = UserProfile.read(new File(new File(profilesFolder_, loggedInUser_.getUserLogonName()), PREFS_FILE_NAME));
+		AppContext.getService(UserProfileBindings.class).update(loggedInUser_);
 	}
 
 	/**
@@ -187,6 +186,7 @@ public class UserProfileManager implements ServicesToPreloadI
 				else
 				{
 					loggedInUser_ = up;
+					AppContext.getService(UserProfileBindings.class).update(loggedInUser_);
 					Files.write(new File(profilesFolder_, "lastUser.txt").toPath(), userLogonName.getBytes(), 
 							StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE);
 					for (Consumer<String> listener : notifyUponLogin)
@@ -495,6 +495,7 @@ public class UserProfileManager implements ServicesToPreloadI
 		up.setEditCoordinatePath(TermAux.WB_AUX_PATH.getUuids()[0]);
 		up.setViewCoordinatePath(Snomed.SNOMED_RELEASE_PATH.getUuids()[0]);  //TODO this needs to be able to read a reasonable path out of the DB, and construct it.
 		loggedInUser_ = up;
+		AppContext.getService(UserProfileBindings.class).update(loggedInUser_);
 		userNamesWithProfiles_.add(up.getUserLogonName());
 		Log.info("User Profile Manager automation mode enabled!");
 	}
@@ -512,33 +513,14 @@ public class UserProfileManager implements ServicesToPreloadI
 	{
 		return profilesFolder_;
 	}
-
-	private static Object getPropertyValue(UserProfile userProfile, UserProfileProperty property) {
-		switch(property) {
-		case statedInferredPolicy:
-			return userProfile.getStatedInferredPolicy();
-		case displayFSN:
-			return userProfile.getDisplayFSN();
-		case workflowUsername:
-			return userProfile.getWorkflowUsername();
-		case viewCoordinatePath:
-			return userProfile.getViewCoordinatePath();
-		case editCoordinatePath:
-			return userProfile.getEditCoordinatePath();
-		default:
-			throw new IllegalArgumentException("Unsupported UserProfileProperty " + property);
-		}
-	}
-
-	public void addUserProfilePropertyChangeListener(UserProfileProperty eventType, PropertyChangeListener listener) {
-		UserProfilePropertyChange.addPropertyChangeListener(eventType, listener);
-	}
-	public void removeUserProfilePropertyChangeListener(PropertyChangeListener listener) {
-		UserProfilePropertyChange.removePropertyChangeListener(listener);
-	}
-	private static void fireUserProfilePropertyChanges(UserProfile oldUserProfile, UserProfile newUserProfile) {
-		for (UserProfileProperty property : UserProfileProperty.values()) {
-			UserProfilePropertyChange.firePropertyChange(property, getPropertyValue(oldUserProfile, property), getPropertyValue(newUserProfile, property));
-		}
+	
+	/**
+	 * Get the class that provides getters for the various bindable features of the currently logged in user profile.
+	 * Binding to the various Property types of this class allows you to watch for changes to a property.
+	 * @return
+	 */
+	public UserProfileBindings getPropertyBindings()
+	{
+		return AppContext.getService(UserProfileBindings.class);
 	}
 }
