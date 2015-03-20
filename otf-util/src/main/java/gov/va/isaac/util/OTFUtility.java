@@ -110,6 +110,7 @@ public class OTFUtility {
 	private static Integer fsnRf1Nid = null;
 	private static Integer preferredRf1Nid = null;
 	private static Integer synonymRf1Nid = null;
+	private static Integer langTypeNid = null;
 	
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 
@@ -337,6 +338,14 @@ public class OTFUtility {
 			synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
 		}
 		return synonymRf1Nid;
+	}
+	
+	public static int getLangTypeNid() {
+		// Lazily load.
+		if (langTypeNid == null) {
+			langTypeNid = dataStore.getNidForUuids(Snomed.LANGUAGE_REFEX.getPrimodialUuid());
+		}
+		return langTypeNid;
 	}
 
 	private static int getPreferredTypeNid() {
