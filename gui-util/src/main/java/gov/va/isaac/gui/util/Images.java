@@ -78,7 +78,7 @@ public enum Images {
     CONFIGURE(setupImage("/icons/fugue/16x16/icons-shadowless/ui-check-boxes-series.png")),
     HISTORICAL(setupImage("/icons/fugue/16x16/icons-shadowless/clock-history.png")),
     BLACK_DOT(setupImage("/icons/diagona/16x16/158.png")),
-    GREY_DOT(setupImage("/icons/diagona/16x16/158.png")),
+    GREY_DOT(setupImage("/icons/diagona/16x16/159.png")),
     YELLOW_DOT(setupImage("/icons/diagona/16x16/154.png")),
     USER(setupImage("/icons/misc/16x16/user.png")),
     LOCK(setupImage("/icons/misc/16x16/lock.png")),
