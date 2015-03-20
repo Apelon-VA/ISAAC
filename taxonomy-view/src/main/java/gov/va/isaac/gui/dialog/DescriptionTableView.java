@@ -312,10 +312,11 @@ public class DescriptionTableView
 								cm.getItems().add(mi);
 							}
 							setGraphic(graphic);
+							setText(null);
 						}
 						else
 						{
-							setText("");
+							setText(null);
 							setGraphic(null);
 						}
 					}
@@ -441,31 +442,52 @@ public class DescriptionTableView
 	
 	private Node backgroundLookup(final TableCell<DescriptionVersion, DescriptionVersion> cell, DescriptionColumnType type, DescriptionVersion ref)
 	{
-		cell.setText(null);
 		Utility.execute(() ->
 		{
 			String value = ref.getDisplayStrings(type).getKey();
 			Platform.runLater(() ->
 			{
-				Text text = new Text(value);
-				cell.setGraphic(text);
-				text.wrappingWidthProperty().bind(cell.getTableColumn().widthProperty());
-				// Menu item to copy cell text.
-				MenuItem mi = new MenuItem("Copy Value");
-				mi.setOnAction(new EventHandler<ActionEvent>()
-				{
-					@Override
-					public void handle(ActionEvent arg0)
-					{
-						CustomClipboard.set(text.getText());
-					}
-				});
-				mi.setGraphic(Images.COPY.createImageView());
 				if (cell.getContextMenu() == null)
 				{
 					cell.setContextMenu(new ContextMenu());
 				}
-				cell.getContextMenu().getItems().add(mi);
+				Text text = new Text(value);
+				if (cell.isEmpty() || cell.getItem() == null)
+				{
+					//We are updating a cell that should no longer be populated - stop!
+					return;
+				}
+				cell.setGraphic(text);
+				text.wrappingWidthProperty().bind(cell.getTableColumn().widthProperty());
+				
+				// Menu item to copy cell text.
+				//for some reason, we get called multiple times - only add the Copy Value method if it doesn't exit
+				boolean found = false;
+				for (MenuItem mi : cell.getContextMenu().getItems())
+				{
+					if (mi.getText().equals("Copy Value"))
+					{
+						found = true;
+						break;
+					}
+				}
+				
+				if (!found)
+				{
+					// Menu item to copy cell text.
+					MenuItem mi = new MenuItem("Copy Value");
+					mi.setOnAction(new EventHandler<ActionEvent>()
+					{
+						@Override
+						public void handle(ActionEvent arg0)
+						{
+							CustomClipboard.set(text.getText());
+						}
+					});
+					mi.setGraphic(Images.COPY.createImageView());
+					
+					cell.getContextMenu().getItems().add(mi);
+				}
 			});
 		});
 		ProgressBar pb = new ProgressBar();
