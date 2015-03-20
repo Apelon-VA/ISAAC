@@ -236,7 +236,9 @@ public class DynamicRefexView implements RefexViewI
 				@Override
 				protected boolean computeValue()
 				{
-					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem().getValue() != null)
+					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && 
+							ttv_.getSelectionModel().getSelectedItem() != null && 
+							ttv_.getSelectionModel().getSelectedItem().getValue() != null)
 					{
 						return ttv_.getSelectionModel().getSelectedItem().getValue().isCurrent();
 					}
