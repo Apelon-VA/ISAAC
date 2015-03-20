@@ -174,7 +174,7 @@ public class DescriptionVersion
 	{
 		switch (desiredColumn)
 		{
-			case STATUS_CONDENSED: case LANGUAGE: case STATUS_STRING: case TIME: case UUID:
+			case STATUS_CONDENSED: case LANGUAGE: case STATUS_STRING: case TIME: case UUID: case DESCRIPTION:
 			{
 				throw new RuntimeException("Improper API usage");
 			}
@@ -220,16 +220,6 @@ public class DescriptionVersion
 						return value.getTypeNid();
 					}
 				};
-			case DESCRIPTION:
-				return new ToIntFunction<DescriptionVersionBI<?>>()
-				{
-					@Override
-					public int applyAsInt(DescriptionVersionBI<?> value)
-					{
-						return value.getNid();
-					}
-				};
-			
 
 			default:
 				throw new RuntimeException("Missing implementation: " + desiredColumn);

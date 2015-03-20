@@ -19,16 +19,20 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfileBindings;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
@@ -249,40 +253,6 @@ public class RelationshipTableView
 									break;
 								case TYPE: case AUTHOR: case MODULE: case PATH: case CHARACTERISTIC: case DESTINATION: case REFINEABILITY: case SOURCE:
 									graphic = backgroundLookup(this, (RelationshipColumnType)getTableColumn().getUserData(), ref);
-									MenuItem mi = new MenuItem("Copy " + ((RelationshipColumnType)getTableColumn().getUserData()).toString() + " UUID");
-									mi.setOnAction(new EventHandler<ActionEvent>()
-									{
-										@Override
-										public void handle(ActionEvent ignored)
-										{
-											try
-											{
-												CustomClipboard.set(ExtendedAppContext.getDataStore().getUuidPrimordialForNid(
-														ref.getNidFetcher((RelationshipColumnType)getTableColumn().getUserData()).applyAsInt(ref.getRelationshipVersion()))
-														.toString());
-											}
-											catch (IOException e)
-											{
-												LOG.error("Error getting UUID for nid", e);
-											}
-										}
-									});
-									mi.setGraphic(Images.COPY.createImageView());
-									cm.getItems().add(mi);
-									
-									mi = new MenuItem("View " + ((RelationshipColumnType)getTableColumn().getUserData()).toString() + " Concept");
-									mi.setOnAction(new EventHandler<ActionEvent>()
-									{
-										@Override
-										public void handle(ActionEvent ignored)
-										{
-											AppContext.getCommonDialogs().showConceptDialog(ref.getNidFetcher((RelationshipColumnType)getTableColumn().getUserData())
-													.applyAsInt(ref.getRelationshipVersion()));
-										}
-									});
-									mi.setGraphic(Images.CONCEPT_VIEW.createImageView());
-									cm.getItems().add(mi);
-
 									break;
 								case TIME: case STATUS_STRING: case UUID: case GROUP:
 									graphic = new Text(ref.getDisplayStrings((RelationshipColumnType)getTableColumn().getUserData()).getKey());
@@ -445,23 +415,42 @@ public class RelationshipTableView
 			String value = ref.getDisplayStrings(type).getKey();
 			Platform.runLater(() ->
 			{
-				if (cell.getContextMenu() == null)
-				{
-					cell.setContextMenu(new ContextMenu());
-				}
-				Text text = new Text(value);
 				if (cell.isEmpty() || cell.getItem() == null)
 				{
 					//We are updating a cell that should no longer be populated - stop!
 					return;
 				}
+				ContextMenu cm = cell.getContextMenu();
+				if (cm == null)
+				{
+					cm = new ContextMenu();
+					cell.setContextMenu(cm);
+				}
+				
+				Text text = new Text(value);
 				cell.setGraphic(text);
 				text.wrappingWidthProperty().bind(cell.getTableColumn().widthProperty());
+
+				CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
+				{
+					@Override
+					public Collection<Integer> getNIds()
+					{
+						int nid = ref.getNidFetcher(type).applyAsInt(ref.getRelationshipVersion());
+
+						ArrayList<Integer> nids = new ArrayList<>();
+						if (nid != 0)
+						{
+							nids.add(nid);
+						}
+						return nids;
+					}
+				});
 				
 				// Menu item to copy cell text.
 				//for some reason, we get called multiple times - only add the Copy Value method if it doesn't exit
 				boolean found = false;
-				for (MenuItem mi : cell.getContextMenu().getItems())
+				for (MenuItem mi : cm.getItems())
 				{
 					if (mi.getText().equals("Copy Value"))
 					{
@@ -484,8 +473,17 @@ public class RelationshipTableView
 					});
 					mi.setGraphic(Images.COPY.createImageView());
 					
-					cell.getContextMenu().getItems().add(mi);
+					cm.getItems().add(mi);
 				}
+				
+				AppContext.getService(DragRegistry.class).setupDragOnly(text, new SingleConceptIdProvider()
+				{
+					@Override
+					public String getConceptId()
+					{
+						return ref.getNidFetcher(type).applyAsInt(ref.getRelationshipVersion()) +"";
+					}
+				});
 			});
 		});
 		ProgressBar pb = new ProgressBar();

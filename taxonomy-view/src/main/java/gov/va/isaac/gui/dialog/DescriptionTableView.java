@@ -19,15 +19,20 @@
 package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfileBindings;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
@@ -49,9 +54,9 @@ import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
+import javafx.scene.control.Tooltip;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
@@ -77,7 +82,7 @@ public class DescriptionTableView
 	private static final Logger LOG = LoggerFactory.getLogger(DescriptionTableView.class);
 	
 	private TableView<DescriptionVersion> descriptionsTable = new TableView<>();
-	private ConceptVersionBI concept_;
+	private UUID conceptUUID_;
 	private BooleanProperty showActiveOnly_, showHistory_, showStampColumns_;
 	
 	ArrayList<TableColumn<DescriptionVersion, DescriptionVersion>> stampColumns = new ArrayList<>();
@@ -117,7 +122,7 @@ public class DescriptionTableView
 				LOG.info("Kicking off refresh() due to change of an observed user property}");
 				try
 				{
-					refresh();
+					refresh(null);
 				}
 				catch (Exception e)
 				{
@@ -141,7 +146,7 @@ public class DescriptionTableView
 					{
 						super.updateItem(ref, empty);
 
-						if (!isEmpty())
+						if (!isEmpty() && ref != null)
 						{
 							Node graphic = null;
 							ContextMenu cm = new ContextMenu();
@@ -245,50 +250,13 @@ public class DescriptionTableView
 									}
 									
 									break;
-								case TYPE: case AUTHOR: case MODULE: case PATH: case DESCRIPTION:
+								case TYPE: case AUTHOR: case MODULE: case PATH:
 									graphic = backgroundLookup(this, (DescriptionColumnType)getTableColumn().getUserData(), ref);
-									MenuItem mi = new MenuItem("Copy " + ((DescriptionColumnType)getTableColumn().getUserData()).toString() + " UUID");
-									mi.setOnAction(new EventHandler<ActionEvent>()
-									{
-										@Override
-										public void handle(ActionEvent ignored)
-										{
-											try
-											{
-												CustomClipboard.set(ExtendedAppContext.getDataStore().getUuidPrimordialForNid(
-														ref.getNidFetcher((DescriptionColumnType)getTableColumn().getUserData()).applyAsInt(ref.getDescriptionVersion()))
-														.toString());
-											}
-											catch (IOException e)
-											{
-												LOG.error("Error getting UUID for nid", e);
-											}
-										}
-									});
-									mi.setGraphic(Images.COPY.createImageView());
-									cm.getItems().add(mi);
-									
-									if ((DescriptionColumnType)getTableColumn().getUserData() != DescriptionColumnType.DESCRIPTION)
-									{
-										mi = new MenuItem("View " + ((DescriptionColumnType)getTableColumn().getUserData()).toString() + " Concept");
-										mi.setOnAction(new EventHandler<ActionEvent>()
-										{
-											@Override
-											public void handle(ActionEvent ignored)
-											{
-												AppContext.getCommonDialogs().showConceptDialog(ref.getNidFetcher((DescriptionColumnType)getTableColumn().getUserData())
-														.applyAsInt(ref.getDescriptionVersion()));
-											}
-										});
-										mi.setGraphic(Images.CONCEPT_VIEW.createImageView());
-										cm.getItems().add(mi);
-									}
-
 									break;
 								case LANGUAGE: 
 									graphic = backgroundLookup(this, (DescriptionColumnType)getTableColumn().getUserData(), ref);
 									break;
-								case TIME: case STATUS_STRING: case UUID:
+								case TIME: case STATUS_STRING: case UUID: case DESCRIPTION:
 									graphic = new Text(ref.getDisplayStrings((DescriptionColumnType)getTableColumn().getUserData()).getKey());
 									break;
 								default :
@@ -447,23 +415,46 @@ public class DescriptionTableView
 			String value = ref.getDisplayStrings(type).getKey();
 			Platform.runLater(() ->
 			{
-				if (cell.getContextMenu() == null)
-				{
-					cell.setContextMenu(new ContextMenu());
-				}
-				Text text = new Text(value);
 				if (cell.isEmpty() || cell.getItem() == null)
 				{
 					//We are updating a cell that should no longer be populated - stop!
 					return;
 				}
+				ContextMenu cm = cell.getContextMenu();
+				if (cm == null)
+				{
+					cm = new ContextMenu();
+					cell.setContextMenu(cm);
+				}
+				
+				Text text = new Text(value);
 				cell.setGraphic(text);
 				text.wrappingWidthProperty().bind(cell.getTableColumn().widthProperty());
+
+				
+				if (type != DescriptionColumnType.LANGUAGE)
+				{
+					CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider()
+					{
+						@Override
+						public Collection<Integer> getNIds()
+						{
+							int nid = ref.getNidFetcher(type).applyAsInt(ref.getDescriptionVersion());
+	
+							ArrayList<Integer> nids = new ArrayList<>();
+							if (nid != 0)
+							{
+								nids.add(nid);
+							}
+							return nids;
+						}
+					});
+				}
 				
 				// Menu item to copy cell text.
 				//for some reason, we get called multiple times - only add the Copy Value method if it doesn't exit
 				boolean found = false;
-				for (MenuItem mi : cell.getContextMenu().getItems())
+				for (MenuItem mi : cm.getItems())
 				{
 					if (mi.getText().equals("Copy Value"))
 					{
@@ -486,7 +477,19 @@ public class DescriptionTableView
 					});
 					mi.setGraphic(Images.COPY.createImageView());
 					
-					cell.getContextMenu().getItems().add(mi);
+					cm.getItems().add(mi);
+				}
+				
+				if (type != DescriptionColumnType.LANGUAGE)
+				{
+					AppContext.getService(DragRegistry.class).setupDragOnly(text, new SingleConceptIdProvider()
+					{
+						@Override
+						public String getConceptId()
+						{
+							return ref.getNidFetcher(type).applyAsInt(ref.getDescriptionVersion()) +"";
+						}
+					});
 				}
 			});
 		});
@@ -519,6 +522,7 @@ public class DescriptionTableView
 			});
 			tc.setCellFactory(cellFactory);
 
+			//off by default
 			if (col == DescriptionColumnType.UUID)
 			{
 				tc.setVisible(false);
@@ -539,62 +543,86 @@ public class DescriptionTableView
 	public void setConcept(ConceptVersionBI concept) throws IOException, ContradictionException
 	{
 		// Populate description table data model.
-		concept_ = concept;
-		refresh();
+		conceptUUID_ = concept.getPrimordialUuid();
+		refresh(concept);
 	}
 	
-	public void refresh() throws IOException, ContradictionException
+	private void refresh(ConceptVersionBI concept)
 	{
-		if (concept_ == null)
+		if (concept == null && conceptUUID_ == null)
 		{
 			LOG.info("refesh called while concept null");
 			return;
 		}
-		ArrayList<DescriptionVersionBI<?>> allDescriptions = new ArrayList<>();
-		
-		for (DescriptionChronicleBI chronicle : concept_.getDescriptions())
+		Utility.execute(() ->
 		{
-			for (DescriptionVersionBI<?> dv : chronicle.getVersions())
+			ArrayList<DescriptionVersionBI<?>> allDescriptions = new ArrayList<>();
+			
+			try
 			{
-				allDescriptions.add(dv);
+				ConceptVersionBI localConcept = (concept == null ? OTFUtility.getConceptVersion(conceptUUID_) : concept);
+				
+				for (DescriptionChronicleBI chronicle : localConcept.getDescriptions())
+				{
+					for (DescriptionVersionBI<?> dv : chronicle.getVersions())
+					{
+						allDescriptions.add(dv);
+					}
+				}	
+				
+				//Sort the newest to the top per UUID
+				Collections.sort(allDescriptions, new Comparator<DescriptionVersionBI<?>>()
+				{
+					@Override
+					public int compare(DescriptionVersionBI<?> o1, DescriptionVersionBI<?> o2)
+					{
+						if (o1.getPrimordialUuid().equals(o2.getPrimordialUuid()))
+						{
+							return o2.getStamp() - o1.getStamp();
+						}
+						else
+						{
+							return o1.getPrimordialUuid().compareTo(o2.getPrimordialUuid());
+						}
+					}
+				});
 			}
-		}	
-		
-		//Sort the newest to the top per UUID
-		Collections.sort(allDescriptions, new Comparator<DescriptionVersionBI<?>>()
-		{
-			@Override
-			public int compare(DescriptionVersionBI<?> o1, DescriptionVersionBI<?> o2)
+			catch (Exception e)
 			{
-				if (o1.getPrimordialUuid().equals(o2.getPrimordialUuid()))
-				{
-					return o2.getStamp() - o1.getStamp();
-				}
-				else
-				{
-					return o1.getPrimordialUuid().compareTo(o2.getPrimordialUuid());
-				}
+				AppContext.getCommonDialogs().showErrorDialog("Error reading relationships", e);
+				LOG.error("Unexpected error reading relationships", e);
 			}
+			
+			Platform.runLater(() ->
+			{
+				try
+				{
+					UUID lastSeenRefex = null;
+					
+					descriptionsTable.getItems().clear();
+					for (DescriptionVersionBI<?> d : allDescriptions)
+					{
+						if (!showHistory_.get() && d.getPrimordialUuid().equals(lastSeenRefex))
+						{
+							//Only want the newest one per UUID if history isn't requested
+							continue;
+						}
+						if (showActiveOnly_.get() == false || d.isActive())
+						{
+							//first one we see with a new UUID is current, others are historical
+							DescriptionVersion newDescriptionVersion = new DescriptionVersion(d, !d.getPrimordialUuid().equals(lastSeenRefex));  
+							descriptionsTable.getItems().add(newDescriptionVersion);
+						}
+						lastSeenRefex = d.getPrimordialUuid();
+					}
+				}
+				catch (Exception e)
+				{
+					AppContext.getCommonDialogs().showErrorDialog("Error reading relationships", e);
+					LOG.error("Unexpected error reading relationships", e);
+				}
+			});
 		});
-		
-		UUID lastSeenRefex = null;
-		
-		descriptionsTable.getItems().clear();
-		for (DescriptionVersionBI<?> d : allDescriptions)
-		{
-			if (!showHistory_.get() && d.getPrimordialUuid().equals(lastSeenRefex))
-			{
-				//Only want the newest one per UUID if history isn't requested
-				continue;
-			}
-			if (showActiveOnly_.get() == false || d.isActive())
-			{
-				//first one we see with a new UUID is current, others are historical
-				DescriptionVersion newDescriptionVersion = new DescriptionVersion(d, !d.getPrimordialUuid().equals(lastSeenRefex));  
-				descriptionsTable.getItems().add(newDescriptionVersion);
-			}
-			lastSeenRefex = d.getPrimordialUuid();
-		}
 	}
 	
 	public Node getNode()
