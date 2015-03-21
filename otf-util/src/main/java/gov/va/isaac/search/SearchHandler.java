@@ -20,9 +20,9 @@ package gov.va.isaac.search;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
-import gov.va.isaac.util.OTFUtility;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -66,7 +66,7 @@ public class SearchHandler
 	 * @param resultLimit - limit to X results.  Use {@link Integer#MAX_VALUE} for no limit.
 	 * @param prefixSearch - true to use the "prefex search" algorithm.  False to use the standard lucene algorithm.  
 	 *   See {@link LuceneDescriptionIndexer#query(String, boolean, ComponentProperty, int, Long)} for more details on this algorithm.
-	 * @param callback - Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
+	 * @param callback - (optional) Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
 	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
 	 *   requests to this method with callbacks.
 	 * @param filters - An optional filter than can add or remove items from the tenative result set before it is returned.
@@ -210,17 +210,20 @@ public class SearchHandler
 					LOG.error("Unexpected error during lucene search", ex);
 					searchHandle.setError(ex);
 				}
-				callback.taskComplete(searchHandle.getSearchStartTime(), taskId);
+				if (callback != null)
+				{
+					callback.taskComplete(searchHandle.getSearchStartTime(), taskId);
+				}
 			}
 		};
 
 		Utility.execute(r);
 		return searchHandle;
 	}
-
+	
 	/**
 	 * Calls {@link #descriptionSearch(String, int, boolean, TaskCompleteCallback, Integer, SearchResultsFilter, Comparator, boolean)}
-	 * passing MAX_VALUE for the limit, false for prefixSearch, null for the taskID, null for the filters, null for the comparator
+	 * passing false for prefixSearch, null for the taskID, null for the filters, null for the comparator, null for the filterList
 	 */
 	public static SearchHandle descriptionSearch(String query, int resultLimit, TaskCompleteCallback callback, boolean mergeResultsOnConcepts) {
 		return descriptionSearch(query, resultLimit, false, callback, (Integer)null, (SearchResultsFilter)null, null, 

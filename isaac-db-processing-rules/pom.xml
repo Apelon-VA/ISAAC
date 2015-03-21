@@ -13,10 +13,17 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+		
 		<dependency>
 			<groupId>gov.va.isaac.modules</groupId>
 			<artifactId>mojos</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>org.apache.poi</groupId>
+			<artifactId>poi-ooxml</artifactId>
+		</dependency>
+		
 	</dependencies>
 </project>

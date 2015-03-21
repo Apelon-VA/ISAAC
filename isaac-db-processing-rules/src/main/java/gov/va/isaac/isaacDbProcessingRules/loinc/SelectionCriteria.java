@@ -16,31 +16,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.utility;
-
-import gov.va.isaac.interfaces.gui.ApplicationWindowI;
-
+package gov.va.isaac.isaacDbProcessingRules.loinc;
 
 /**
- * {@link ShutdownBroadcastListenerI}
- *
- * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
- * 
- * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
- * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
- * 
- * Be very cautious about creating memory leaks with this - this olds a hard reference to the services that need 
- * notification.
- * 
- * @see ApplicationWindowI
+ * {@link SelectionCriteria}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public interface ShutdownBroadcastListenerI
+public class SelectionCriteria
 {
+	protected Operand operand;
+	protected SelectionCriteriaType type;
+	protected String value;
+	protected String valueId;
 	/**
-	 * Called when an app shutdown is requested.
+	 * @return the operand
 	 */
-	public void shutdown();
+	public Operand getOperand()
+	{
+		return operand;
+	}
+	/**
+	 * @return the type
+	 */
+	public SelectionCriteriaType getType()
+	{
+		return type;
+	}
+	/**
+	 * @return the value
+	 */
+	public String getValue()
+	{
+		return value;
+	}
+	/**
+	 * @return the valueId
+	 */
+	public String getValueId()
+	{
+		return valueId;
+	}
+	/**
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString()
+	{
+		return "Operand: " + operand + ", type: " + type + ", value: " + value + ", valueId: " + valueId;
+	}
 }

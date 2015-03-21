@@ -2,20 +2,21 @@ package gov.va.isaac.gui.conceptViews.enhanced;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerLabelHelper;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerTooltipHelper;
 import gov.va.isaac.gui.conceptViews.helpers.EnhancedConceptBuilder;
-import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.UpdateableBooleanBinding;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.UUID;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WeakChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -72,6 +73,8 @@ public class EnhancedConceptViewController {
 	private EnhancedConceptBuilder creator;
 
 	private boolean initialized = false;
+	
+	private ArrayList<ChangeListener<?>> changeListeners = new ArrayList<>();
 
 	private static final Logger LOG = LoggerFactory.getLogger(EnhancedConceptViewController.class);
 
@@ -86,21 +89,38 @@ public class EnhancedConceptViewController {
 	void setConcept(UUID currentCon, ConceptViewMode mode, ObservableList<Integer> conceptHistoryStack) {
 		if (!initialized ) {
 			initialized = true;
-            UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
-            userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.viewCoordinatePath, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                    setConcept(currentCon, mode, conceptHistoryStack);
-                }
-            });
-            userProfileManager.addUserProfilePropertyChangeListener(UserProfileProperty.statedInferredPolicy, new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    LOG.info("Kicking off refresh() due to change of {} from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
-                    setConcept(currentCon, mode, conceptHistoryStack);
-                }
-            });
+			UserProfileManager userProfileManager = AppContext.getService(UserProfileManager.class);
+			
+			{
+				ChangeListener<UUID> changeListener = new ChangeListener<UUID>()
+				{
+					@Override
+					public void changed(ObservableValue<? extends UUID> observable, UUID oldValue, UUID newValue)
+					{
+						LOG.info("Kicking off refresh() due to stated / inferred from {} to {}", oldValue, newValue);
+						setConcept(currentCon, mode, conceptHistoryStack);
+					}
+				};
+				
+				//Need to keep a ref, otherwise, it will be GC'ed right away
+				changeListeners.add(changeListener);
+				userProfileManager.getPropertyBindings().getViewCoordinatePath().addListener(new WeakChangeListener<UUID>(changeListener));
+			}
+			
+			{
+				ChangeListener<StatedInferredOptions> changeListener = new ChangeListener<StatedInferredOptions>()
+				{
+					@Override
+					public void changed(ObservableValue<? extends StatedInferredOptions> observable, StatedInferredOptions oldValue, StatedInferredOptions newValue)
+					{
+						LOG.info("Kicking off refresh() due to stated / inferred from {} to {}", oldValue, newValue);
+						setConcept(currentCon, mode, conceptHistoryStack);
+					}
+				};
+				//Need to keep a ref, otherwise, it will be GC'ed right away
+				changeListeners.add(changeListener);
+				userProfileManager.getPropertyBindings().getStatedInferredPolicy().addListener(new WeakChangeListener<StatedInferredOptions>(changeListener));
+			}
 
 			initializeWindow(conceptHistoryStack, mode);
 		}
@@ -271,8 +291,8 @@ public class EnhancedConceptViewController {
 	}
 	
 	public String getTitle() {
-        return fsnLabel.getText();
-    }
+		return fsnLabel.getText();
+	}
 	
 	private void clearContents() {
 		releaseIdLabel.setText("");

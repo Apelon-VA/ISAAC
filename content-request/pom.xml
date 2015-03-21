@@ -11,9 +11,7 @@
 	<packaging>jar</packaging>
 
 	<name>ISAAC Content Request Submission Module</name>
-	<description>
-        ISAAC handling for USCRS and LOINC content submission integration.
-    </description>
+	<description>ISAAC handling for USCRS and LOINC content submission integration.</description>
 
 	<dependencies>
 

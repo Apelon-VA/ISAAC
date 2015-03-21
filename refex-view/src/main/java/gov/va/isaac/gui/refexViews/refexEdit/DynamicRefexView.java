@@ -20,6 +20,9 @@ package gov.va.isaac.gui.refexViews.refexEdit;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.profiles.UserProfile;
+import gov.va.isaac.config.profiles.UserProfileBindings;
+import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dialog.YesNoDialog;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
@@ -44,6 +47,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -55,6 +61,8 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
@@ -67,9 +75,11 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -115,7 +125,9 @@ public class DynamicRefexView implements RefexViewI
 	private TreeTableView<RefexDynamicGUI> ttv_;
 	private TreeItem<RefexDynamicGUI> treeRoot_;
 	private Button retireButton_, addButton_, commitButton_, cancelButton_, editButton_, viewUsageButton_;
+	private Label summary_ = new Label("");
 	private ToggleButton stampButton_, activeOnlyButton_, historyButton_;
+	private Button displayFSNButton_;
 	private UpdateableBooleanBinding currentRowSelected_, selectedRowIsActive_;
 	private UpdateableBooleanBinding showStampColumns_, showActiveOnly_, showFullHistory_, showViewUsageButton_;
 	private TreeTableColumn<RefexDynamicGUI, String> stampColumn_;
@@ -135,7 +147,10 @@ public class DynamicRefexView implements RefexViewI
 	IndexedGenerationCallable newComponentIndexGen_ = null; //Useful when adding from the assemblage perspective - if they are using an index, we need to wait till the new thing is indexed
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
-	private volatile boolean noRefresh_ = false;
+	private AtomicInteger noRefresh_ = new AtomicInteger(0);
+	
+	@SuppressWarnings("unused")
+	private UpdateableBooleanBinding refreshRequiredListenerHack;
 
 	private final ObservableMap<ColumnId, Filter<?>> filterCache_ = new ObservableMapWrapper<>(new WeakHashMap<>());
 	
@@ -187,6 +202,7 @@ public class DynamicRefexView implements RefexViewI
 	{
 		if (rootNode_ == null)
 		{
+			noRefresh_.getAndIncrement();
 			ttv_ = new TreeTableView<>();
 			ttv_.setTableMenuButtonVisible(true);
 			ttv_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -224,7 +240,9 @@ public class DynamicRefexView implements RefexViewI
 				@Override
 				protected boolean computeValue()
 				{
-					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem().getValue() != null)
+					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && 
+							ttv_.getSelectionModel().getSelectedItem() != null && 
+							ttv_.getSelectionModel().getSelectedItem().getValue() != null)
 					{
 						return ttv_.getSelectionModel().getSelectedItem().getValue().isCurrent();
 					}
@@ -243,7 +261,8 @@ public class DynamicRefexView implements RefexViewI
 				@Override
 				protected boolean computeValue()
 				{
-					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem().getValue() != null)
+					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem() != null 
+							&& ttv_.getSelectionModel().getSelectedItem().getValue() != null)
 					{
 						try
 						{
@@ -389,6 +408,8 @@ public class DynamicRefexView implements RefexViewI
 			viewUsageButton_.visibleProperty().bind(showViewUsageButton_);
 			t.getItems().add(viewUsageButton_);
 			
+			t.getItems().add(summary_);
+			
 			//fill to right
 			Region r = new Region();
 			HBox.setHgrow(r, Priority.ALWAYS);
@@ -474,6 +495,35 @@ public class DynamicRefexView implements RefexViewI
 					return showFullHistory;
 				}
 			};
+			
+			displayFSNButton_ = new Button("");
+			ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
+			Tooltip.install(displayFsn, new Tooltip("Displaying the Fully Specified Name - click to display the Preferred Term"));
+			displayFsn.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayFSN());
+			ImageView displayPreferred = Images.DISPLAY_PREFERRED.createImageView();
+			displayPreferred.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayFSN().not());
+			Tooltip.install(displayPreferred, new Tooltip("Displaying the Preferred Term - click to display the Fully Specified Name"));
+			displayFSNButton_.setGraphic(new StackPane(displayFsn, displayPreferred));
+			displayFSNButton_.prefHeightProperty().bind(historyButton_.heightProperty());
+			displayFSNButton_.prefWidthProperty().bind(historyButton_.widthProperty());
+			displayFSNButton_.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					try
+					{
+						UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+						up.setDisplayFSN(AppContext.getService(UserProfileBindings.class).getDisplayFSN().not().get());
+						ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+					}
+					catch (Exception e)
+					{
+						logger_.error("Unexpected error storing pref change", e);
+					}
+				}
+			});
+			t.getItems().add(displayFSNButton_);
 			
 			cancelButton_ = new Button("Cancel");
 			cancelButton_.disableProperty().bind(hasUncommitted_.not());
@@ -563,6 +613,63 @@ public class DynamicRefexView implements RefexViewI
 			});
 			
 			rootNode_.getChildren().add(t);
+			
+			Platform.runLater(new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					//TODO hack for bug in javafx - need to start as true, then later toggle to false.
+					stampButton_.setSelected(false);
+				}
+			});
+			
+			refreshRequiredListenerHack = new UpdateableBooleanBinding()
+			{
+				private volatile AtomicBoolean refreshQueued = new AtomicBoolean(false);
+				{
+					setComputeOnInvalidate(true);
+					addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(), AppContext.getService(UserProfileBindings.class).getDisplayFSN());
+				}
+
+				@Override
+				protected boolean computeValue()
+				{
+					synchronized (refreshQueued)
+					{
+						if (refreshQueued.get())
+						{
+							logger_.info("Skip DynRefex refresh() due to pending refresh");
+							return false;
+						}
+						else
+						{
+							refreshQueued.set(true);
+							logger_.debug("DynRefex refresh() due to change of an observed user property");
+							Utility.schedule(() -> 
+							{
+								Platform.runLater(() -> 
+								{
+									synchronized (refreshQueued)
+									{
+										refreshQueued.set(false);
+									}
+									try
+									{
+										refresh();
+									}
+									catch (Exception e)
+									{
+										logger_.error("Unexpected error running refresh", e);
+									}
+								});
+							}, 10, TimeUnit.MILLISECONDS);
+						}
+					}
+					return false;
+				}
+			};
+			noRefresh_.decrementAndGet();
 		}
 	}
 
@@ -573,49 +680,49 @@ public class DynamicRefexView implements RefexViewI
 	public Region getView()
 	{
 		//setting up the binding stuff is causing refresh calls
-		noRefresh_ = true;
 		initialInit();
-		noRefresh_ = false;
 		return rootNode_;
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.RefexViewI#setComponent(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty))
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setComponent(int, javafx.beans.property.ReadOnlyBooleanProperty, 
+	 * javafx.beans.property.ReadOnlyBooleanProperty, javafx.beans.property.ReadOnlyBooleanProperty, boolean)
 	 */
 	@Override
 	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory)
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		//disable refresh, as the bindings mucking causes many refresh calls
-		noRefresh_ = true;
+		noRefresh_.getAndIncrement();
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
-		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
+		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		showViewUsageButton_.invalidate();
 		newComponentHint_ = null;
-		noRefresh_ = false;
-		refresh();
+		noRefresh_.getAndDecrement();
+		initColumnsLoadData();
 	}
 
 	/**
-	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setAssemblage(int, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty, ReadOnlyBooleanProperty)
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI#setAssemblage(int, javafx.beans.property.ReadOnlyBooleanProperty, 
+	 * javafx.beans.property.ReadOnlyBooleanProperty, javafx.beans.property.ReadOnlyBooleanProperty, boolean)
 	 */
 	@Override
 	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory)
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		//disable refresh, as the bindings mucking causes many refresh calls
-		noRefresh_ = true;
+		noRefresh_.getAndIncrement();
 		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
-		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory);
+		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		newComponentHint_ = null;
-		noRefresh_ = false;
-		refresh();
+		noRefresh_.getAndDecrement();
+		initColumnsLoadData();
 	}
 	
 	private void handleExternalBindings(ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory)
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		showStampColumns_.clearBindings();
 		showActiveOnly_.clearBindings();
@@ -653,6 +760,16 @@ public class DynamicRefexView implements RefexViewI
 			historyButton_.setVisible(false);
 			showFullHistory_.addBinding(showFullHistory);
 		}
+		
+		if (displayFSNButton)
+		{
+			//Use our own button
+			displayFSNButton_.setVisible(true);
+		}
+		else
+		{
+			displayFSNButton_.setVisible(false);
+		}
 	}
 	
 	protected void setNewComponentHint(int componentNid, IndexedGenerationCallable indexGen)
@@ -663,33 +780,26 @@ public class DynamicRefexView implements RefexViewI
 	
 	protected void refresh()
 	{
-		if (noRefresh_)
+		if (noRefresh_.get() > 0)
 		{
+			logger_.info("Skip refresh of dynamic refex due to wait count {}" + noRefresh_.get());
 			return;
 		}
-		//This is silly - throwing out the entire table...
-		//But JavaFX seems to be broken, and the code that should work - simply removing
-		//all children from the rootNode - doesn't work.
-		//So build a completely new table upon every refresh, for now.
-		rootNode_.getChildren().remove(ttv_);
-		ttv_ = new TreeTableView<>();
-		ttv_.setTableMenuButtonVisible(true);
-		VBox.setVgrow(ttv_, Priority.ALWAYS);
-		rootNode_.getChildren().add(0, ttv_);
-		
-		treeRoot_ = new TreeItem<>();
-		treeRoot_.setExpanded(true);
-		ttv_.setShowRoot(false);
-		ttv_.setRoot(treeRoot_);
 
-		ttv_.setPlaceholder(progressBar_);
-		progressBar_.setProgress(-1);
-		currentRowSelected_.clearBindings();
-		currentRowSelected_.addBinding(ttv_.getSelectionModel().getSelectedItems());
-		selectedRowIsActive_.clearBindings();
-		selectedRowIsActive_.addBinding(ttv_.getSelectionModel().getSelectedItems());
-		
-		loadData();
+		Utility.execute(() ->
+		{
+			try
+			{
+				loadRealData();
+			}
+			catch (Exception e)
+			{
+				logger_.error("Unexpected error building the sememe display", e);
+				//null check, as the error may happen before the scene is visible
+				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the sememe display", e.getMessage(), 
+						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+			}
+		});
 	}
 	
 	private void storeTooltip(Map<String, List<String>> store, String key, String value)
@@ -703,11 +813,12 @@ public class DynamicRefexView implements RefexViewI
 		list.add(value);
 	}
 
-	private void loadData()
+	private void initColumnsLoadData()
 	{
+		noRefresh_.getAndIncrement();
 		Utility.execute(() -> {
 			try
-			{				
+			{
 				removeFilterCacheListeners();
 				
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
@@ -1125,31 +1236,7 @@ public class DynamicRefexView implements RefexViewI
 				
 				TableHeaderRowTooltipInstaller.installTooltips(ttv_, toolTipStore);
 
-				ArrayList<TreeItem<RefexDynamicGUI>> rowData;
-				//Now add the data
-				if (setFromType_.getComponentNid() != null)
-				{
-					rowData = getDataRows(setFromType_.getComponentBI(), null);
-				}
-				else
-				{
-					rowData = getDataRows(setFromType_.getAssemblyNid());
-				}
-
-				Platform.runLater(() ->
-				{
-					addButton_.setDisable(false);
-					for (TreeItem<RefexDynamicGUI> rd : rowData)
-					{
-						treeRoot_.getChildren().add(rd);
-					}
-					checkForUncommittedRefexes(rowData);
-					ttv_.setPlaceholder(placeholderText);
-					ttv_.getSelectionModel().clearAndSelect(0);
-				});
-				
-				// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
-				addFilterCacheListeners();
+				loadRealData();
 			}
 			catch (Exception e)
 			{
@@ -1158,7 +1245,45 @@ public class DynamicRefexView implements RefexViewI
 				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the sememe display", e.getMessage(), 
 						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
 			}
+			finally
+			{
+				noRefresh_.getAndDecrement();
+			}
 		});
+	}
+	
+	private synchronized void loadRealData() throws IOException, ContradictionException, NumberFormatException, InterruptedException, ParseException
+	{
+		//Now add the data
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData;
+		if (setFromType_.getComponentNid() != null)
+		{
+			rowData = getDataRows(setFromType_.getComponentBI(), null);
+		}
+		else
+		{
+			rowData = getDataRows(setFromType_.getAssemblyNid());
+		}
+		
+		logger_.info("Found {} rows of data in a dynamic refex", rowData.size());
+		
+		Utility.execute(() ->
+		{
+			checkForUncommittedRefexes(rowData);
+		});
+		
+		Platform.runLater(() ->
+		{
+			treeRoot_.getChildren().clear();
+			addButton_.setDisable(false);
+			treeRoot_.getChildren().addAll(rowData);
+			summary_.setText(rowData.size() + " entries");
+			ttv_.setPlaceholder(placeholderText);
+			ttv_.getSelectionModel().clearSelection();
+		});
+		
+		// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
+		addFilterCacheListeners();
 	}
 	
 	private TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> buildComponentCellColumn(DynamicRefexColumnType type)
@@ -1379,7 +1504,11 @@ public class DynamicRefexView implements RefexViewI
 		{
 			if (item.getValue() != null && item.getValue().getRefex().isUncommitted())
 			{
-				hasUncommitted_.set(true);
+				//TODO add some indication that this is either running / finished
+				Platform.runLater(() ->
+				{
+					hasUncommitted_.set(true);
+				});
 				return;
 			}
 			checkForUncommittedRefexes(item.getChildren());

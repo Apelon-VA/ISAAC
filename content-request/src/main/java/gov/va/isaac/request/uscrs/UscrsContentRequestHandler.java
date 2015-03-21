@@ -1,6 +1,7 @@
 package gov.va.isaac.request.uscrs;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.conceptViews.helpers.ConceptViewerHelper;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.ContentRequestHandlerI;
@@ -9,14 +10,12 @@ import gov.va.isaac.request.ContentRequestHandler;
 import gov.va.isaac.request.ContentRequestTrackingInfo;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.COLUMN;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Case_Significance;
-import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Characteristic_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Refinability;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Relationship_Type;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Semantic_Tag;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Source_Terminology;
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.SHEET;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,13 +24,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
-
 import javax.inject.Named;
-
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -88,11 +84,9 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		
 		
 		//Set the Descriptions and Relationships
-		DescriptionChronicleBI thisDesc = null;
 		descVersion = null;
 		for (DescriptionChronicleBI desc : concept.getDescriptions())
 		{
-			thisDesc = desc;
 			descVersion = desc.getVersion(OTFUtility.getViewCoordinate());
 			break;
 
@@ -268,13 +262,14 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					break;
 				case Justification:
 					//Probably not correct because justification needs to be specific to that row
-					bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+					bt.addStringCell(column, "Developed as part of extension namespace " + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getExtensionNamespace());
 					break;
 				case Note:
 					StringBuilder sb = new StringBuilder();
 					
-					sb.append("Java version:" + System.getProperty("sun.arch.data.model"));
-					sb.append("SCT ID:" + this.getSct(-2143244556));
+					//TODO not sure what is going on here....
+					//sb.append("Java version:" + System.getProperty("sun.arch.data.model"));
+					//sb.append("SCT ID:" + this.getSct(-2143244556));
 					
 					
 					if (concept.getConceptAttributes().getVersion(OTFUtility.getViewCoordinate()).isDefined())
@@ -331,7 +326,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-    private void handleNewSyn(DescriptionVersionBI<?> descVersion, USCRSBatchTemplate bt) throws Exception
+	private void handleNewSyn(DescriptionVersionBI<?> descVersion, USCRSBatchTemplate bt) throws Exception
 	{	
 		bt.selectSheet(SHEET.New_Synonym);
 		bt.addRow();
@@ -376,7 +371,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings({ })
-	private void handleChangeParent(ConceptChronicleBI concept, RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
+	private void handleChangeParent(ConceptChronicleBI concept, RelationshipVersionBI<?> relVersion, USCRSBatchTemplate bt) throws Exception
 	{	
 		bt.selectSheet(SHEET.Change_Parent);
 		bt.addRow();
@@ -529,7 +524,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addNumericCell(column, relVersion.getGroup());
 					break;
 				case Justification:
-					bt.addStringCell(column, "Developed as part of extension namespace " + AppContext.getAppConfiguration().getCurrentExtensionNamespace());
+					bt.addStringCell(column, "Developed as part of extension namespace " + ExtendedAppContext.getCurrentlyLoggedInUserProfile().getExtensionNamespace());
 					break;
 				case Note:
 					bt.addStringCell(column, "This is a defining relationship expressed for the corresponding new concept request in the other tab");
@@ -568,6 +563,9 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 			descIdAttempt = Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate())));
 		} catch(Exception e) {
 			//Eat it
+			//TODO - no - you shouldn't be taking an error here.  the poorly written ConceptViewerHelper is going to return the String "Unreleased" if it 
+			//doesn't find one - we should fix the API to be proper.  It should return an int and throw a checked exception if none is available, or perhaps, 
+			//return an Integer, and return null if none is available.
 		}
 		
 		try {
@@ -578,6 +576,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		
 		try 
 		{
+			//TODO get rid of these sysouts - put in log statements if you want debug output
 			if(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate()) != null && descIdAttempt != 0) { //Description
 				System.out.println("Fetching SCT of a Description");
 				return Integer.parseInt(ConceptViewerHelper.getSctId(OTFUtility.getComponentChronicle(nid).getVersion(OTFUtility.getViewCoordinate())));
@@ -598,8 +597,8 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 		} catch(Exception e) 
 		{ 
 			Log.error("We could not get the SCT from the Given NID");
-			e.printStackTrace();
-			return 0;
+			e.printStackTrace();  //TODO nope
+			return 0;  //document the failure behavior - is 0 an appropriate thing to return if no sctid could be found?
 		}
 		
 	}
@@ -611,7 +610,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @param bt the wb
 	 * @throws Exception the exception
 	 */
-	private void handleChangeRels(ConceptChronicleBI concept, RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
+	private void handleChangeRels(ConceptChronicleBI concept, RelationshipVersionBI<?> relVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Change_Relationship);
 		ConceptVersionBI destConcept = OTFUtility.getConceptVersion(relVersion.getDestinationNid());
@@ -692,6 +691,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addNumericCell(column, this.getSct(descVersion.getNid()));
 					break;
 				case Term: 
+					//TODO nope - can't use OTF Utility to get this - you need to get the text from the description version passed in
 					bt.addStringCell(column, OTFUtility.getConPrefTerm(descVersion.getConceptNid()));
 					break;
 				case Case_Significance:
@@ -777,7 +777,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 				case Concept_Id:
 					bt.addNumericCell(column, this.getSct(conceptVersion.getNid()));
 					break;
-				case Description_Id:  //TODO not UUID
+				case Description_Id:
 					bt.addNumericCell(column, this.getSct(descVersion.getNid()));
 					break;
 				case Change_Description_Status_To:  //TODO talk to Jaqui / NLM - same status question as above
@@ -803,7 +803,7 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings({"rawtypes" })
-    private void handleRetireRelationship(RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
+	private void handleRetireRelationship(RelationshipVersionBI relVersion, USCRSBatchTemplate bt) throws Exception
 	{
 		bt.selectSheet(SHEET.Retire_Relationship);
 		bt.addRow();
@@ -823,7 +823,6 @@ public class UscrsContentRequestHandler implements ContentRequestHandler, Conten
 					bt.addNumericCell(column, this.getSct(sourceConcept.getNid()));
 					break;
 				case Relationship_Id:  
-					//TODO no nid - either SCTID , or need to talk to NLM / Jaqui
 					bt.addNumericCell(column, this.getSct(relVersion.getNid()));
 					break;
 				case Destination_Terminology:

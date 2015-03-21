@@ -16,31 +16,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.utility;
+package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.interfaces.gui.ApplicationWindowI;
-
+import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
+import org.jvnet.hk2.annotations.Service;
 
 /**
- * {@link ShutdownBroadcastListenerI}
- *
- * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
- * 
- * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
- * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
- * 
- * Be very cautious about creating memory leaks with this - this olds a hard reference to the services that need 
- * notification.
- * 
- * @see ApplicationWindowI
+ * {@link ShutdownHack}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public interface ShutdownBroadcastListenerI
+@Service
+public class ShutdownHack implements ServicesToPreloadI
 {
+
 	/**
-	 * Called when an app shutdown is requested.
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
 	 */
-	public void shutdown();
+	@Override
+	public void loadRequested()
+	{
+		// noop
+		
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
+	 */
+	@Override
+	public void shutdown()
+	{
+		SctTreeView.globalShutdown();
+		
+	}
 }

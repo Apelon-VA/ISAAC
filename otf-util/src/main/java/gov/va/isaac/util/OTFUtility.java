@@ -66,6 +66,7 @@ import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexType;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
@@ -109,6 +110,7 @@ public class OTFUtility {
 	private static Integer fsnRf1Nid = null;
 	private static Integer preferredRf1Nid = null;
 	private static Integer synonymRf1Nid = null;
+	private static Integer langTypeNid = null;
 	
 	private static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 
@@ -336,6 +338,14 @@ public class OTFUtility {
 			synonymRf1Nid = dataStore.getNidForUuids(SYNONYM_RF1_UUID);
 		}
 		return synonymRf1Nid;
+	}
+	
+	public static int getLangTypeNid() {
+		// Lazily load.
+		if (langTypeNid == null) {
+			langTypeNid = dataStore.getNidForUuids(Snomed.LANGUAGE_REFEX.getPrimodialUuid());
+		}
+		return langTypeNid;
 	}
 
 	private static int getPreferredTypeNid() {
@@ -1159,6 +1169,21 @@ public class OTFUtility {
 		RefexVersionBI<?> newest = null;;
 		long newestTime = Long.MIN_VALUE;
 		for (RefexVersionBI<?> x : collection)
+		{
+			if (x.getTime() > newestTime)
+			{
+				newest = x;
+				newestTime = x.getTime();
+			}
+		}
+		return newest;
+	}
+	
+	public static RefexDynamicVersionBI<?> getLatestDynamicRefexVersion(@SuppressWarnings("rawtypes") Collection<? extends RefexDynamicVersionBI> collection)
+	{
+		RefexDynamicVersionBI<?> newest = null;;
+		long newestTime = Long.MIN_VALUE;
+		for (RefexDynamicVersionBI<?> x : collection)
 		{
 			if (x.getTime() > newestTime)
 			{

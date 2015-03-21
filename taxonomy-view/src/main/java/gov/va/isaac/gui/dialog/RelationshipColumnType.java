@@ -16,31 +16,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.utility;
-
-import gov.va.isaac.interfaces.gui.ApplicationWindowI;
-
+package gov.va.isaac.gui.dialog;
 
 /**
- * {@link ShutdownBroadcastListenerI}
- *
- * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
- * 
- * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
- * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
- * 
- * Be very cautious about creating memory leaks with this - this olds a hard reference to the services that need 
- * notification.
- * 
- * @see ApplicationWindowI
+ * {@link RelationshipColumnType}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public interface ShutdownBroadcastListenerI
+public enum RelationshipColumnType
 {
-	/**
-	 * Called when an app shutdown is requested.
-	 */
-	public void shutdown();
+	STATUS_CONDENSED("s"),
+	SOURCE("Source"),
+	TYPE("Type"),
+	DESTINATION("Destination"),
+	UUID("UUID"),
+	GROUP("Group"),
+	REFINEABILITY("Refineability"),
+	CHARACTERISTIC("Characteristic"),
+	STATUS_STRING("Status"),
+	TIME("Time"),
+	AUTHOR("Author"),
+	MODULE("Module"),
+	PATH("Path");
+	
+	private String niceName_;
+	
+	private RelationshipColumnType(String name)
+	{
+		niceName_ = name;
+	}
+
+	@Override
+	public String toString()
+	{
+		return niceName_;
+	}
 }

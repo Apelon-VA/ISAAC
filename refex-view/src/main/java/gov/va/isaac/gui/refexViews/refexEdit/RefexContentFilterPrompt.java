@@ -47,6 +47,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
 		}
 	}
 
+	@Override
 	protected Node createUserInterface() {
 		VBox vb = new VBox(10);
 		vb.setAlignment(Pos.CENTER);
@@ -150,6 +151,7 @@ public class RefexContentFilterPrompt extends UserPrompt {
 			selectedProperty.set(selected);
 		}
 		
+		@Override
 		public String toString() { return text; }
 	}
 	private ListView<CheckableText> createCheckBoxListView() {

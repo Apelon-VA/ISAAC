@@ -21,15 +21,11 @@ package gov.va.isaac.config.profiles;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfileBindings.RelationshipDirection;
 import gov.va.isaac.util.PasswordHasher;
-
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.TreeSet;
 import java.util.UUID;
-
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
@@ -37,7 +33,6 @@ import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +67,9 @@ public class UserProfile
 	
 	@XmlElement 
 	private boolean displayFSN = UserProfileDefaults.getDefaultDisplayFSN();
+	
+	@XmlElement 
+	private RelationshipDirection displayRelDirection = UserProfileDefaults.getDefaultDisplayRelDirection();
 	
 	@XmlElement 
 	private String workflowUsername = null;
@@ -133,6 +131,7 @@ public class UserProfile
 		clone.hashedPassword = this.hashedPassword;
 		clone.statedInferredPolicy = this.statedInferredPolicy;
 		clone.displayFSN = this.displayFSN;
+		clone.displayRelDirection = this.displayRelDirection;
 		clone.syncPasswordEncrypted = this.syncPasswordEncrypted;
 		clone.syncUsername = this.syncUsername;
 		clone.workflowPasswordEncrypted = this.workflowPasswordEncrypted;
@@ -266,6 +265,15 @@ public class UserProfile
 		return displayFSN;
 	}
 	
+	public void setDisplayRelDirection(RelationshipDirection displayRelationshipDirection)
+	{
+		this.displayRelDirection = displayRelationshipDirection;
+	}
+	
+	public RelationshipDirection getDisplayRelDirection()
+	{
+		return displayRelDirection;
+	}
 	
 	public String getWorkflowUsername()
 	{

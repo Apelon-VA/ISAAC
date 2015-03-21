@@ -16,31 +16,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.utility;
-
-import gov.va.isaac.interfaces.gui.ApplicationWindowI;
-
+package gov.va.isaac.isaacDbProcessingRules.loinc;
 
 /**
- * {@link ShutdownBroadcastListenerI}
- *
- * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
- * 
- * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
- * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
- * 
- * Be very cautious about creating memory leaks with this - this olds a hard reference to the services that need 
- * notification.
- * 
- * @see ApplicationWindowI
+ * {@link SelectionCriteriaType}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public interface ShutdownBroadcastListenerI
+public enum SelectionCriteriaType
 {
-	/**
-	 * Called when an app shutdown is requested.
-	 */
-	public void shutdown();
+	DESCENDENT_OF("descendent of"), COMPONENT("Component"), CONCEPT("Concept"), SYSTEM("SYSTEM ="), METHOD_TYPE("METHOD_TYP");
+	
+	private String altName_;
+	
+	private SelectionCriteriaType(String altName)
+	{
+		this.altName_ = altName;
+	}
+	
+	public static SelectionCriteriaType parse(String value)
+	{
+		for (SelectionCriteriaType a : SelectionCriteriaType.values())
+		{
+			if (a.altName_.equalsIgnoreCase(value))
+			{
+				return a;
+			}
+		}
+		throw new RuntimeException("Couldn't parse SelectionCriteriaType " + value);
+	}
 }

@@ -16,31 +16,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.interfaces.utility;
-
-import gov.va.isaac.interfaces.gui.ApplicationWindowI;
-
+package gov.va.isaac.isaacDbProcessingRules.loinc;
 
 /**
- * {@link ShutdownBroadcastListenerI}
- *
- * An interface that allows individual modules to receive callbacks when an application shutdown had been requested.
- * 
- * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
- * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
- * 
- * Be very cautious about creating memory leaks with this - this olds a hard reference to the services that need 
- * notification.
- * 
- * @see ApplicationWindowI
+ * {@link Operand}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-
-public interface ShutdownBroadcastListenerI
+public enum Operand
 {
-	/**
-	 * Called when an app shutdown is requested.
-	 */
-	public void shutdown();
+	AND,NOT;
+	
+	public static Operand parse(String value)
+	{
+		for (Operand a : Operand.values())
+		{
+			if (a.name().equalsIgnoreCase(value))
+			{
+				return a;
+			}
+		}
+		throw new RuntimeException("Couldn't parse operand " + value);
+	}
 }

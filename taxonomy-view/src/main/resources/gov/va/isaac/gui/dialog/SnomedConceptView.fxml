@@ -6,97 +6,108 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1200.0" styleClass="dialogBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.dialog.SnomedConceptViewController">
-  <children>
-    <VBox alignment="CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-      <children>
-        <Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="FSN" />
-        <GridPane prefWidth="790.0">
-          <children>
-            <VBox spacing="5.0" GridPane.columnIndex="0" GridPane.rowIndex="0">
-              <children>
-                <HBox maxWidth="1.7976931348623157E308">
-                  <children>
-                    <Label styleClass="boldLabel" text="UUID" />
-                    <Label fx:id="uuidLabel" text="uuid-value">
-                      <HBox.margin>
-                        <Insets left="10.0" />
-                      </HBox.margin>
-                    </Label>
-                  </children>
-                </HBox>
-                <HBox maxWidth="1.7976931348623157E308" spacing="5.0">
-                  <children>
-                    <Label styleClass="boldLabel" text="Status" />
-                    <Label fx:id="conceptStatusLabel" text="active concept" />
-                    <Label styleClass="boldLabel" text="Defined">
-                      <HBox.margin>
-                        <Insets left="10.0" />
-                      </HBox.margin>
-                    </Label>
-                    <Label fx:id="conceptDefinedLabel" text="False" />
-                    <ToggleButton fx:id="stampToggle" mnemonicParsing="false" text="T" />
-                    <ToggleButton fx:id="historyToggle" mnemonicParsing="false" text="T" />
-                    <ToggleButton fx:id="activeOnlyToggle" mnemonicParsing="false" text="T" />
-                  </children>
-                </HBox>
-              </children>
-            </VBox>
-            <VBox fx:id="idVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="100.0" spacing="5.0" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" GridPane.vgrow="ALWAYS" />
-          </children>
-          <columnConstraints>
-            <ColumnConstraints hgrow="NEVER" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-            <ColumnConstraints hgrow="NEVER" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
-          </columnConstraints>
-          <rowConstraints>
-            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-          </rowConstraints>
-        </GridPane>
-        <SplitPane fx:id="splitPane" dividerPositions="0.7" style="-fx-background-color: transparent" VBox.vgrow="ALWAYS">
-          <items>
-            <VBox spacing="1.0">
-              <children>
-                <VBox alignment="CENTER" prefHeight="450.0" prefWidth="606.0" spacing="5.0" VBox.vgrow="ALWAYS">
-                  <children>
-                    <VBox alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
-                      <children>
-                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Descriptions" />
-                        <TableView fx:id="descriptionsTable" maxWidth="1.7976931348623157E308" minHeight="100.0" VBox.vgrow="ALWAYS" />
-                      </children>
-                    </VBox>
-                    <VBox alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
-                      <children>
-                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Source Relationships" />
-                        <TableView fx:id="relationshipsTable" maxWidth="1.7976931348623157E308" minHeight="100.0" VBox.vgrow="ALWAYS" />
-                      </children>
-                    </VBox>
-                    <VBox fx:id="annotationsRegion" alignment="CENTER" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
-                      <children>
-                        <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Sememe Extensions" />
-                      </children>
-                    </VBox>
-                  </children>
-                </VBox>
-              </children>
-            </VBox>
-            <VBox fx:id="splitRight" prefHeight="200.0" prefWidth="100.0" styleClass="itemBorder">
-              <children>
-                <HBox alignment="CENTER_LEFT" spacing="5.0">
-                  <children>
-                    <Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Tree View" />
-                  </children>
-                </HBox>
-              </children>
-            </VBox>
-          </items>
-        </SplitPane>
-      </children>
-    </VBox>
-  </children>
-  <padding>
-    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" fx:id="x1" />
-  </padding>
-  <stylesheets>
-    <URL value="@SnomedConceptView.css" />
-  </stylesheets>
+<AnchorPane fx:id="anchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0"
+	prefWidth="1200.0" styleClass="dialogBackground" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+	fx:controller="gov.va.isaac.gui.dialog.SnomedConceptViewController">
+	<children>
+		<VBox alignment="CENTER" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+			AnchorPane.topAnchor="0.0">
+			<children>
+				<Label fx:id="fsnLabel" alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="FSN" />
+				<GridPane maxWidth="1.7976931348623157E308">
+					<children>
+						<VBox spacing="5.0" GridPane.columnIndex="0" GridPane.rowIndex="0" GridPane.vgrow="NEVER">
+							<children>
+								<HBox maxWidth="1.7976931348623157E308">
+									<children>
+										<Label styleClass="boldLabel" text="UUID" />
+										<Label fx:id="uuidLabel" text="uuid-value">
+											<HBox.margin>
+												<Insets left="10.0" />
+											</HBox.margin>
+										</Label>
+									</children>
+								</HBox>
+								<HBox maxWidth="1.7976931348623157E308" spacing="5.0">
+									<children>
+										<Label styleClass="boldLabel" text="Status" />
+										<Label fx:id="conceptStatusLabel" text="active concept" />
+										<Label styleClass="boldLabel" text="Defined">
+											<HBox.margin>
+												<Insets left="10.0" />
+											</HBox.margin>
+										</Label>
+										<Label fx:id="conceptDefinedLabel" text="False" />
+										<ToggleButton fx:id="stampToggle" mnemonicParsing="false" text="T" />
+										<ToggleButton fx:id="historyToggle" mnemonicParsing="false" text="T" />
+										<ToggleButton fx:id="activeOnlyToggle" mnemonicParsing="false" text="T" />
+										<Button fx:id="descriptionTypeButton" mnemonicParsing="false" text="F" />
+									</children>
+								</HBox>
+							</children>
+						</VBox>
+						<VBox fx:id="idVBox" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" spacing="5.0" GridPane.columnIndex="1"
+							GridPane.hgrow="ALWAYS" GridPane.rowIndex="0" GridPane.vgrow="NEVER" />
+					</children>
+					<columnConstraints>
+						<ColumnConstraints hgrow="NEVER" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+						<ColumnConstraints hgrow="NEVER" minWidth="10.0" percentWidth="50.0" prefWidth="100.0" />
+					</columnConstraints>
+					<rowConstraints>
+						<RowConstraints fillHeight="false" valignment="TOP" vgrow="NEVER" />
+					</rowConstraints>
+				</GridPane>
+				<SplitPane fx:id="splitPane" dividerPositions="0.7" style="-fx-background-color: transparent" VBox.vgrow="ALWAYS">
+					<items>
+						<VBox maxHeight="1.7976931348623157E308" spacing="1.0">
+							<children>
+								<SplitPane focusTraversable="true" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" orientation="VERTICAL"
+									VBox.vgrow="ALWAYS">
+									<items>
+										<VBox fx:id="descriptionsTableHolder" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+											minHeight="150.0" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
+											<children>
+												<Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Descriptions" />
+											</children>
+										</VBox>
+										<VBox fx:id="relationshipsTableHolder" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+											minHeight="150.0" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
+											<children>
+												<HBox fx:id="sourceRelTitleHBox" maxWidth="1.7976931348623157E308">
+													<children>
+														<Label contentDisplay="CENTER" styleClass="boldLabel" text="Relationships" />
+													</children>
+												</HBox>
+											</children>
+										</VBox>
+										<VBox fx:id="annotationsRegion" alignment="TOP_CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308"
+											minHeight="150.0" spacing="5.0" styleClass="itemBorder" VBox.vgrow="ALWAYS">
+											<children>
+												<Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Sememe Extensions" />
+											</children>
+										</VBox>
+									</items>
+								</SplitPane>
+							</children>
+						</VBox>
+						<VBox fx:id="splitRight" prefWidth="200.0" styleClass="itemBorder">
+							<children>
+								<HBox alignment="CENTER_LEFT" spacing="5.0">
+									<children>
+										<Label contentDisplay="CENTER" maxWidth="1.7976931348623157E308" styleClass="boldLabel" text="Tree View" />
+									</children>
+								</HBox>
+							</children>
+						</VBox>
+					</items>
+				</SplitPane>
+			</children>
+		</VBox>
+	</children>
+	<padding>
+		<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" fx:id="x1" />
+	</padding>
+	<stylesheets>
+		<URL value="@SnomedConceptView.css" />
+	</stylesheets>
 </AnchorPane>

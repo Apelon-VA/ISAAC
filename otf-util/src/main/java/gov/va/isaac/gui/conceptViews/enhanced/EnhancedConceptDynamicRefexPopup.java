@@ -36,7 +36,7 @@ public class EnhancedConceptDynamicRefexPopup {
 	    final Prompt prompt = new Prompt( title, owner, scene);
 		
         RefexViewI v = AppContext.getService(RefexViewI.class, "DynamicRefexView");
-        v.setComponent(conNid, null, null, null);
+        v.setComponent(conNid, null, null, null, true);
         v.getView().setMinHeight(200.0);
         v.getView().setMinWidth(200.0);
 

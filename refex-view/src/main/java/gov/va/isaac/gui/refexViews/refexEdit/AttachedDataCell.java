@@ -18,7 +18,10 @@
  */
 package gov.va.isaac.gui.refexViews.refexEdit;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.util.CommonMenus;
@@ -181,6 +184,11 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 
 			Platform.runLater(() ->
 			{
+				if (isEmpty() || getItem() == null)
+				{
+					//We are updating a cell that has sense been changed to empty - abort!
+					return;
+				}
 				if (value.getValue() != null && value.getValue().length() > 0)
 				{
 					setTooltip(new Tooltip(value.getValue()));
@@ -192,6 +200,14 @@ public class AttachedDataCell extends TreeTableCell<RefexDynamicGUI, RefexDynami
 				Text textHolder = new Text(value.getKey());
 				textHolder.wrappingWidthProperty().bind(widthProperty().subtract(10));
 				setGraphic(textHolder);
+				AppContext.getService(DragRegistry.class).setupDragOnly(textHolder, new SingleConceptIdProvider()
+				{
+					@Override
+					public String getConceptId()
+					{
+						return item.getNidFetcher(DynamicRefexColumnType.ATTACHED_DATA, refexColumnOrder).applyAsInt(item.getRefex()) +"";
+					}
+				});
 				setText(null);
 			});
 		});

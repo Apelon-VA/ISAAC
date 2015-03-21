@@ -80,13 +80,18 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
     public Boolean call() throws Exception {
         ComponentReference reference;
 
+        if (treeItem == null || treeItem.getValue() == null || treeItem.getValue().getRelationshipVersion() == null)
+        {
+            return false;
+        }
+        
         if (addChildren) {
             reference = treeItem.getValue().getRelationshipVersion().getOriginReference();
         } else {
             reference = treeItem.getValue().getRelationshipVersion().getDestinationReference();
         }
 
-        if (SctTreeView.shutdownRequested) {
+        if (SctTreeView.shutdownRequested || reference == null) {
             return false;
         }
 
