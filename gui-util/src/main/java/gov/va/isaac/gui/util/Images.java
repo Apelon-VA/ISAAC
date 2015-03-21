@@ -98,7 +98,11 @@ public enum Images {
     DISPLAY_PREFERRED(setupImage("/icons/wb-icons/16x16/plain/car_compact_green.png")),
     TAXONOMY_STATED(setupImage("/icons/wb-icons/16x16/plain/graph_edge.png")),
     TAXONOMY_INFERRED(setupImage("/icons/wb-icons/16x16/plain/chrystal_ball.png")),
-    TAXONOMY_INFERRED_THEN_STATED(setupImage("/icons/wb-icons/16x16/plain/text_sum.png"));
+    TAXONOMY_INFERRED_THEN_STATED(setupImage("/icons/wb-icons/16x16/plain/text_sum.png")),
+    
+    TAXONOMY_SOURCE(setupImage("/icons/fugue/16x16/icons-shadowless/arrow-out.png")),
+    TAXONOMY_TARGET(setupImage("/icons/fugue/16x16/icons-shadowless/arrow-in.png")),
+    TAXONOMY_SOURCE_AND_TARGET(setupImage("/icons/fugue/16x16/icons-shadowless/arrow-in-out.png"));
 
     private final Image image;
 
