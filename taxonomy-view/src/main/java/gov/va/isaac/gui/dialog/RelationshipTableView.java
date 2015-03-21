@@ -20,6 +20,7 @@ package gov.va.isaac.gui.dialog;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.profiles.UserProfileBindings;
+import gov.va.isaac.config.profiles.UserProfileBindings.RelationshipDirection;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView;
@@ -36,9 +37,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -86,7 +91,10 @@ public class RelationshipTableView
 	private UUID conceptUUID_;
 	private BooleanProperty showActiveOnly_, showHistory_, showStampColumns_;
 	
+	private ReadOnlyStringWrapper summaryText = new ReadOnlyStringWrapper("0 relationships");
+	
 	ArrayList<TableColumn<RelationshipVersion, RelationshipVersion>> stampColumns = new ArrayList<>();
+	TableColumn<RelationshipVersion, RelationshipVersion> sourceColumn = null;
 	
 	@SuppressWarnings("unused")
 	private UpdateableBooleanBinding refreshRequiredListenerHack;
@@ -109,11 +117,13 @@ public class RelationshipTableView
 		
 		refreshRequiredListenerHack = new UpdateableBooleanBinding()
 		{
+			private volatile AtomicBoolean refreshQueued = new AtomicBoolean(false);
 			{
 				setComputeOnInvalidate(true);
 				addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(),
 						AppContext.getService(UserProfileBindings.class).getDisplayFSN(),
 						AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy(),
+						AppContext.getService(UserProfileBindings.class).getDisplayRelDirection(),
 						showActiveOnly,
 						showHistory);
 			}
@@ -121,14 +131,43 @@ public class RelationshipTableView
 			@Override
 			protected boolean computeValue()
 			{
-				LOG.info("Kicking off refresh() due to change of an observed user property}");
-				try
+				synchronized (refreshQueued)
 				{
-					refresh(null);
-				}
-				catch (Exception e)
-				{
-					LOG.error("Unexpected");
+					if (refreshQueued.get())
+					{
+						LOG.info("Skip relationship refresh() due to pending refresh");
+						return false;
+					}
+					else
+					{
+						refreshQueued.set(true);
+
+						LOG.debug("Rel refresh() due to change of an observed user property");
+						Utility.schedule(() ->
+						{
+							Platform.runLater(() ->
+							{
+								try
+								{
+									synchronized (refreshQueued)
+									{
+										refreshQueued.set(false);
+									}
+									refresh(null);
+									if (sourceColumn != null 
+											&& AppContext.getService(UserProfileBindings.class).getDisplayRelDirection().get() != RelationshipDirection.SOURCE)
+									{
+										//this defaults to off, turn it on, if they switch to a view mode that includes targets
+										sourceColumn.setVisible(true);
+									}
+								}
+								catch (Exception e)
+								{
+									LOG.error("Unexpected error running refresh", e);
+								}
+							});
+						}, 10, TimeUnit.MILLISECONDS);
+					}
 				}
 				return false;
 			}
@@ -520,6 +559,11 @@ public class RelationshipTableView
 			{
 				tc.setVisible(false);
 			}
+			
+			if (col == RelationshipColumnType.SOURCE)
+			{
+				sourceColumn = tc;
+			}
 
 			if (nestingParent == null)
 			{
@@ -555,13 +599,29 @@ public class RelationshipTableView
 			{
 				ConceptVersionBI localConcept = (concept == null ? OTFUtility.getConceptVersion(conceptUUID_) : concept);
 				
-				for (RelationshipChronicleBI chronicle : localConcept.getRelationshipsOutgoing())
+				//target is the only option where we would exclude source
+				if (AppContext.getService(UserProfileBindings.class).getDisplayRelDirection().get() != RelationshipDirection.TARGET)
 				{
-					for (RelationshipVersionBI<?> rv : chronicle.getVersions())
+					for (RelationshipChronicleBI chronicle : localConcept.getRelationshipsOutgoing())
 					{
-						allRelationships.add(rv);
+						for (RelationshipVersionBI<?> rv : chronicle.getVersions())
+						{
+							allRelationships.add(rv);
+						}
 					}
-				}	
+				}
+				
+				//source is the only option where we would exclude target
+				if (AppContext.getService(UserProfileBindings.class).getDisplayRelDirection().get() != RelationshipDirection.SOURCE)
+				{
+					for (RelationshipChronicleBI chronicle : localConcept.getRelationshipsIncoming())
+					{
+						for (RelationshipVersionBI<?> rv : chronicle.getVersions())
+						{
+							allRelationships.add(rv);
+						}
+					}
+				}
 				
 				//Sort the newest to the top per UUID
 				Collections.sort(allRelationships, new Comparator<RelationshipVersionBI<?>>()
@@ -588,6 +648,7 @@ public class RelationshipTableView
 			
 			Platform.runLater(() ->
 			{
+				int count = 0;
 				try
 				{
 					UUID lastSeenRefex = null;
@@ -603,7 +664,8 @@ public class RelationshipTableView
 						if (showActiveOnly_.get() == false || r.isActive())
 						{
 							//first one we see with a new UUID is current, others are historical
-							RelationshipVersion newRelationshipVersion = new RelationshipVersion(r, !r.getPrimordialUuid().equals(lastSeenRefex));  
+							RelationshipVersion newRelationshipVersion = new RelationshipVersion(r, !r.getPrimordialUuid().equals(lastSeenRefex));
+							count++;
 							relationshipsTable.getItems().add(newRelationshipVersion);
 						}
 						lastSeenRefex = r.getPrimordialUuid();
@@ -614,6 +676,7 @@ public class RelationshipTableView
 					AppContext.getCommonDialogs().showErrorDialog("Error reading relationships", e);
 					LOG.error("Unexpected error reading relationships", e);
 				}
+				summaryText.set(count + " relationships");
 			});
 		});
 	}
@@ -621,5 +684,10 @@ public class RelationshipTableView
 	public Node getNode()
 	{
 		return relationshipsTable;
+	}
+	
+	public ReadOnlyStringProperty getSummaryText()
+	{
+		return summaryText.getReadOnlyProperty();
 	}
 }

@@ -75,7 +75,7 @@
 											<children>
 												<HBox fx:id="sourceRelTitleHBox" maxWidth="1.7976931348623157E308">
 													<children>
-														<Label contentDisplay="CENTER" styleClass="boldLabel" text="Source Relationships" />
+														<Label contentDisplay="CENTER" styleClass="boldLabel" text="Relationships" />
 													</children>
 												</HBox>
 											</children>

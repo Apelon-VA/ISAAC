@@ -24,6 +24,7 @@ import gov.va.isaac.config.generated.StatedInferredOptions;
 import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.config.profiles.UserProfileBindings;
 import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.config.profiles.UserProfileBindings.RelationshipDirection;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
@@ -146,17 +147,17 @@ public class SnomedConceptViewController {
 		
 		stampToggle.setText("");
 		stampToggle.setGraphic(Images.STAMP.createImageView());
-		stampToggle.setTooltip(new Tooltip("Show/Hide Stamp Columns"));
+		stampToggle.setTooltip(new Tooltip("Show Stamp columns when pressed, Hides Stamp columns when not pressed"));
 		stampToggle.setSelected(true);
 
 		activeOnlyToggle.setText("");
 		activeOnlyToggle.setGraphic(Images.FILTER_16.createImageView());
-		activeOnlyToggle.setTooltip(new Tooltip("Show Active Only / Show All"));
+		activeOnlyToggle.setTooltip(new Tooltip("Filter to only show active items when pressed, Show all items when not pressed"));
 		activeOnlyToggle.setSelected(true);
 		
 		historyToggle.setText("");
 		historyToggle.setGraphic(Images.HISTORY.createImageView());
-		historyToggle.setTooltip(new Tooltip("Show Current Only / Show Full History"));
+		historyToggle.setTooltip(new Tooltip("Shows full history when pressed, Only shows current items when not pressed"));
 		
 		descriptionTypeButton.setText("");
 		ImageView displayFsn = Images.DISPLAY_FSN.createImageView();
@@ -279,10 +280,63 @@ public class SnomedConceptViewController {
 			HBox.setMargin(taxonomyViewMode, new Insets(0, 0, 0, 5.0));
 			sourceRelTitleHBox.getChildren().add(taxonomyViewMode);
 			
+			Button relationshipViewMode = new Button();
+			relationshipViewMode.setPadding(new Insets(2.0));
+			ImageView taxonomySource = Images.TAXONOMY_SOURCE.createImageView();
+			taxonomySource.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayRelDirection().isEqualTo(RelationshipDirection.SOURCE));
+			Tooltip.install(taxonomySource, new Tooltip("Displaying the Source Relationships only, click to display Target"));
+			ImageView taxonomyTarget = Images.TAXONOMY_TARGET.createImageView();
+			taxonomyTarget.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayRelDirection().isEqualTo(RelationshipDirection.TARGET));
+			Tooltip.install(taxonomyTarget, new Tooltip("Displaying the Target Relationships only, click to display Source and Target"));
+			ImageView taxonomySourceAndTarget = Images.TAXONOMY_SOURCE_AND_TARGET.createImageView();
+			taxonomySourceAndTarget.visibleProperty().bind(AppContext.getService(UserProfileBindings.class).getDisplayRelDirection().isEqualTo(RelationshipDirection.SOURCE_AND_TARGET));
+			Tooltip.install(taxonomySourceAndTarget, new Tooltip("Displaying the Source and Target Relationships, click to display Source only"));
+			relationshipViewMode.setGraphic(new StackPane(taxonomySource, taxonomyTarget, taxonomySourceAndTarget));
+			relationshipViewMode.setOnAction(new EventHandler<ActionEvent>()
+			{
+				@Override
+				public void handle(ActionEvent event)
+				{
+					try
+					{
+						UserProfile up = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
+						if (up.getDisplayRelDirection() == RelationshipDirection.SOURCE)
+						{
+							up.setDisplayRelDirection(RelationshipDirection.TARGET);
+						}
+						else if (up.getDisplayRelDirection() == RelationshipDirection.TARGET)
+						{
+							up.setDisplayRelDirection(RelationshipDirection.SOURCE_AND_TARGET);
+						}
+						else if (up.getDisplayRelDirection() == RelationshipDirection.SOURCE_AND_TARGET)
+						{
+							up.setDisplayRelDirection(RelationshipDirection.SOURCE);
+						}
+						else 
+						{
+							LOG.error("Unhandeled case!");
+						}
+						ExtendedAppContext.getService(UserProfileManager.class).saveChanges(up);
+					}
+					catch (Exception e)
+					{
+						LOG.error("Unexpected error storing pref change", e);
+					}
+				}
+			});
+			HBox.setMargin(relationshipViewMode, new Insets(0, 0, 0, 5.0));
+			sourceRelTitleHBox.getChildren().add(relationshipViewMode);
+
 			RelationshipTableView rtv = new RelationshipTableView(stampToggle.selectedProperty(), historyToggle.selectedProperty(), activeOnlyToggle.selectedProperty());
 			rtv.setConcept(conceptVersionBI);
 			relationshipsTableHolder.getChildren().add(rtv.getNode());
 			VBox.setVgrow(rtv.getNode(), Priority.ALWAYS);
+			
+			Label summary = new Label();
+			HBox.setMargin(summary, new Insets(0, 0, 0, 5.0));
+			sourceRelTitleHBox.getChildren().add(summary);
+			summary.textProperty().bind(rtv.getSummaryText());
+			
 		}
 		catch (Exception e)
 		{

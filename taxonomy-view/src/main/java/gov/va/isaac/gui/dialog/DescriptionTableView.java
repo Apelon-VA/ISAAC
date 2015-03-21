@@ -36,6 +36,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -108,6 +110,7 @@ public class DescriptionTableView
 		
 		refreshRequiredListenerHack = new UpdateableBooleanBinding()
 		{
+			private volatile AtomicBoolean refreshQueued = new AtomicBoolean(false);
 			{
 				setComputeOnInvalidate(true);
 				addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(),
@@ -119,14 +122,36 @@ public class DescriptionTableView
 			@Override
 			protected boolean computeValue()
 			{
-				LOG.info("Kicking off refresh() due to change of an observed user property}");
-				try
+				synchronized (refreshQueued)
 				{
-					refresh(null);
-				}
-				catch (Exception e)
-				{
-					LOG.error("Unexpected");
+					if (refreshQueued.get())
+					{
+						LOG.info("Skip description refresh() due to pending refresh");
+						return false;
+					}
+					else
+					{
+						refreshQueued.set(true);
+						LOG.debug("Desc refresh() due to change of an observed user property in " + DescriptionTableView.this);
+						Utility.schedule(() ->
+						{
+							Platform.runLater(() ->
+							{
+								try
+								{
+									synchronized (refreshQueued)
+									{
+										refreshQueued.set(false);
+									}
+									refresh(null);
+								}
+								catch (Exception e)
+								{
+									LOG.error("Unexpected error running refresh", e);
+								}
+							});
+						}, 10, TimeUnit.MILLISECONDS);
+					}
 				}
 				return false;
 			}
