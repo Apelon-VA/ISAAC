@@ -27,7 +27,6 @@ import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
@@ -35,6 +34,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.concurrent.Task;
@@ -77,7 +78,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-class SctTreeView implements ShutdownBroadcastListenerI {
+class SctTreeView {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeView.class);
 
@@ -102,11 +103,10 @@ class SctTreeView implements ShutdownBroadcastListenerI {
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
     
     @SuppressWarnings("unused")
-	private UpdateableBooleanBinding refreshRequiredListenerHack;
+    private UpdateableBooleanBinding refreshRequiredListenerHack;
 
     SctTreeView() {
         treeView_ = new TreeView<>();
-        AppContext.getRuntimeGlobals().registerShutdownListener(this);
         bp_ = new BorderPane();
         
         Button descriptionType = new Button();
@@ -308,26 +308,58 @@ class SctTreeView implements ShutdownBroadcastListenerI {
             }
 
             @Override
-            protected void succeeded() {
+            protected void succeeded()
+            {
                 LOG.debug("getFxConcept() (called by init()) succeeded");
 
                 ConceptChronicleDdo result = this.getValue();
                 SctTreeView.this.finishTreeSetup(result);
-                
+
                 refreshRequiredListenerHack = new UpdateableBooleanBinding()
                 {
+                    private volatile AtomicBoolean refreshQueued = new AtomicBoolean(false);
                     {
                         setComputeOnInvalidate(true);
                         addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(), 
-                                AppContext.getService(UserProfileBindings.class).getDisplayFSN(),
+                                AppContext.getService(UserProfileBindings.class).getDisplayFSN(), 
                                 AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy());
                     }
-                    
+
                     @Override
                     protected boolean computeValue()
                     {
-                        LOG.info("Kicking off refresh() due to change of an observed user property}");
-                        SctTreeView.this.refresh();
+                        synchronized (refreshQueued)
+                        {
+                            if (refreshQueued.get())
+                            {
+                                LOG.info("Skip tree refresh() due to pending refresh");
+                                return false;
+                            }
+                            else
+                            {
+                                refreshQueued.set(true);
+                                LOG.debug("Kicking off tree refresh() due to change of an observed user property");
+                                Utility.schedule(() -> 
+                                {
+                                    Platform.runLater(() -> 
+                                    {
+                                        try
+                                        {
+                                            synchronized (refreshQueued)
+                                            {
+                                                refreshQueued.set(false);
+                                            }
+                                            
+                                            SctTreeView.this.refresh();
+                                        }
+                                        catch (Exception e)
+                                        {
+                                            LOG.error("Unexpected error running refresh", e);
+                                        }
+                                    });
+                                }, 10, TimeUnit.MILLISECONDS);
+                            }
+                        }
                         return false;
                     }
                 };
@@ -622,9 +654,10 @@ class SctTreeView implements ShutdownBroadcastListenerI {
      * since the application is exiting.
      * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
      */
-    @Override
-    public void shutdown()
+    public static void globalShutdown()
     {
         shutdownRequested = true;
+        SctTreeItem.shutdown();
+        LOG.info("Tree shutdown called!");
     }
 }
