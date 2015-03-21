@@ -21,6 +21,7 @@ package gov.va.isaac.config.profiles;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.RoleOption;
 import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfileBindings.RelationshipDirection;
 import gov.va.isaac.util.PasswordHasher;
 import java.io.File;
 import java.io.IOException;
@@ -66,6 +67,9 @@ public class UserProfile
 	
 	@XmlElement 
 	private boolean displayFSN = UserProfileDefaults.getDefaultDisplayFSN();
+	
+	@XmlElement 
+	private RelationshipDirection displayRelDirection = UserProfileDefaults.getDefaultDisplayRelDirection();
 	
 	@XmlElement 
 	private String workflowUsername = null;
@@ -127,6 +131,7 @@ public class UserProfile
 		clone.hashedPassword = this.hashedPassword;
 		clone.statedInferredPolicy = this.statedInferredPolicy;
 		clone.displayFSN = this.displayFSN;
+		clone.displayRelDirection = this.displayRelDirection;
 		clone.syncPasswordEncrypted = this.syncPasswordEncrypted;
 		clone.syncUsername = this.syncUsername;
 		clone.workflowPasswordEncrypted = this.workflowPasswordEncrypted;
@@ -260,6 +265,15 @@ public class UserProfile
 		return displayFSN;
 	}
 	
+	public void setDisplayRelDirection(RelationshipDirection displayRelationshipDirection)
+	{
+		this.displayRelDirection = displayRelationshipDirection;
+	}
+	
+	public RelationshipDirection getDisplayRelDirection()
+	{
+		return displayRelDirection;
+	}
 	
 	public String getWorkflowUsername()
 	{

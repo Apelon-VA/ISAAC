@@ -40,15 +40,18 @@ import org.jvnet.hk2.annotations.Service;
 @Singleton
 public class UserProfileBindings
 {
+	public enum RelationshipDirection {SOURCE, TARGET, SOURCE_AND_TARGET};
+	
 	ReadOnlyObjectWrapper<StatedInferredOptions> statedInferredPolicy = new ReadOnlyObjectWrapper<>();
 	ReadOnlyBooleanWrapper displayFSN = new ReadOnlyBooleanWrapper();
+	ReadOnlyObjectWrapper<RelationshipDirection> displayRelDirection = new ReadOnlyObjectWrapper<>();
 	ReadOnlyStringWrapper workflowUsername = new ReadOnlyStringWrapper();
 	ReadOnlyObjectWrapper<UUID> viewCoordinatePath = new ReadOnlyObjectWrapper<>();
 	ReadOnlyObjectWrapper<UUID> editCoordinatePath = new ReadOnlyObjectWrapper<>();
 	
 	public Property<?>[] getAll()
 	{
-		return new Property<?>[] {statedInferredPolicy, displayFSN, workflowUsername, viewCoordinatePath, editCoordinatePath};
+		return new Property<?>[] {statedInferredPolicy, displayFSN, displayRelDirection, workflowUsername, viewCoordinatePath, editCoordinatePath};
 	}
 	
 	/**
@@ -59,11 +62,19 @@ public class UserProfileBindings
 		return statedInferredPolicy.getReadOnlyProperty();
 	}
 	/**
-	 * @return the displayFSN
+	 * @return displayFSN when true, display the preferred term when false
 	 */
 	public ReadOnlyBooleanProperty getDisplayFSN()
 	{
 		return displayFSN.getReadOnlyProperty();
+	}
+	
+	/**
+	 * @return which direction of relationships should be displayed
+	 */
+	public ReadOnlyObjectProperty<RelationshipDirection> getDisplayRelDirection()
+	{
+		return displayRelDirection.getReadOnlyProperty();
 	}
 	/**
 	 * @return the workflowUsername
@@ -89,10 +100,29 @@ public class UserProfileBindings
 	
 	protected void update(UserProfile up)
 	{
-		displayFSN.set(up.getDisplayFSN());
-		editCoordinatePath.set(up.getEditCoordinatePath());
-		statedInferredPolicy.set(up.getStatedInferredPolicy());
-		viewCoordinatePath.set(up.getViewCoordinatePath());
-		workflowUsername.set(up.getWorkflowUsername());
+		if (displayFSN.get() != up.getDisplayFSN())
+		{
+			displayFSN.set(up.getDisplayFSN());
+		}
+		if (displayRelDirection.get() != up.getDisplayRelDirection())
+		{
+			displayRelDirection.set(up.getDisplayRelDirection());
+		}
+		if ((editCoordinatePath.get() == null && up.getEditCoordinatePath() != null) || !editCoordinatePath.get().equals(up.getEditCoordinatePath()))
+		{
+			editCoordinatePath.set(up.getEditCoordinatePath());
+		}
+		if (statedInferredPolicy.get() != up.getStatedInferredPolicy())
+		{
+			statedInferredPolicy.set(up.getStatedInferredPolicy());
+		}
+		if ((viewCoordinatePath.get() == null && up.getViewCoordinatePath() != null) || !viewCoordinatePath.get().equals(up.getViewCoordinatePath()))
+		{
+			viewCoordinatePath.set(up.getViewCoordinatePath());
+		}
+		if ((workflowUsername.get() == null && up.getWorkflowUsername() != null) || !workflowUsername.get().equals(up.getWorkflowUsername()))
+		{
+			workflowUsername.set(up.getWorkflowUsername());
+		}
 	}
 }

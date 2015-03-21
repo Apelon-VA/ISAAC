@@ -26,6 +26,7 @@ package gov.va.isaac.config.profiles;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfileBindings.RelationshipDirection;
 import java.util.UUID;
 
 /**
@@ -43,6 +44,11 @@ public final class UserProfileDefaults {
 
 	public static boolean getDefaultDisplayFSN() { 
 		return true;
+	}
+	
+	public static RelationshipDirection getDefaultDisplayRelDirection()
+	{
+		return RelationshipDirection.SOURCE;
 	}
 
 	public static boolean getDefaultLaunchWorkflowForEachCommit() {
