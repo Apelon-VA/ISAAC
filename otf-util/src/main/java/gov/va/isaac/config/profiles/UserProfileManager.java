@@ -111,8 +111,6 @@ public class UserProfileManager implements ServicesToPreloadI
 		
 		rereadProfile();
 
-		UserProfile old = loggedInUser_;
-		
 		temp.store(new File(new File(profilesFolder_, temp.getUserLogonName()), PREFS_FILE_NAME));
 		
 		loggedInUser_ = temp;
@@ -149,8 +147,13 @@ public class UserProfileManager implements ServicesToPreloadI
 			authenticate(userLogonName, password);
 			return true;
 		}
+		catch (InvalidUserException | InvalidPasswordException e)
+		{
+			return false;
+		}
 		catch (Exception e)
 		{
+			logger.warn("Exception during authenticate:", e);
 			return false;
 		}
 	}
@@ -159,7 +162,7 @@ public class UserProfileManager implements ServicesToPreloadI
 	 * Throws an exception if authentication fails, otherwise, logs in the user.
 	 * @throws InvalidUserException
 	 */
-	public void authenticate(String userLogonName, String password) throws InvalidUserException
+	public void authenticate(String userLogonName, String password) throws InvalidUserException, InvalidPasswordException
 	{
 		if (isAutomationModeEnabled())
 		{
