@@ -5,6 +5,7 @@ import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
@@ -94,13 +96,13 @@ public class MappingController {
 		
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
-		FxUtils.assignImageToButton(activeOnlyToggle, 	Images.FILTER_16.createImageView(), "Show Active Only / Show All");
+		FxUtils.assignImageToButton(activeOnlyToggle, 		Images.FILTER_16.createImageView(), "Show Active Only / Show All");
 		FxUtils.assignImageToButton(plusMappingSetButton, 	Images.PLUS.createImageView(), 		"Create Mapping Set");
-		FxUtils.assignImageToButton(minusMappingSetButton, Images.MINUS.createImageView(), 	"Retire Mapping Set");
+		FxUtils.assignImageToButton(minusMappingSetButton, 	Images.MINUS.createImageView(), 	"Retire Mapping Set");
 		FxUtils.assignImageToButton(editMappingSetButton, 	Images.EDIT.createImageView(), 		"Edit Mapping Set");
 		FxUtils.assignImageToButton(plusMappingItemButton, 	Images.PLUS.createImageView(), 		"Create Mapping");
-		FxUtils.assignImageToButton(minusMappingItemButton, 	Images.MINUS.createImageView(), 	"Retire Mapping");
-		FxUtils.assignImageToButton(commentButton, 		Images.BALLOON.createImageView(), 	"View Comments");
+		FxUtils.assignImageToButton(minusMappingItemButton, Images.MINUS.createImageView(), 	"Retire Mapping");
+		FxUtils.assignImageToButton(commentButton, 			Images.BALLOON.createImageView(), 	"View Comments");
 		
 		ToggleGroup activeOnlyToggleGroup = new ToggleGroup();
 		activeOnlyToggle.setToggleGroup(activeOnlyToggleGroup);
@@ -130,6 +132,43 @@ public class MappingController {
 				itemView.showView(null);
 			}
 		});
+		
+		minusMappingSetButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				ObservableList<MappingSet> selectedMappingSets = getSelectedMappingSets();
+				if (selectedMappingSets.size() >= 0) {
+					String clause = (selectedMappingSets.size() == 1) ? selectedMappingSets.get(0).getName() : "these " + Integer.toString(selectedMappingSets.size()) + " Mapping Sets";
+					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + clause + "?");
+
+					if (response == DialogResponse.YES) {
+						for (MappingSet mappingSet : selectedMappingSets) {
+							mappingSet.retire();
+						}
+						readData();
+					}
+				}
+			}
+		});
+		
+		minusMappingItemButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				ObservableList<MappingItem> selectedMappingItems = getSelectedMappingItems();
+				if (selectedMappingItems.size() >= 0) {
+					String clause = (selectedMappingItems.size() == 1) ? "this Mapping Item" : "these " + Integer.toString(selectedMappingItems.size()) + " Mapping Items";
+					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + clause + "?");
+
+					if (response == DialogResponse.YES) {
+						for (MappingItem mappingItem : selectedMappingItems) {
+							mappingItem.retire();
+						}
+						updateMappingItemsList(getSelectedMappingSet());
+					}
+				}
+			}
+		});
+
 		
 		commentButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -183,12 +222,14 @@ public class MappingController {
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MappingSet> c)
 			{
-				if (c.getList().size() == 1)
-				{
-					updateItemsList((MappingSet) c.getList().get(0));
+				MappingSet selectedMappingSet = getSelectedMappingSet();
+				if (selectedMappingSet != null) {
+					updateMappingItemsList(selectedMappingSet);
 				}
 			}
 		});
+		
+		mappingSetTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
 		for (TableColumn<MappingItem, ?> x : mappingItemTableView.getColumns())
 		{
@@ -219,6 +260,24 @@ public class MappingController {
 			});
 		}
 		
+		mappingItemTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<MappingItem>() {
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MappingItem> c) {
+				MappingItem selectedMappingItem = getSelectedMappingItem();
+				if (c.getList().size() >= 1) {
+					selectedMappingItem = (MappingItem) c.getList().get(0);
+				} else {
+					selectedMappingItem = null;
+				}
+				minusMappingItemButton.setDisable(selectedMappingItem == null);
+				commentButton.setDisable(selectedMappingItem == null);
+				
+				mappingItemSummaryLabel.setText((selectedMappingItem == null)? "" : selectedMappingItem.getSummary());
+			}
+		});
+		
+		mappingItemTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+		
 		mappingSetSummaryLabel.setText("");
 		mappingItemSummaryLabel.setText("");
 		mappingItemListTitleLabel.setText("(no Mapping Set selected)");
@@ -227,29 +286,38 @@ public class MappingController {
 	}
 		
 	
-	private void updateItemsList(MappingSet mappingSet)
+	private void updateMappingItemsList(MappingSet mappingSet)
 	{
 		ObservableList<MappingItem> mappingItems;
-		try
-		{
-			//mappingItems = FXCollections.observableList(MappingDataAccess.getMappingItems(mappingSetId));
-			mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
-		}
-		catch (IOException e)
-		{
-			LOG.error("unexpected", e);
-			//TODO GUI prompt;
-			mappingItems = FXCollections.observableArrayList();
-		}
+		mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
 		mappingItemTableView.setItems(mappingItems);
-
+		if (mappingItems.size() == 0) {
+			mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
+		}
+		
 		mappingItemListTitleLabel.setText(mappingSet.getName());
 		plusMappingItemButton.setDisable(false);
 		minusMappingSetButton.setDisable(false);
 		editMappingSetButton.setDisable(false);
-		mappingSetSummaryLabel.setText("Summary here.");
+		mappingSetSummaryLabel.setText(mappingSet.getSummary());
 	}
 
+	private MappingSet getSelectedMappingSet() {
+		return mappingSetTableView.getSelectionModel().getSelectedItem();
+	}
+	
+	private MappingItem getSelectedMappingItem() {
+		return mappingItemTableView.getSelectionModel().getSelectedItem();
+	}
+	
+	private ObservableList<MappingSet> getSelectedMappingSets() {
+		return mappingSetTableView.getSelectionModel().getSelectedItems();
+	}
+	
+	private ObservableList<MappingItem> getSelectedMappingItems() {
+		return mappingItemTableView.getSelectionModel().getSelectedItems();
+	}
+	
 	public AnchorPane getRoot()	{
 		return mainPane;
 	}

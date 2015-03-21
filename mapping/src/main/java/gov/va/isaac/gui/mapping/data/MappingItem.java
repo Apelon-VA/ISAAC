@@ -166,6 +166,11 @@ public class MappingItem
 		return null;
 	}
 	
+	public String getSummary() {
+		//TODO determine summary
+		return "<mapping item summary>";
+	}
+	
 	/**
 	 * @return Any comments attached to this mapping set.
 	 */
@@ -213,11 +218,7 @@ public class MappingItem
 	 */
 	public static List<MappingItem> getMappingItems(UUID mappingSetID) throws IOException {
 		List<MappingItem> mappingItems;
-		try {
-			mappingItems = MappingItemDAO.getMappingItems(mappingSetID);
-		} catch (IOException e) {
-			throw new RuntimeException("Unexpected error", e);
-		}
+		mappingItems = MappingItemDAO.getMappingItems(mappingSetID);
 		return mappingItems;
 	}
 

@@ -94,7 +94,7 @@ public class MappingSet
 
 		// TODO Remove for primetime
 		// Generate random mapping items
-		MappingItem.generateRandomMappingItems(this.getPrimordialUUID());
+		//MappingItem.generateRandomMappingItems(this.getPrimordialUUID());
 		
 	}
 	
@@ -102,8 +102,15 @@ public class MappingSet
 		MappingSetDAO.updateMappingSet(this);
 	}
 	
-	public List<MappingItem> getMappingItems() throws IOException {
-		return MappingItem.getMappingItems(this.getPrimordialUUID());
+	public List<MappingItem> getMappingItems() {
+		List<MappingItem> mappingItems = null;
+		try {
+			mappingItems = MappingItem.getMappingItems(this.getPrimordialUUID());
+		} catch (Exception e) {
+			LOG.error("Error retrieving Mapping Items for " + this.getName(), e);
+			mappingItems = new ArrayList<MappingItem>();
+		}
+		return mappingItems;
 	}
 	
 	//TODO: vk - all of these javadocs
@@ -174,6 +181,16 @@ public class MappingSet
 	public void setDescription(String descInput) 
 	{
 		description = descInput;
+	}
+	
+	/**
+	 * 
+	 * @return The summary of the mapping set
+	 */
+	public String getSummary() {
+		List<MappingItem> mappingItems;
+		mappingItems = this.getMappingItems();
+		return Integer.toString(mappingItems.size()) + " Mapping Items";
 	}
 	
 	/**
