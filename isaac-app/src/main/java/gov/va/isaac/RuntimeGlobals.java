@@ -66,6 +66,7 @@ public class RuntimeGlobals implements RuntimeGlobalsI
 	@Override
 	public void registerShutdownListener(ShutdownBroadcastListenerI listener)
 	{
+		//TODO this needs to use weak references - but would rather just get rid of the interface, and allow HK2 to manage.
 		shutdownListeners_.add(listener);
 	}
 
