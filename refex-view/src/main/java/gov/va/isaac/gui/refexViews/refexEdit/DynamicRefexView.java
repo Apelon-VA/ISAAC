@@ -47,6 +47,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.WeakHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -257,7 +259,8 @@ public class DynamicRefexView implements RefexViewI
 				@Override
 				protected boolean computeValue()
 				{
-					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem().getValue() != null)
+					if (ttv_.getSelectionModel().getSelectedItems().size() > 0 && ttv_.getSelectionModel().getSelectedItem() != null 
+							&& ttv_.getSelectionModel().getSelectedItem().getValue() != null)
 					{
 						try
 						{
@@ -621,17 +624,46 @@ public class DynamicRefexView implements RefexViewI
 			
 			refreshRequiredListenerHack = new UpdateableBooleanBinding()
 			{
+				private volatile AtomicBoolean refreshQueued = new AtomicBoolean(false);
 				{
 					setComputeOnInvalidate(true);
-					addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(),
-							AppContext.getService(UserProfileBindings.class).getDisplayFSN());
+					addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(), AppContext.getService(UserProfileBindings.class).getDisplayFSN());
 				}
 
 				@Override
 				protected boolean computeValue()
 				{
-					logger_.info("Kicking off refresh() due to change of an observed user property}");
-					refresh();
+					synchronized (refreshQueued)
+					{
+						if (refreshQueued.get())
+						{
+							logger_.info("Skip DynRefex refresh() due to pending refresh");
+							return false;
+						}
+						else
+						{
+							refreshQueued.set(true);
+							logger_.debug("DynRefex refresh() due to change of an observed user property");
+							Utility.schedule(() -> 
+							{
+								Platform.runLater(() -> 
+								{
+									synchronized (refreshQueued)
+									{
+										refreshQueued.set(false);
+									}
+									try
+									{
+										refresh();
+									}
+									catch (Exception e)
+									{
+										logger_.error("Unexpected error running refresh", e);
+									}
+								});
+							}, 10, TimeUnit.MILLISECONDS);
+						}
+					}
 					return false;
 				}
 			};
@@ -667,7 +699,7 @@ public class DynamicRefexView implements RefexViewI
 		showViewUsageButton_.invalidate();
 		newComponentHint_ = null;
 		noRefresh_ = false;
-		refresh();
+		initColumnsLoadData();
 	}
 
 	/**
@@ -685,7 +717,7 @@ public class DynamicRefexView implements RefexViewI
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		newComponentHint_ = null;
 		noRefresh_ = false;
-		refresh();
+		initColumnsLoadData();
 	}
 	
 	private void handleExternalBindings(ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
@@ -751,30 +783,21 @@ public class DynamicRefexView implements RefexViewI
 		{
 			return;
 		}
-		//This is silly - throwing out the entire table...
-		//But JavaFX seems to be broken, and the code that should work - simply removing
-		//all children from the rootNode - doesn't work.
-		//So build a completely new table upon every refresh, for now.
-		rootNode_.getChildren().remove(ttv_);
-		ttv_ = new TreeTableView<>();
-		ttv_.setTableMenuButtonVisible(true);
-		VBox.setVgrow(ttv_, Priority.ALWAYS);
-		rootNode_.getChildren().add(0, ttv_);
-		
-		treeRoot_ = new TreeItem<>();
-		treeRoot_.setExpanded(true);
-		ttv_.setShowRoot(false);
-		ttv_.setRoot(treeRoot_);
-		summary_.setText("");
 
-		ttv_.setPlaceholder(progressBar_);
-		progressBar_.setProgress(-1);
-		currentRowSelected_.clearBindings();
-		currentRowSelected_.addBinding(ttv_.getSelectionModel().getSelectedItems());
-		selectedRowIsActive_.clearBindings();
-		selectedRowIsActive_.addBinding(ttv_.getSelectionModel().getSelectedItems());
-		
-		loadData();
+		Utility.execute(() ->
+		{
+			try
+			{
+				loadRealData();
+			}
+			catch (Exception e)
+			{
+				logger_.error("Unexpected error building the sememe display", e);
+				//null check, as the error may happen before the scene is visible
+				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the sememe display", e.getMessage(), 
+						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+			}
+		});
 	}
 	
 	private void storeTooltip(Map<String, List<String>> store, String key, String value)
@@ -788,7 +811,7 @@ public class DynamicRefexView implements RefexViewI
 		list.add(value);
 	}
 
-	private void loadData()
+	private void initColumnsLoadData()
 	{
 		Utility.execute(() -> {
 			try
@@ -1210,33 +1233,7 @@ public class DynamicRefexView implements RefexViewI
 				
 				TableHeaderRowTooltipInstaller.installTooltips(ttv_, toolTipStore);
 
-				ArrayList<TreeItem<RefexDynamicGUI>> rowData;
-				//Now add the data
-				if (setFromType_.getComponentNid() != null)
-				{
-					rowData = getDataRows(setFromType_.getComponentBI(), null);
-				}
-				else
-				{
-					rowData = getDataRows(setFromType_.getAssemblyNid());
-				}
-				
-				Utility.execute(() ->
-				{
-					checkForUncommittedRefexes(rowData);
-				});
-
-				Platform.runLater(() ->
-				{
-					addButton_.setDisable(false);
-					treeRoot_.getChildren().addAll(rowData);
-					summary_.setText(rowData.size() + " entries");
-					ttv_.setPlaceholder(placeholderText);
-					ttv_.getSelectionModel().clearAndSelect(0);
-				});
-				
-				// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
-				addFilterCacheListeners();
+				loadRealData();
 			}
 			catch (Exception e)
 			{
@@ -1246,6 +1243,40 @@ public class DynamicRefexView implements RefexViewI
 						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
 			}
 		});
+	}
+	
+	private synchronized void loadRealData() throws IOException, ContradictionException, NumberFormatException, InterruptedException, ParseException
+	{
+		//Now add the data
+		ArrayList<TreeItem<RefexDynamicGUI>> rowData;
+		if (setFromType_.getComponentNid() != null)
+		{
+			rowData = getDataRows(setFromType_.getComponentBI(), null);
+		}
+		else
+		{
+			rowData = getDataRows(setFromType_.getAssemblyNid());
+		}
+		
+		logger_.info("Found {} rows of data in a dynamic refex", rowData.size());
+		
+		Utility.execute(() ->
+		{
+			checkForUncommittedRefexes(rowData);
+		});
+		
+		Platform.runLater(() ->
+		{
+			treeRoot_.getChildren().clear();
+			addButton_.setDisable(false);
+			treeRoot_.getChildren().addAll(rowData);
+			summary_.setText(rowData.size() + " entries");
+			ttv_.setPlaceholder(placeholderText);
+			ttv_.getSelectionModel().clearSelection();
+		});
+		
+		// ADD LISTENERS TO headerNode.getUserFilters() TO EXECUTE REFRESH WHENEVER FILTER SETS CHANGE
+		addFilterCacheListeners();
 	}
 	
 	private TreeTableColumn<RefexDynamicGUI, RefexDynamicGUI> buildComponentCellColumn(DynamicRefexColumnType type)
