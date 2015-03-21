@@ -29,6 +29,9 @@ import gov.va.isaac.interfaces.gui.ApplicationWindowI;
  * This interface is intended for modules that aren't managed by HK2.  If you have a singleton service which is 
  * managed by HK2, you can get a shutdown notification for free by instead implementing {@link ServicesToPreloadI}
  * 
+ * Be very cautious about creating memory leaks with this - this olds a hard reference to the services that need 
+ * notification.
+ * 
  * @see ApplicationWindowI
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
