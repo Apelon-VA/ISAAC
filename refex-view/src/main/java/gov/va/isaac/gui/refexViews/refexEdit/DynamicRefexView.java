@@ -49,6 +49,7 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javafx.application.Platform;
 import javafx.beans.binding.FloatBinding;
 import javafx.beans.property.BooleanProperty;
@@ -146,7 +147,7 @@ public class DynamicRefexView implements RefexViewI
 	IndexedGenerationCallable newComponentIndexGen_ = null; //Useful when adding from the assemblage perspective - if they are using an index, we need to wait till the new thing is indexed
 	private DialogResponse dr_ = null;
 	private final Object dialogThreadBlock_ = new Object();
-	private volatile boolean noRefresh_ = false;
+	private AtomicInteger noRefresh_ = new AtomicInteger(0);
 	
 	@SuppressWarnings("unused")
 	private UpdateableBooleanBinding refreshRequiredListenerHack;
@@ -201,6 +202,7 @@ public class DynamicRefexView implements RefexViewI
 	{
 		if (rootNode_ == null)
 		{
+			noRefresh_.getAndIncrement();
 			ttv_ = new TreeTableView<>();
 			ttv_.setTableMenuButtonVisible(true);
 			ttv_.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
@@ -667,6 +669,7 @@ public class DynamicRefexView implements RefexViewI
 					return false;
 				}
 			};
+			noRefresh_.decrementAndGet();
 		}
 	}
 
@@ -677,9 +680,7 @@ public class DynamicRefexView implements RefexViewI
 	public Region getView()
 	{
 		//setting up the binding stuff is causing refresh calls
-		noRefresh_ = true;
 		initialInit();
-		noRefresh_ = false;
 		return rootNode_;
 	}
 
@@ -692,13 +693,13 @@ public class DynamicRefexView implements RefexViewI
 			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		//disable refresh, as the bindings mucking causes many refresh calls
-		noRefresh_ = true;
+		noRefresh_.getAndIncrement();
 		initialInit();
 		setFromType_ = new InputType(componentNid, false);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		showViewUsageButton_.invalidate();
 		newComponentHint_ = null;
-		noRefresh_ = false;
+		noRefresh_.getAndDecrement();
 		initColumnsLoadData();
 	}
 
@@ -711,12 +712,12 @@ public class DynamicRefexView implements RefexViewI
 			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton)
 	{
 		//disable refresh, as the bindings mucking causes many refresh calls
-		noRefresh_ = true;
+		noRefresh_.getAndIncrement();
 		initialInit();
 		setFromType_ = new InputType(assemblageConceptNid, true);
 		handleExternalBindings(showStampColumns, showActiveOnly, showFullHistory, displayFSNButton);
 		newComponentHint_ = null;
-		noRefresh_ = false;
+		noRefresh_.getAndDecrement();
 		initColumnsLoadData();
 	}
 	
@@ -779,8 +780,9 @@ public class DynamicRefexView implements RefexViewI
 	
 	protected void refresh()
 	{
-		if (noRefresh_)
+		if (noRefresh_.get() > 0)
 		{
+			logger_.info("Skip refresh of dynamic refex due to wait count {}" + noRefresh_.get());
 			return;
 		}
 
@@ -813,9 +815,10 @@ public class DynamicRefexView implements RefexViewI
 
 	private void initColumnsLoadData()
 	{
+		noRefresh_.getAndIncrement();
 		Utility.execute(() -> {
 			try
-			{				
+			{
 				removeFilterCacheListeners();
 				
 				final ArrayList<TreeTableColumn<RefexDynamicGUI, ?>> treeColumns = new ArrayList<>();
@@ -1241,6 +1244,10 @@ public class DynamicRefexView implements RefexViewI
 				//null check, as the error may happen before the scene is visible
 				AppContext.getCommonDialogs().showErrorDialog("Error", "There was an unexpected error building the sememe display", e.getMessage(), 
 						(rootNode_.getScene() == null ? null : rootNode_.getScene().getWindow()));
+			}
+			finally
+			{
+				noRefresh_.getAndDecrement();
 			}
 		});
 	}
