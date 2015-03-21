@@ -30,6 +30,7 @@ import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
 import javafx.fxml.FXMLLoader;
@@ -177,6 +178,14 @@ public class ConceptView implements PopupConceptViewI {
 
 		// Title will change after concept is set.
 		s.titleProperty().bind(controller.getTitle());
+		
+		s.onHiddenProperty().set((eventHandler) ->
+		{
+			s.setScene(null);
+			//No other way to force a timely release of all of the bindings that would still fire / still recalculate data..
+			Utility.schedule(() -> System.gc(), 250, TimeUnit.MILLISECONDS);
+		});
+		
 		s.show();
 		//doesn't come to the front unless you do this (on linux, at least)
 		Platform.runLater(() -> {s.toFront();});
