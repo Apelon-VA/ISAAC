@@ -55,7 +55,7 @@
 				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
 			</rowConstraints>
 			<children>
-				<Button fx:id="createButton" mnemonicParsing="false" text="Create">
+				<Button fx:id="createButton" minWidth="52.0" mnemonicParsing="false" text="Save">
 					<GridPane.margin>
 						<Insets right="20.0" />
 					</GridPane.margin>
