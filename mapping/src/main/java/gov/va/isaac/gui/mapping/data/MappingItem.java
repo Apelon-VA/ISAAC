@@ -66,7 +66,7 @@ public class MappingItem
 		}
 	}
 	
-	protected MappingItem(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
+	public MappingItem(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
 	{
 		try
 		{
@@ -101,7 +101,7 @@ public class MappingItem
 		}
 		catch (InvalidCAB | ContradictionException | PropertyVetoException | NoSuchAlgorithmException e)
 		{
-			throw new RuntimeException("Unexpected error", e);
+			throw new RuntimeException("Invalid mapping. Check Source, Target, and Qualifier.", e);
 		}
 	}
 
@@ -156,7 +156,7 @@ public class MappingItem
 		return null;
 	}
 	
-	public UUID getEditorStatusConcept()
+	public UUID getEditorStatus()
 	{
 		RefexDynamicDataBI[] data = refex_.getData();
 		if (data != null && data.length > 2)

@@ -2,6 +2,7 @@ package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.mapping.data.MappingItem;
+import gov.va.isaac.gui.mapping.data.MappingItemComment;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
@@ -10,6 +11,7 @@ import gov.va.isaac.util.OTFUtility;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 import java.util.UUID;
 
 import javafx.beans.property.SimpleStringProperty;
@@ -111,7 +113,7 @@ public class MappingController {
 		activeOnlyToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			@Override
 			public void changed(ObservableValue<? extends Toggle> ov, Toggle toggle, Toggle new_toggle) {
-	        	readData();
+	        	refreshMappingSets();
 			}
 		});
 		
@@ -135,14 +137,6 @@ public class MappingController {
 			}
 		});
 		
-		plusMappingItemButton.setOnAction(new EventHandler<ActionEvent>() {
-			@Override
-			public void handle(ActionEvent e) {
-				CreateMappingItemView itemView = AppContext.getService(CreateMappingItemView.class);
-				itemView.showView(null);
-			}
-		});
-		
 		minusMappingSetButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
@@ -155,8 +149,26 @@ public class MappingController {
 						for (MappingSet mappingSet : selectedMappingSets) {
 							mappingSet.retire();
 						}
-						readData();
+						refreshMappingSets();
 					}
+				}
+			}
+		});
+		
+
+		plusMappingItemButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				MappingSet selectedMappingSet = getSelectedMappingSet();
+				if (selectedMappingSet != null) {
+					MappingItem selectedMappingItem = getSelectedMappingItem();
+
+					CreateMappingItemView itemView = AppContext.getService(CreateMappingItemView.class);
+					itemView.setMappingSet(selectedMappingSet);
+					if (selectedMappingItem != null) {
+						itemView.setSourceConcept(selectedMappingItem.getSourceConcept());
+					}
+					itemView.showView(null);
 				}
 			}
 		});
@@ -259,6 +271,24 @@ public class MappingController {
 					{
 						return new SimpleStringProperty(OTFUtility.getDescription(param.getValue().getQualifierConcept()));
 					}
+					else if (param.getTableColumn().getText().equals("Comments"))
+					{
+						String commentValue = "";
+						List<MappingItemComment> comments = param.getValue().getComments();
+						if (comments.size() > 0) {
+							commentValue = comments.get(0).getCommentText();
+						}
+						if (comments.size() > 1) {
+							commentValue += " (+" + Integer.toString(comments.size() - 1) + " more)";
+						}
+						return new SimpleStringProperty(commentValue);
+					}
+					else if (param.getTableColumn().getText().equals("Status"))
+					{
+						UUID editorStatus = param.getValue().getEditorStatus();
+						String statusString = (editorStatus == null) ? "" : editorStatus.toString().trim(); 
+						return new SimpleStringProperty(statusString);
+					}
 					else
 					{
 						System.out.println(param.getTableColumn().getText());
@@ -331,7 +361,7 @@ public class MappingController {
 		return mainPane;
 	}
 	
-	protected void readData()
+	protected void refreshMappingSets()
 	{
 		ObservableList<MappingSet> mappingSets;
 		boolean activeOnly = activeOnlyToggle.isSelected();
@@ -348,4 +378,10 @@ public class MappingController {
 		mappingSetTableView.setItems(mappingSets);
 	}
 
+	protected void refreshMappingItems() {
+		MappingSet selectedMappingSet = getSelectedMappingSet();
+		if (selectedMappingSet != null) {
+			updateMappingItemsList(selectedMappingSet);
+		}
+	}
 }

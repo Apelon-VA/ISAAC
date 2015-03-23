@@ -2,7 +2,10 @@ package gov.va.isaac.gui.mapping;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.UUID;
 
+import gov.va.isaac.gui.mapping.data.MappingItem;
+import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import javafx.application.Platform;
@@ -52,11 +55,11 @@ public class CreateMappingItemView implements PopupViewI{
 	    
     }
 	
-	
-	public void setMappingItem() {
-		// Function TBD
-		
-		//Catch exceptions and throw up a dialog box
+	public void setMappingSet(MappingSet mappingSet) {
+		controller.setMappingSet(mappingSet);
 	}
 	
+	public void setSourceConcept(UUID sourceConcept) {
+		controller.setSourceConcept(sourceConcept);
+	}
 }
