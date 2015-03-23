@@ -115,11 +115,22 @@ public class MappingController {
 			}
 		});
 		
+		editMappingSetButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) {
+				MappingSet selectedMappingSet = getSelectedMappingSet();
+				if (selectedMappingSet != null) {
+					CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
+					cv.setMappingSet(getSelectedMappingSet());
+					cv.showView(null);
+				}
+			}
+		});
+		
 		plusMappingSetButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
 				CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
-				cv.setMapping("New Name", "New Desc", "New Purpose");
 				cv.showView(null);
 			}
 		});
@@ -128,7 +139,6 @@ public class MappingController {
 			@Override
 			public void handle(ActionEvent e) {
 				CreateMappingItemView itemView = AppContext.getService(CreateMappingItemView.class);
-				//itemView.setMapping();
 				itemView.showView(null);
 			}
 		});
@@ -174,7 +184,6 @@ public class MappingController {
 			@Override
 			public void handle(ActionEvent e) {
 				CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
-				//itemView.setMapping();
 				commentView.showView(null);
 			}
 		});

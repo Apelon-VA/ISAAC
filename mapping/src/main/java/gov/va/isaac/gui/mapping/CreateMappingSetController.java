@@ -7,6 +7,7 @@ import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.beans.property.StringProperty;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
@@ -44,6 +45,7 @@ public class CreateMappingSetController {
 	@FXML private GridPane		gridPane;
 	
 	private Label title = new Label();
+	private MappingSet mappingSet_ = null;
 	
 	public Region getRootNode() {
 		return mainPane;
@@ -106,14 +108,20 @@ public class CreateMappingSetController {
 		createButton.setDefaultButton(true);
 		createButton.disableProperty().bind(nameInputValid.not().or(descInputValid.not()));
 		createButton.setOnAction((event) -> {
-			// TODO: vk CREATE LOGIC TO PASS ON TO NEXT STEP
-			
 			try
 			{
-				// Option 1
-				MappingSet mappingSet = new MappingSet(nameInput.getText(), purposeInput.getText(), descInput.getText(), null);
-				
-				//TOOD: Pass the new map back to the previous window
+				if (mappingSet_ == null) {
+					// TODO status
+					MappingSet mappingSet = new MappingSet(nameInput.getText(), purposeInput.getText(), descInput.getText(), null);
+				} else {
+					// Edit mapping set
+					mappingSet_.setName(nameInput.getText());
+					mappingSet_.setPurpose(purposeInput.getText());
+					mappingSet_.setDescription(descInput.getText());
+					//TODO Status
+					mappingSet_.setEditorStatus(null);
+					mappingSet_.save();
+				}
 				
 				AppContext.getService(Mapping.class).refresh();
 				createButton.getScene().getWindow().hide();
@@ -128,6 +136,13 @@ public class CreateMappingSetController {
 		});
 		
 		cancelButton.setCancelButton(true);
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) { 
+				mappingSet_ = null;
+				cancelButton.getScene().getWindow().hide();
+			}
+		});
 		cancelButton.setOnKeyPressed(new EventHandler<KeyEvent>()  {
 			@Override
 			public void handle(KeyEvent event) {
@@ -137,6 +152,16 @@ public class CreateMappingSetController {
 				}
 			}
 		});
+	}
+	
+	public void setMappingSet(MappingSet mappingSet) {
+		title.setText("Edit Mapping Set");;
+		mappingSet_ = mappingSet;
+		nameInput.setText(mappingSet.getName());
+		purposeInput.setText(mappingSet.getPurpose());
+		descInput.setText(mappingSet.getDescription());
+		//TODO status
+		
 	}
 }
 
