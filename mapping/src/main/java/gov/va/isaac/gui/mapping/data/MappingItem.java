@@ -185,7 +185,8 @@ public class MappingItem
 		MappingItemComment comment;
 		
 		try {
-			comment = new MappingItemComment(this.getID(), commentText); 
+			//TODO do we want to utilize the other comment field (don't have to)
+			comment = new MappingItemComment(this.getID(), commentText, null); 
 		} catch (IOException e) {
 			throw new RuntimeException("Unexpected error", e);
 		}

@@ -28,7 +28,7 @@ public class MappingItemDAO {
 			{
 				throw new RuntimeException("Required index is not available");
 			}
-			List<SearchResult> refexes = indexer.queryAssemblageUsage(ExtendedAppContext.getDataStore().getNidForUuids(mappingSetID), Integer.MAX_VALUE, null);
+			List<SearchResult> refexes = indexer.queryAssemblageUsage(ExtendedAppContext.getDataStore().getNidForUuids(mappingSetID), Integer.MAX_VALUE, Long.MAX_VALUE);
 			for (SearchResult sr : refexes)
 			{
 				RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
