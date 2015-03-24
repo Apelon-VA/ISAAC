@@ -210,10 +210,16 @@ public class MappingController {
 		commentButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
-				commentView.showView(null);
+				MappingSet  selectedMappingSet  = getSelectedMappingSet();
+				MappingItem selectedMappingItem = getSelectedMappingItem();
+				if (selectedMappingItem != null && selectedMappingSet != null) {
+					CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
+					commentView.setMappingSetAndItem(selectedMappingSet, selectedMappingItem);
+					commentView.showView(null);
+				}
 			}
 		});
+		
 		
 		for (TableColumn<MappingSet, ?> x : mappingSetTableView.getColumns())
 		{
