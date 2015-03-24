@@ -214,7 +214,8 @@ public class MappingSetDAO extends MappingDAO
 						getComponentVersion(OTFUtility.getViewCoordinate(), sr.getNid());
 				if (rc != null)
 				{
-					if (activeOnly && !rc.isActive())
+					ConceptVersionBI con = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), rc.getReferencedComponentNid());
+					if (activeOnly && !con.isActive())
 					{
 						continue;
 					}
