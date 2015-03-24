@@ -123,7 +123,7 @@ public class CreateMappingSetController {
 					mappingSet_.save();
 				}
 				
-				AppContext.getService(Mapping.class).refresh();
+				AppContext.getService(Mapping.class).refreshMappingSets();
 				createButton.getScene().getWindow().hide();
 			}
 			catch (Exception e)

@@ -65,7 +65,7 @@ public class Mapping implements DockedViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					svc_.readData();
+					svc_.refreshMappingSets();
 					hasBeenInited_ = true;
 				}
 			}
@@ -120,9 +120,14 @@ public class Mapping implements DockedViewI
 	/**
 	 * 
 	 */
-	public void refresh()
+	public void refreshMappingSets()
 	{
-		svc_.readData();
-		
+		svc_.refreshMappingSets();
 	}
+	
+	public void refreshMappingItems()
+	{
+		svc_.refreshMappingItems();
+	}
+		
 }

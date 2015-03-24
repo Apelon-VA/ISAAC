@@ -8,6 +8,8 @@ import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.gui.mapping.data.MappingItem;
+import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -33,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import javafx.application.Platform;
@@ -89,7 +92,8 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 
     @FXML private BorderPane 		mainPane;
     @FXML private Label				titleLabel;
-
+    @FXML private GridPane			mainGridPane;
+    
     @FXML private TextField 		criteriaText;
     @FXML private Button 			searchButton;
 
@@ -97,7 +101,6 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
     @FXML private TableColumn<?, ?> candidatesConceptColumn;
     @FXML private TableColumn<?, ?> candidatesCodeSystemColumn;
     @FXML private TableColumn<?, ?> candidatesStatusColumn;
-    @FXML private Label 			targetConceptLabel;
 
     @FXML private ComboBox<?> 		codeSystemRestrictionCombo;
     @FXML private ComboBox<?> 		refsetRestrictionCombo;
@@ -109,8 +112,6 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
     
     @FXML private ComboBox<?> 		childRestrictionCombo;
     @FXML private ComboBox<?> 		descriptionRestrictionCombo;
-    @FXML private ComboBox<?> 		sourceConceptCombo;
-    @FXML private ComboBox<?>		qualifierCombo;
     @FXML private ComboBox<?>		statusCombo;
     @FXML private ToggleGroup 		desc;    
 
@@ -118,6 +119,11 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
     @FXML private Button 			saveButton;
     @FXML private Button 			cancelButton;
 
+	private ConceptNode 			sourceConceptNode = new ConceptNode(null, true);
+	private ConceptNode				targetConceptNode = new ConceptNode(null, true);
+	private ConceptNode				qualifierConceptNode = new ConceptNode(null, false);
+
+	private MappingSet mappingSet_;
 
 	public Region getRootNode() {
 		//return region;
@@ -132,13 +138,13 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 	public void initialize() {
 
 	    assert mainPane                    != null: "fx:id=\"mainPane\" was not injected. Check 'CreateMapping.fxml' file.";
+	    assert mainGridPane                != null: "fx:id=\"mainGridPane\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert criteriaText                != null: "fx:id=\"criteriaText\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert searchButton                != null: "fx:id=\"searchButton\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert candidatesTableView         != null: "fx:id=\"candidatesTableView\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert candidatesConceptColumn     != null: "fx:id=\"candidatesConceptColumn\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert candidatesCodeSystemColumn  != null: "fx:id=\"candidatesCodeSystemColumn\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert candidatesStatusColumn      != null: "fx:id=\"candidatesStatusColumn\" was not injected. Check 'CreateMapping.fxml' file.";
-	    assert targetConceptLabel          != null: "fx:id=\"targetConceptLabel\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert codeSystemRestrictionCombo  != null: "fx:id=\"codeSystemRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert refsetRestrictionCombo      != null: "fx:id=\"refsetRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert noRestrictionRadio          != null: "fx:id=\"noRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
@@ -147,18 +153,83 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 	    assert fsnRestrictionRadio         != null: "fx:id=\"fsnRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert childRestrictionCombo       != null: "fx:id=\"childRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert descriptionRestrictionCombo != null: "fx:id=\"descriptionRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
-	    assert sourceConceptCombo          != null: "fx:id=\"sourceConceptCombo\" was not injected. Check 'CreateMapping.fxml' file.";
-	    assert qualifierCombo          	   != null: "fx:id=\"qualifierCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert statusCombo          	   != null: "fx:id=\"statusCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert clearRestrictionButton      != null: "fx:id=\"clearRestrictionButton\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert saveButton                  != null: "fx:id=\"saveButton\" was not injected. Check 'CreateMapping.fxml' file.";
 	    assert cancelButton                != null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";
 
+	    mainGridPane.add(sourceConceptNode.getNode(), 1, 0);
+	    mainGridPane.add(targetConceptNode.getNode(), 1, 4);
+	    mainGridPane.add(qualifierConceptNode.getNode(), 1, 5);
+	    //TODO status
+	    
+		saveButton.setDefaultButton(true);
+		saveButton.setOnAction((event) -> {
+			MappingItem mi = null;
+			try	{
+				ConceptVersionBI sourceConcept = sourceConceptNode.getConcept();
+				ConceptVersionBI targetConcept = targetConceptNode.getConcept();
+				
+				if (sourceConcept == null || targetConcept == null) {
+					AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", "Source and Target Concepts must be specified.");
+				} else {
+					UUID qualifierUUID = (qualifierConceptNode.getConcept() == null)? null : qualifierConceptNode.getConcept().getPrimordialUuid();
+					UUID statusUUID = null; // TODO status UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9")
+					
+					mi = new MappingItem(sourceConceptNode.getConcept().getPrimordialUuid(), 
+										 mappingSet_.getPrimordialUUID(), 
+										 targetConceptNode.getConcept().getPrimordialUuid(),
+										 qualifierUUID,
+										 statusUUID);
+				}
+			} catch (Exception e)	{
+				AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", e.getMessage());
+			}
+			
+			if (mi != null) {
+				saveButton.getScene().getWindow().hide();
+				AppContext.getService(Mapping.class).refreshMappingItems();
+			} else {
+				saveButton.getScene().getWindow().requestFocus();
+			}
+		});
+		
+		cancelButton.setCancelButton(true);
+		cancelButton.setOnAction(new EventHandler<ActionEvent>() {
+			@Override
+			public void handle(ActionEvent e) { 
+				mappingSet_ = null;
+				cancelButton.getScene().getWindow().hide();
+			}
+		});
+		cancelButton.setOnKeyPressed(new EventHandler<KeyEvent>()  {
+			@Override
+			public void handle(KeyEvent event) {
+				if (event.getCode() == KeyCode.ENTER) {
+					event.consume();
+					cancelButton.fire();
+				}
+			}
+		});
+	    
+	    
 	}
     
 	@Override
     public void taskComplete(long taskStartTime, Integer taskId) {
 	    // TODO Auto-generated method stub
-	    
+		// No idea what this needs to be - DT
     }
+	
+	public void setMappingSet(MappingSet mappingSet) {
+		mappingSet_ = mappingSet;
+	}
+	
+	public void setSourceConcept(UUID sourceConceptID) {
+		//TODO set source concept node
+		ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(sourceConceptID);
+		if (sourceConcept != null) {
+			sourceConceptNode.set(sourceConcept);
+		}
+	}
 }
