@@ -112,6 +112,16 @@ public class MappingItem
 		return refex_.getPrimordialUuid();
 	}
 
+	public String getName() {
+		String name = OTFUtility.getConceptVersion(getSourceConcept()).toString() + " > " +
+					  OTFUtility.getConceptVersion(getTargetConcept()).toString();
+		UUID qualifierID = getQualifierConcept();
+		if (qualifierID != null) {
+			name += " (" + OTFUtility.getConceptVersion(qualifierID).toString() + ")";
+		}
+		return name;
+	}
+	
 	public UUID getSourceConcept()
 	{
 		try
@@ -168,7 +178,7 @@ public class MappingItem
 	
 	public String getSummary() {
 		//TODO determine summary
-		return "<mapping item summary>";
+		return "";
 	}
 	
 	/**
@@ -184,12 +194,7 @@ public class MappingItem
 	public MappingItemComment addComment(String commentText) throws IOException {
 		MappingItemComment comment;
 		
-		try {
-			comment = new MappingItemComment(this.getID(), commentText); 
-		} catch (IOException e) {
-			throw new RuntimeException("Unexpected error", e);
-		}
-		 
+		comment = new MappingItemComment(this.getID(), commentText); 
 		
 		return comment;
 	}

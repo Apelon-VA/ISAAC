@@ -1,6 +1,9 @@
 package gov.va.isaac.gui.mapping;
 
+import gov.va.isaac.gui.mapping.data.MappingItemComment;
+
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
@@ -13,6 +16,8 @@ public class CommentControl extends AnchorPane {
     @FXML private Label authorLabel;
     @FXML private TextArea commentTextArea;
 
+    private static SimpleDateFormat dateTimeFormatShort = new SimpleDateFormat("MM/dd/yy HH:mm");
+    
     public CommentControl() {
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("CommentControl.fxml"));
         fxmlLoader.setRoot(this);
@@ -26,9 +31,9 @@ public class CommentControl extends AnchorPane {
 
     }
     
-    public void setComment(String comment, String author, String timestamp) {
-    	commentTextArea.textProperty().set(comment);
-    	authorLabel.textProperty().set(author);
-    	timestampLabel.textProperty().set(timestamp);
+    public void setComment(MappingItemComment comment) {
+    	commentTextArea.textProperty().set(comment.getCommentText());
+    	authorLabel.textProperty().set(comment.getAuthorName());
+    	timestampLabel.textProperty().set(dateTimeFormatShort.format(comment.getCreatedDate()));
     }
 }

@@ -15,7 +15,7 @@ public class MappingItemComment {
 	private String commentText;
 	private UUID mappingItemUUID;
 	
-	public String getAuthorName()   { return "";} //TODO  DAN read from stamp   }
+	public String getAuthorName()   { return "<author>";} //TODO  DAN read from stamp   }
 	public Date   getCreatedDate()  { return new Date(); } //TODO  DAN read from stamp 
 	public String getCommentText()  { return commentText; }
 	public UUID   getMappingItemUUID() {return mappingItemUUID; }
@@ -45,7 +45,7 @@ public class MappingItemComment {
 		List<MappingItemComment> comments;
 		
 		//try {
-			//TODO  DAN retreive comments for specified Mapping Item
+			//TODO  DAN retrieve comments for specified Mapping Item
 			comments = new ArrayList<MappingItemComment>();
 
 		//} catch (IOException e) {
