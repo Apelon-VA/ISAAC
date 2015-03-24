@@ -83,6 +83,7 @@ public class MappingItemCommentDAO extends MappingDAO
 		
 		try
 		{
+			int mappingNid = ExtendedAppContext.getDataStore().getNidForUuids(mappingUUID);
 			for (SearchResult sr : search(ISAAC.COMMENT_ATTRIBUTE.getPrimodialUuid()))
 			{
 				RefexDynamicVersionBI<?> rc = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().
@@ -93,7 +94,10 @@ public class MappingItemCommentDAO extends MappingDAO
 					{
 						continue;
 					}
-					comments.add(new MappingItemComment(rc));
+					if (rc.getReferencedComponentNid() == mappingNid)
+					{
+						comments.add(new MappingItemComment(rc));
+					}
 				}
 			}
 		}
