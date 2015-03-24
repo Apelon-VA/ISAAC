@@ -3,17 +3,17 @@ package gov.va.isaac.gui.mapping;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemComment;
+import gov.va.isaac.gui.mapping.data.MappingItemDAO;
 import gov.va.isaac.gui.mapping.data.MappingSet;
+import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.UUID;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -35,7 +35,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
-
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -147,7 +146,15 @@ public class MappingController {
 
 					if (response == DialogResponse.YES) {
 						for (MappingSet mappingSet : selectedMappingSets) {
-							mappingSet.retire();
+							try
+							{
+								MappingSetDAO.retireMappingSet(mappingSet.getPrimordialUUID());
+							}
+							catch (IOException e1)
+							{
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 						refreshMappingSets();
 					}
@@ -183,7 +190,15 @@ public class MappingController {
 
 					if (response == DialogResponse.YES) {
 						for (MappingItem mappingItem : selectedMappingItems) {
-							mappingItem.retire();
+							try
+							{
+								MappingItemDAO.retireMappingItem(mappingItem.getPrimordialUUID());
+							}
+							catch (IOException e1)
+							{
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
 						}
 						updateMappingItemsList(getSelectedMappingSet());
 					}
@@ -275,18 +290,26 @@ public class MappingController {
 					else if (param.getTableColumn().getText().equals("Comments"))
 					{
 						String commentValue = "";
-						List<MappingItemComment> comments = param.getValue().getComments();
-						if (comments.size() > 0) {
-							commentValue = comments.get(0).getCommentText();
+						try
+						{
+							List<MappingItemComment> comments = param.getValue().getComments();
+							if (comments.size() > 0) {
+								commentValue = comments.get(0).getCommentText();
+							}
+							if (comments.size() > 1) {
+								commentValue += " (+" + Integer.toString(comments.size() - 1) + " more)";
+							}
 						}
-						if (comments.size() > 1) {
-							commentValue += " (+" + Integer.toString(comments.size() - 1) + " more)";
+						catch (IOException e)
+						{
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 						return new SimpleStringProperty(commentValue);
 					}
 					else if (param.getTableColumn().getText().equals("Status"))
 					{
-						UUID editorStatus = param.getValue().getEditorStatus();
+						UUID editorStatus = param.getValue().getEditorStatusConcept();
 						String statusString = (editorStatus == null) ? "" : editorStatus.toString().trim(); 
 						return new SimpleStringProperty(statusString);
 					}
@@ -368,9 +391,9 @@ public class MappingController {
 		boolean activeOnly = activeOnlyToggle.isSelected();
 		try
 		{
-			mappingSets = FXCollections.observableList(MappingSet.getMappingSets(activeOnly));
+			mappingSets = FXCollections.observableList(MappingSetDAO.getMappingSets(activeOnly));
 		}
-		catch (IOException | ContradictionException e)
+		catch (IOException e)
 		{
 			LOG.error("unexpected", e);
 			//TODO GUI prompt;

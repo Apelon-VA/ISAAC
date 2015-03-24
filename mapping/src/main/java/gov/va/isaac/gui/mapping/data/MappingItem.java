@@ -18,28 +18,16 @@
  */
 package gov.va.isaac.gui.mapping.data;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
-import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.util.OTFUtility;
-import java.beans.PropertyVetoException;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
-import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.api.uuid.UuidT5Generator;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
-import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,205 +40,138 @@ public class MappingItem
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
 
-	private RefexDynamicVersionBI<?> refex_;
+	private UUID editorStatusConcept, primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
+	boolean isActive;
+	long creationTime;
 
-	protected MappingItem(RefexDynamicChronicleBI<?> refex)
+	protected MappingItem(RefexDynamicChronicleBI<?> refex) throws IOException
 	{
 		try
 		{
-			refex_ = refex.getVersion(OTFUtility.getViewCoordinate());
+			read(refex.getVersion(OTFUtility.getViewCoordinate()));
 		}
 		catch (ContradictionException e)
 		{
-			throw new RuntimeException("Unexpected error", e);
+			LOG.error("Unexpected error", e);
 		}
 	}
 	
-	public MappingItem(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
+	private void read(RefexDynamicVersionBI<?> refex) throws IOException
 	{
-		try
-		{
-			ConceptVersionBI cv = OTFUtility.getConceptVersion(sourceConcept);
-			
-			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(sourceConcept, mappingSetID);
-			mappingAnnotation.setData(new RefexDynamicDataBI[] {
-					(targetConcept == null ? null : new RefexDynamicUUID(targetConcept)),
-					(qualifier == null ? null : new RefexDynamicUUID(qualifier)),
-					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinate());
-			
-			
-			UUID mappingItemUUID = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
-					sourceConcept.toString() + "|" 
-					+ mappingSetID.toString() + "|"
-					+ targetConcept.toString() + "|" 
-					+ ((qualifier == null)? "" : qualifier.toString()));
-			
-			if (ExtendedAppContext.getDataStore().hasUuid(mappingItemUUID))
-			{
-				throw new IOException("A mapping with the specified source, target and qualifier already exists in this set.  Please edit that mapping.");
-			}
-			
-			mappingAnnotation.setComponentUuidNoRecompute(mappingItemUUID);
-			
-			OTFUtility.getBuilder().construct(mappingAnnotation);
-			
-			ExtendedAppContext.getDataStore().addUncommitted(cv);
-			ExtendedAppContext.getDataStore().commit(cv);
-			
-			refex_ = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponent(mappingItemUUID);
-		}
-		catch (InvalidCAB | ContradictionException | PropertyVetoException | NoSuchAlgorithmException e)
-		{
-			throw new RuntimeException("Invalid mapping. Check Source, Target, and Qualifier.", e);
-		}
+		primordialUUID = refex.getPrimordialUuid();
+		sourceConcept = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex.getReferencedComponentNid());
+		mappingSetIDConcept = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex.getAssemblageNid());
+		isActive = refex.isActive();
+		creationTime = refex.getTime();
+		
+		RefexDynamicDataBI[] data = refex.getData();
+		targetConcept = ((data != null && data.length > 0) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null);
+		qualifierConcept = ((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null); 
+		editorStatusConcept = ((data != null && data.length > 2 && data[2] != null) ? ((RefexDynamicUUID) data[2]).getDataUUID() : null);
 	}
 
-	/**
-	 * @return the identifier of this mapping set
-	 */
-	public UUID getID()	{
-		return refex_.getPrimordialUuid();
-	}
-
-	public UUID getSourceConcept()
-	{
-		try
-		{
-			return ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex_.getReferencedComponentNid());
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException("Unexpected error", e);
-		}
-	}
-
-	public UUID getMappingTypeConcept()
-	{
-		try
-		{
-			return ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex_.getAssemblageNid());
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException("Unexpected error", e);
-		}
-	}
-
-	public UUID getTargetConcept()
-	{
-		RefexDynamicDataBI[] data = refex_.getData();
-		if (data != null && data.length > 0)
-		{
-			return ((RefexDynamicUUID) data[0]).getDataUUID();
-		}
-		return null;
-	}
-	
-	public UUID getQualifierConcept()
-	{
-		RefexDynamicDataBI[] data = refex_.getData();
-		if (data != null && data.length > 1 && data[1] != null)
-		{
-			return ((RefexDynamicUUID) data[1]).getDataUUID();
-		}
-		return null;
-	}
-	
-	public UUID getEditorStatus()
-	{
-		RefexDynamicDataBI[] data = refex_.getData();
-		if (data != null && data.length > 2 && data[2] != null)
-		{
-			return ((RefexDynamicUUID) data[2]).getDataUUID();
-		}
-		return null;
-	}
 	
 	public String getSummary() {
-		//TODO determine summary
-		return "<mapping item summary>";
+		return  (isActive ? "Active " : "Retired ") + "Mapping: " + OTFUtility.getDescription(sourceConcept) + "-" + OTFUtility.getDescription(mappingSetIDConcept)
+				+ "-" + OTFUtility.getDescription(targetConcept) + "-" + (qualifierConcept == null ? "no qualifier" : OTFUtility.getDescription(qualifierConcept)) 
+				+ "-" + (editorStatusConcept == null ? "no status" : OTFUtility.getDescription(editorStatusConcept)) + "-" + primordialUUID.toString();
 	}
 	
 	/**
 	 * @return Any comments attached to this mapping set.
+	 * @throws IOException 
 	 */
-	public List<MappingItemComment> getComments()
+	public List<MappingItemComment> getComments() throws IOException
 	{
-		//TODO  DAN implement
-		return new ArrayList<MappingItemComment>();
+		return MappingItemCommentDAO.getComments(getPrimordialUUID(), false);
 	}
-	
-	
-	public MappingItemComment addComment(String commentText) throws IOException {
-		MappingItemComment comment;
-		
-		try {
-			//TODO do we want to utilize the other comment field (don't have to)
-			comment = new MappingItemComment(this.getID(), commentText, null); 
-		} catch (IOException e) {
-			throw new RuntimeException("Unexpected error", e);
-		}
-		 
-		
-		return comment;
-	}
-	
-	public void update() {
-		//TODO  DAN implement
-	}
-	
-	public void retire() {
-		//TODO  DAN implement
-	}
-	
-	public void unRetire() {
-		//TODO  DAN implement
-	}
-	
-	/*
-	 * Static methods 
-	 */
 	
 	/**
-	 * 
-	 * @param mappingSetID
-	 * @return List<MappingItem>
+	 * Add a comment to this mapping set
+	 * @param commentText - the text of the comment
+	 * @return - the added comment
 	 * @throws IOException
 	 */
-	public static List<MappingItem> getMappingItems(UUID mappingSetID) throws IOException {
-		List<MappingItem> mappingItems;
-		mappingItems = MappingItemDAO.getMappingItems(mappingSetID);
-		return mappingItems;
+	public MappingItemComment addComment(String commentText) throws IOException
+	{
+		//TODO do we want to utilize the other comment field (don't have to)
+		return MappingItemCommentDAO.createMappingItemComment(this.getPrimordialUUID(), commentText, null);
 	}
 
-	public static void generateRandomMappingItems(UUID mappingSetUUID) throws IOException {
-		try
-		{
-			LuceneDescriptionIndexer ldi = AppContext.getService(LuceneDescriptionIndexer.class);
-			List<SearchResult> result = ldi.query("acetaminophen", ComponentProperty.DESCRIPTION_TEXT, 100);
-
-			for (int i = 0; i < 10; i++)
-			{
-				UUID source;
-				UUID target = null;
-				
-				int index =  (int)(Math.random() * 100);
-				source = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
-				
-				while (target == null || target.equals(source))
-				{
-					index =  (int)(Math.random() * 100);
-					target = ExtendedAppContext.getDataStore().getConceptForNid(result.get(index).getNid()).getPrimordialUuid();
-				}
-				
-				MappingItem mi = new MappingItem(source, mappingSetUUID, target, UUID.fromString("c1068428-a986-5c12-9583-9b2d3a24fdc6"), UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
-				
-			}
-		}
-		catch (Exception e)
-		{
-			LOG.error("oops", e);
-		}
+	/**
+	 * @return the editorStatusConcept
+	 */
+	public UUID getEditorStatusConcept()
+	{
+		return editorStatusConcept;
 	}
 
+	//TODO not sure if we should allow changes to the qualifier concept.  I would say yes... but the qualifier concept ID 
+	//is part of the value that is hashed to create the UUID of the map item... it may be best to retire and create a new one in this case.
+	
+	
+	/**
+	 * @param editorStatusConcept the editorStatusConcept to set
+	 */
+	public void setEditorStatusConcept(UUID editorStatusConcept)
+	{
+		this.editorStatusConcept = editorStatusConcept;
+	}
+
+	/**
+	 * @return the isActive
+	 */
+	public boolean isActive()
+	{
+		return isActive;
+	}
+
+	/**
+	 * @return the primordialUUID of this Mapping Item.  Note that this doesn't uniquely identify a mapping item within the system
+	 * as changes to the mapping item will retain the same ID - there will now be multiple versions.  They will differ by date.
+	 */
+	public UUID getPrimordialUUID()
+	{
+		return primordialUUID;
+	}
+
+	/**
+	 * @return the mappingSetIDConcept
+	 */
+	public UUID getMappingSetIDConcept()
+	{
+		return mappingSetIDConcept;
+	}
+
+	/**
+	 * @return the qualifierConcept
+	 */
+	public UUID getQualifierConcept()
+	{
+		return qualifierConcept;
+	}
+
+	/**
+	 * @return the sourceConcept
+	 */
+	public UUID getSourceConcept()
+	{
+		return sourceConcept;
+	}
+
+	/**
+	 * @return the targetConcept
+	 */
+	public UUID getTargetConcept()
+	{
+		return targetConcept;
+	}
+	
+	/**
+	 * @return the creationTime
+	 */
+	public long getCreationTime()
+	{
+		return creationTime;
+	}
 }

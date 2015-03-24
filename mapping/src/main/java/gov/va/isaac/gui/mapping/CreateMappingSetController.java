@@ -111,8 +111,9 @@ public class CreateMappingSetController {
 			try
 			{
 				if (mappingSet_ == null) {
-					// TODO status
-					MappingSet mappingSet = new MappingSet(nameInput.getText(), purposeInput.getText(), descInput.getText(), null);
+					// TODO status, inverseName?
+					//TODO dan wonders why this wasn't setting the mappingSet_ variable?
+					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), null);
 				} else {
 					// Edit mapping set
 					mappingSet_.setName(nameInput.getText());
@@ -120,7 +121,7 @@ public class CreateMappingSetController {
 					mappingSet_.setDescription(descInput.getText());
 					//TODO Status
 					mappingSet_.setEditorStatus(null);
-					mappingSet_.save();
+					MappingSetDAO.updateMappingSet(mappingSet_);
 				}
 				
 				AppContext.getService(Mapping.class).refreshMappingSets();
