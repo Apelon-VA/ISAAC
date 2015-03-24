@@ -113,9 +113,14 @@ public class MappingItem
 	}
 
 	public String getName() {
-		String name = OTFUtility.getConceptVersion(getSourceConcept()).toString() + " > " +
-					  OTFUtility.getConceptVersion(getTargetConcept()).toString();
+		ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(getSourceConcept());
+		ConceptVersionBI targetConcept = OTFUtility.getConceptVersion(getTargetConcept());
 		UUID qualifierID = getQualifierConcept();
+		
+		//TODO How do I get the concept name? DT
+		String name = sourceConcept.toString() + " > " +
+					  targetConcept.toString();
+		
 		if (qualifierID != null) {
 			name += " (" + OTFUtility.getConceptVersion(qualifierID).toString() + ")";
 		}
