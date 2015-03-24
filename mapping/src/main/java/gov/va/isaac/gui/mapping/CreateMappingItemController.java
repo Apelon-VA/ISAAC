@@ -121,7 +121,7 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 
 	private ConceptNode 			sourceConceptNode = new ConceptNode(null, true);
 	private ConceptNode				targetConceptNode = new ConceptNode(null, true);
-	private ConceptNode				qualifierConceptNode = new ConceptNode(null, true);
+	private ConceptNode				qualifierConceptNode = new ConceptNode(null, false);
 
 	private MappingSet mappingSet_;
 
@@ -167,7 +167,6 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 		saveButton.setOnAction((event) -> {
 			MappingItem mi = null;
 			try	{
-				// TODO status
 				ConceptVersionBI sourceConcept = sourceConceptNode.getConcept();
 				ConceptVersionBI targetConcept = targetConceptNode.getConcept();
 				
@@ -175,12 +174,13 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 					AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", "Source and Target Concepts must be specified.");
 				} else {
 					UUID qualifierUUID = (qualifierConceptNode.getConcept() == null)? null : qualifierConceptNode.getConcept().getPrimordialUuid();
+					UUID statusUUID = null; // TODO status UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9")
 					
 					mi = new MappingItem(sourceConceptNode.getConcept().getPrimordialUuid(), 
 										 mappingSet_.getPrimordialUUID(), 
 										 targetConceptNode.getConcept().getPrimordialUuid(),
 										 qualifierUUID,
-										 UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9"));
+										 statusUUID);
 				}
 			} catch (Exception e)	{
 				AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", e.getMessage());
@@ -217,16 +217,19 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
     
 	@Override
     public void taskComplete(long taskStartTime, Integer taskId) {
-		
 	    // TODO Auto-generated method stub
-	    
+		// No idea what this needs to be - DT
     }
 	
 	public void setMappingSet(MappingSet mappingSet) {
 		mappingSet_ = mappingSet;
 	}
 	
-	public void setSourceConcept(UUID sourceConcept) {
+	public void setSourceConcept(UUID sourceConceptID) {
 		//TODO set source concept node
+		ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(sourceConceptID);
+		if (sourceConcept != null) {
+			sourceConceptNode.set(sourceConcept);
+		}
 	}
 }

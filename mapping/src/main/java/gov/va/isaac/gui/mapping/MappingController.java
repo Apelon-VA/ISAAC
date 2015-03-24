@@ -269,7 +269,8 @@ public class MappingController {
 					}
 					else if (param.getTableColumn().getText().equals("Qualifier"))
 					{
-						return new SimpleStringProperty(OTFUtility.getDescription(param.getValue().getQualifierConcept()));
+						UUID qualifierConcept = param.getValue().getQualifierConcept();
+						return new SimpleStringProperty((qualifierConcept == null)? "" : OTFUtility.getDescription(qualifierConcept));
 					}
 					else if (param.getTableColumn().getText().equals("Comments"))
 					{

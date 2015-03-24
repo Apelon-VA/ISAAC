@@ -83,7 +83,7 @@ public class MappingItem
 					sourceConcept.toString() + "|" 
 					+ mappingSetID.toString() + "|"
 					+ targetConcept.toString() + "|" 
-					+ qualifier.toString());
+					+ ((qualifier == null)? "" : qualifier.toString()));
 			
 			if (ExtendedAppContext.getDataStore().hasUuid(mappingItemUUID))
 			{
@@ -149,7 +149,7 @@ public class MappingItem
 	public UUID getQualifierConcept()
 	{
 		RefexDynamicDataBI[] data = refex_.getData();
-		if (data != null && data.length > 1)
+		if (data != null && data.length > 1 && data[1] != null)
 		{
 			return ((RefexDynamicUUID) data[1]).getDataUUID();
 		}
@@ -159,7 +159,7 @@ public class MappingItem
 	public UUID getEditorStatus()
 	{
 		RefexDynamicDataBI[] data = refex_.getData();
-		if (data != null && data.length > 2)
+		if (data != null && data.length > 2 && data[2] != null)
 		{
 			return ((RefexDynamicUUID) data[2]).getDataUUID();
 		}
