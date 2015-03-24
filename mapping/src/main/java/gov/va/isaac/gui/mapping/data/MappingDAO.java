@@ -70,7 +70,7 @@ public abstract class MappingDAO
 			{
 				
 				ConceptAttributeAB conceptAttribCab = conAttrib.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-				conceptAttribCab.setStatus(status == Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE);
+				conceptAttribCab.setStatus(status);
 				OTFUtility.getBuilder().construct(conceptAttribCab);
 
 				ExtendedAppContext.getDataStore().addUncommitted(concept);
@@ -96,7 +96,7 @@ public abstract class MappingDAO
 			else
 			{
 				RefexDynamicCAB mappingCab = rdv.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-				mappingCab.setStatus(status == Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE);
+				mappingCab.setStatus(status);
 				RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(mappingCab);
 
 				ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());
