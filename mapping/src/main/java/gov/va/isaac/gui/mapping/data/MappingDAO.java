@@ -26,11 +26,12 @@ import java.util.List;
 import java.util.UUID;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
-import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
+import org.ihtsdo.otf.tcc.api.blueprint.ConceptAttributeAB;
 import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDirective;
 import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
+import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -60,18 +61,20 @@ public abstract class MappingDAO
 		try
 		{
 			ConceptVersionBI concept = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), conceptUUID);
-			if (concept.getStatus() == status)
+			ConceptAttributeVersionBI<?> conAttrib = concept.getConceptAttributes().getVersion(OTFUtility.getViewCoordinate());
+			if (conAttrib.getStatus() == status)
 			{
 				LOG.warn("Tried set the status to the value it already has.  Doing nothing");
 			}
 			else
 			{
-				ConceptCB conceptCab = concept.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
-				conceptCab.setStatus(status == Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE);
-				ConceptChronicleBI cc = OTFUtility.getBuilder().construct(conceptCab);
+				
+				ConceptAttributeAB conceptAttribCab = conAttrib.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				conceptAttribCab.setStatus(status == Status.ACTIVE ? Status.INACTIVE : Status.ACTIVE);
+				OTFUtility.getBuilder().construct(conceptAttribCab);
 
-				ExtendedAppContext.getDataStore().addUncommitted(cc);
-				ExtendedAppContext.getDataStore().commit(cc);
+				ExtendedAppContext.getDataStore().addUncommitted(concept);
+				ExtendedAppContext.getDataStore().commit(concept);
 			}
 		}
 		catch (InvalidCAB | ContradictionException e)
