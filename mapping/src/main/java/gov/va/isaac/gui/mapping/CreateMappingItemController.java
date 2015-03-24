@@ -127,11 +127,11 @@ public class CreateMappingItemController implements TaskCompleteCallback  {
 					UUID qualifierUUID = (qualifierConceptNode.getConcept() == null)? null : qualifierConceptNode.getConcept().getPrimordialUuid();
 					UUID statusUUID = null; // TODO status UUID.fromString("d481125e-b8ca-537c-b688-d09d626e5ff9")
 					
-					mi = MappingItemDAO.createMappingItem(sourceConceptNode.getConcept().getPrimordialUuid(), 
-										 mappingSet_.getPrimordialUUID(), 
-										 targetConceptNode.getConcept().getPrimordialUuid(),
-										 qualifierUUID,
-										 statusUUID);
+					mi = MappingItemDAO.createMappingItem(sourceConcept.getPrimordialUuid(), 
+														  mappingSet_.getPrimordialUUID(), 
+														  targetConcept.getPrimordialUuid(),
+														  qualifierUUID,
+														  statusUUID);
 				}
 			} catch (Exception e)	{
 				AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", e.getMessage());
