@@ -18,6 +18,17 @@
  */
 package gov.va.isaac.gui.mapping.data;
 
+import gov.va.isaac.constants.MappingConstants;
+import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.util.OTFUtility;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * {@link MappingUtils}
  *
@@ -25,7 +36,45 @@ package gov.va.isaac.gui.mapping.data;
  */
 public class MappingUtils
 {
-	//TODO DAN write methods for getting status / qualifier types
 	//TODO DAN write methods for description search criteria
+	protected static final Logger LOG = LoggerFactory.getLogger(MappingUtils.class);
+	
+	public static List<SimpleDisplayConcept> getStatusConcepts() throws IOException
+	{
+		ArrayList<SimpleDisplayConcept> result = new ArrayList<>();
+		try
+		{
+			for (ConceptVersionBI cv : OTFUtility.getAllChildrenOfConcept(MappingConstants.MAPPING_STATUS.getNid(), true))
+			{
+				result.add(new SimpleDisplayConcept(cv));
+			}
+		}
+		catch (ContradictionException e)
+		{
+			LOG.error("Unexpected", e);
+			throw new IOException("Unexpected error");
+		}
+		
+		return result;
+	}
+	
+	public static List<SimpleDisplayConcept> getQualifierConcepts() throws IOException
+	{
+		ArrayList<SimpleDisplayConcept> result = new ArrayList<>();
+		try
+		{
+			for (ConceptVersionBI cv : OTFUtility.getAllChildrenOfConcept(MappingConstants.MAPPING_QUALIFIERS.getNid(), true))
+			{
+				result.add(new SimpleDisplayConcept(cv));
+			}
+		}
+		catch (ContradictionException e)
+		{
+			LOG.error("Unexpected", e);
+			throw new IOException("Unexpected error");
+		}
+		
+		return result;
+	}
 	
 }

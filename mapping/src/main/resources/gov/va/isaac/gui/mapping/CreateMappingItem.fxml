@@ -90,11 +90,11 @@
 <BorderPane.margin>
 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
 </BorderPane.margin>
-<children><Button fx:id="saveButton" mnemonicParsing="false" prefWidth="60.0" text="Save" GridPane.halignment="RIGHT">
+<children><Button fx:id="saveButton" mnemonicParsing="false" text="Save" GridPane.halignment="RIGHT">
 <GridPane.margin>
 <Insets right="10.0" />
 </GridPane.margin></Button>
-<Button fx:id="cancelButton" layoutX="395.0" layoutY="13.0" mnemonicParsing="false" prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
+<Button fx:id="cancelButton" layoutX="395.0" layoutY="13.0" mnemonicParsing="false" text="Cancel" GridPane.columnIndex="1">
 <GridPane.margin>
 <Insets left="10.0" />
 </GridPane.margin>
@@ -110,11 +110,11 @@
 <ColumnConstraints hgrow="NEVER" minWidth="20.0" />
   </columnConstraints>
   <rowConstraints>
-    <RowConstraints vgrow="NEVER" />
+    <RowConstraints prefHeight="30.0" vgrow="NEVER" />
 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-    <RowConstraints vgrow="NEVER" />
+    <RowConstraints prefHeight="30.0" vgrow="NEVER" />
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-<RowConstraints fillHeight="false" vgrow="NEVER" />
+<RowConstraints fillHeight="false" prefHeight="30.0" vgrow="NEVER" />
             <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
             <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
   </rowConstraints>
@@ -130,7 +130,7 @@
                </font></Label><Label text="Target Concept" GridPane.rowIndex="4">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></Label><TableView fx:id="candidatesTableView" prefHeight="414.0" prefWidth="689.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+</GridPane.margin></Label><TableView fx:id="candidatesTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="414.0" prefWidth="689.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
   <columns>
     <TableColumn fx:id="candidatesConceptColumn" prefWidth="455.0" text="Concept" />
     <TableColumn fx:id="candidatesCodeSystemColumn" prefWidth="304.0" text="Code System" />
@@ -142,7 +142,7 @@
 </TableView><Label text="Candidate Criteria" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </GridPane.margin></Label><TextField fx:id="criteriaText" promptText="&lt;Automatic&gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               </GridPane.margin></Label><TextField fx:id="criteriaText" maxWidth="1.7976931348623157E308" promptText="&lt;Automatic&gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="Status" GridPane.rowIndex="6">
                <GridPane.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -153,7 +153,7 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </GridPane.margin>
             </Label>
-            <ComboBox fx:id="statusCombo" editable="true" prefHeight="25.0" prefWidth="504.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <ComboBox fx:id="statusCombo" editable="true" maxWidth="1.7976931348623157E308" promptText="Select Status" GridPane.columnIndex="1" GridPane.rowIndex="6" /><ComboBox fx:id="qualifierCombo" editable="true" maxWidth="1.7976931348623157E308" promptText="Select Qualifier" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 </children>
 <padding>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
