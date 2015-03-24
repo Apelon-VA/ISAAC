@@ -515,7 +515,7 @@ public class SearchViewController implements TaskCompleteCallback
 				{
 					if (dragItem.getContainingConcept() != null)
 					{
-						return dragItem.getContainingConcept() + "";
+						return dragItem.getContainingConcept().getNid() + "";
 					}
 				}
 				return null;
