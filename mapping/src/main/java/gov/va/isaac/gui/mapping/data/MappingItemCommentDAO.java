@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.mapping.data;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.util.OTFUtility;
@@ -60,6 +61,7 @@ public class MappingItemCommentDAO extends MappingDAO
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(commentAnnotation);
 
 			ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(cc);
 			ExtendedAppContext.getDataStore().commit(cc);
 
@@ -68,6 +70,10 @@ public class MappingItemCommentDAO extends MappingDAO
 		catch (InvalidCAB | ContradictionException | PropertyVetoException e)
 		{
 			throw new IOException("Unexpected error", e);
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 
@@ -143,6 +149,7 @@ public class MappingItemCommentDAO extends MappingDAO
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(commentCab);
 
 			ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(cc);
 			ExtendedAppContext.getDataStore().commit(cc);
 		}
@@ -150,6 +157,10 @@ public class MappingItemCommentDAO extends MappingDAO
 		{
 			LOG.error("Unexpected!", e);
 			throw new IOException("Internal error");
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 }

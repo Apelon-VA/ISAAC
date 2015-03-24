@@ -73,6 +73,7 @@ public abstract class MappingDAO
 				conceptAttribCab.setStatus(status);
 				OTFUtility.getBuilder().construct(conceptAttribCab);
 
+				AppContext.getRuntimeGlobals().disableAllCommitListeners();
 				ExtendedAppContext.getDataStore().addUncommitted(concept);
 				ExtendedAppContext.getDataStore().commit(concept);
 			}
@@ -81,6 +82,10 @@ public abstract class MappingDAO
 		{
 			LOG.error("Unexpected!", e);
 			throw new IOException("Internal error");
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 	

@@ -63,9 +63,9 @@ public class MappingItemDAO extends MappingDAO
 			}
 			
 			mappingAnnotation.setComponentUuidNoRecompute(mappingItemUUID);
-			
 			OTFUtility.getBuilder().construct(mappingAnnotation);
-			
+
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(cv);
 			ExtendedAppContext.getDataStore().commit(cv);
 			
@@ -75,6 +75,10 @@ public class MappingItemDAO extends MappingDAO
 		{
 			LOG.error("Unexpected", e);
 			throw new IOException("Invalid mapping. Check Source, Target, and Qualifier.", e);
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 	
@@ -148,6 +152,7 @@ public class MappingItemDAO extends MappingDAO
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(mappingItemCab);
 
 			ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(cc);
 			ExtendedAppContext.getDataStore().commit(cc);
 		}
@@ -155,6 +160,10 @@ public class MappingItemDAO extends MappingDAO
 		{
 			LOG.error("Unexpected!", e);
 			throw new IOException("Internal error");
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 

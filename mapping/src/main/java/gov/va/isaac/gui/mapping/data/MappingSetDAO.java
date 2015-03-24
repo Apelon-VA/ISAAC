@@ -1,5 +1,6 @@
 package gov.va.isaac.gui.mapping.data;
 
+import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.constants.MappingConstants;
@@ -107,6 +108,7 @@ public class MappingSetDAO extends MappingDAO
 			associationAnnotation.setData(new RefexDynamicDataBI[] {}, null);
 			OTFUtility.getBuilder().construct(associationAnnotation);
 			
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(createdConcept);
 			ExtendedAppContext.getDataStore().commit(createdConcept);
 			
@@ -119,6 +121,10 @@ public class MappingSetDAO extends MappingDAO
 		{
 			LOG.error("unexpected", e);
 			throw new IOException("Unexpected error creating mapping", e);
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 	
@@ -193,6 +199,7 @@ public class MappingSetDAO extends MappingDAO
 					(StringUtils.isBlank(mappingSet.getPurpose()) ? null : new RefexDynamicString(mappingSet.getPurpose()))}, null);
 			OTFUtility.getBuilder().construct(mappingRefexCab);
 
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(mappingConcept);
 			ExtendedAppContext.getDataStore().commit(mappingConcept);
 		}
@@ -200,6 +207,10 @@ public class MappingSetDAO extends MappingDAO
 		{
 			LOG.error("Unexpected!", e);
 			throw new IOException("Internal error");
+		}
+		finally
+		{
+			AppContext.getRuntimeGlobals().enableAllCommitListeners();
 		}
 	}
 	
