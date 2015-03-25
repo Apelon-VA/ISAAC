@@ -149,6 +149,7 @@ public class MappingItemDAO extends MappingDAO
 			RefexDynamicVersionBI<?> rdv = readCurrentRefex(mappingItem.getPrimordialUUID());
 			RefexDynamicCAB mappingItemCab = rdv.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			mappingItemCab.getData()[2] = (mappingItem.getEditorStatusConcept() != null ? new RefexDynamicUUID(mappingItem.getEditorStatusConcept()) : null);
+			mappingItemCab.validate(OTFUtility.getViewCoordinate());
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(mappingItemCab);
 
 			ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());

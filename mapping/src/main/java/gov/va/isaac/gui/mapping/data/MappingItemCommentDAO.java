@@ -146,6 +146,7 @@ public class MappingItemCommentDAO extends MappingDAO
 			RefexDynamicCAB commentCab = rdv.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			commentCab.getData()[0] = new RefexDynamicString(comment.getCommentText());
 			commentCab.getData()[1] = (StringUtils.isNotBlank(comment.getCommentContext()) ? new RefexDynamicString(comment.getCommentContext()) : null);
+			commentCab.validate(null);
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(commentCab);
 
 			ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());
