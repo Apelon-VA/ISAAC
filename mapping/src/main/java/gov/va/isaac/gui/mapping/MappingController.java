@@ -9,9 +9,11 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.Utility;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -27,14 +29,17 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,22 +143,18 @@ public class MappingController {
 		minusMappingSetButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				ObservableList<MappingSet> selectedMappingSets = getSelectedMappingSets();
-				if (selectedMappingSets.size() >= 0) {
-					String clause = (selectedMappingSets.size() == 1) ? selectedMappingSets.get(0).getName() : "these " + Integer.toString(selectedMappingSets.size()) + " Mapping Sets";
-					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + clause + "?");
-
+				MappingSet selectedMappingSet = getSelectedMappingSet();
+				if (selectedMappingSet != null) {
+					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + selectedMappingSet.getName() + "?");
 					if (response == DialogResponse.YES) {
-						for (MappingSet mappingSet : selectedMappingSets) {
-							try
-							{
-								MappingSetDAO.retireMappingSet(mappingSet.getPrimordialUUID());
-							}
-							catch (IOException e1)
-							{
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
+						try
+						{
+							MappingSetDAO.retireMappingSet(selectedMappingSet.getPrimordialUUID());
+						}
+						catch (IOException e1)
+						{
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
 						}
 						refreshMappingSets();
 					}
@@ -227,33 +228,33 @@ public class MappingController {
 				@Override
 				public ObservableValue<String> call(CellDataFeatures<MappingSet, String> param)
 				{
-					if (param.getTableColumn().getText().equals("Name"))
-					{
-						return new SimpleStringProperty(param.getValue().getName());
-					}
-					else if (param.getTableColumn().getText().equals("Purpose"))
-					{
-						return new SimpleStringProperty(param.getValue().getPurpose());
-					}
-					else if (param.getTableColumn().getText().equals("Status"))
-					{
-						UUID editorStatus = param.getValue().getEditorStatus();
-						if (editorStatus == null) {
-							return new SimpleStringProperty("");
-						} else {
-							return new SimpleStringProperty(editorStatus.toString().trim());
+					SimpleStringProperty property = new SimpleStringProperty();
+					MappingSet mappingSet = param.getValue();
+					String columnName = param.getTableColumn().getText().trim();
+					
+					switch (columnName) {
+					case "Name":
+						property = new SimpleStringProperty(mappingSet.getName());
+						break;
+					case "Purpose":
+						property = new SimpleStringProperty(mappingSet.getPurpose());
+						break;
+					case "Status":
+						UUID editorStatus = mappingSet.getEditorStatus();
+						if (editorStatus != null) {
+							property = new SimpleStringProperty(editorStatus.toString().trim());
 						}
-					}
-					else if (param.getTableColumn().getText().equals("Description"))
-					{
-						return new SimpleStringProperty(param.getValue().getDescription());
-					}
-					else
-					{
+						break;
+					case "Description":
+						property = new SimpleStringProperty(mappingSet.getDescription());
+						break;
+					default:
 						System.out.println(param.getTableColumn().getText());
-						return new SimpleStringProperty();
-						
 					}
+					if (!mappingSet.isActive()) {
+						//TODO can we decorate the cell here to indicate inactive?
+					}
+					return property;
 				}
 			});
 		}
@@ -263,14 +264,9 @@ public class MappingController {
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MappingSet> c)
 			{
-				MappingSet selectedMappingSet = getSelectedMappingSet();
-				if (selectedMappingSet != null) {
-					updateMappingItemsList(selectedMappingSet);
-				}
+				updateMappingItemsList(getSelectedMappingSet());
 			}
 		});
-		
-		mappingSetTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 		
 		for (TableColumn<MappingItem, ?> x : mappingItemTableView.getColumns())
 		{
@@ -279,32 +275,30 @@ public class MappingController {
 				@Override
 				public ObservableValue<String> call(CellDataFeatures<MappingItem, String> param)
 				{
-					if (param.getTableColumn().getText().equals("Source Concept Name"))
-					{
-						return param.getValue().getSourceConceptProperty();
-					}
-					else if (param.getTableColumn().getText().equals("Target Concept Name"))
-					{
-						return param.getValue().getTargetConceptProperty();
-					}
-					else if (param.getTableColumn().getText().equals("Qualifier"))
-					{
-						return param.getValue().getQualifierConceptProperty();
-					}
-					else if (param.getTableColumn().getText().equals("Comments"))
-					{
-						return param.getValue().getCommentsProperty();
-					}
-					else if (param.getTableColumn().getText().equals("Status"))
-					{
-						return param.getValue().getEditorStatusConceptProperty();
-					}
-					else
-					{
+					SimpleStringProperty property = new SimpleStringProperty();
+					MappingItem mappingItem = param.getValue();
+					String columnName = param.getTableColumn().getText().trim();
+					
+					switch (columnName) {
+					case "Source Concept Name":
+						property = mappingItem.getSourceConceptProperty(); 
+						break;
+					case "Target Concept Name":
+						property = mappingItem.getTargetConceptProperty();
+						break;
+					case "Qualifier":
+						property = mappingItem.getQualifierConceptProperty();
+						break;
+					case "Comments":
+						property = mappingItem.getCommentsProperty();
+						break;
+					case "Status":
+						property = mappingItem.getEditorStatusConceptProperty();
+						break;
+					default:
 						System.out.println(param.getTableColumn().getText());
-						return new SimpleStringProperty();
-						
 					}
+					return property;
 				}
 			});
 		}
@@ -331,31 +325,32 @@ public class MappingController {
 		mappingItemSummaryLabel.setText("");
 		mappingItemListTitleLabel.setText("(no Mapping Set selected)");
 		mappingSetTableView.setPlaceholder(new Label("There are no Mapping Sets in the database."));
-		mappingItemTableView.setPlaceholder(new Label("No Mapping Set is selected."));
+		clearMappingItems();
 	}
 		
 	
 	private void updateMappingItemsList(MappingSet mappingSet)
 	{
-		mappingItemTableView.getItems().clear();
-		mappingItemTableView.setPlaceholder(new ProgressBar(-1.0));
-		
-		Utility.execute(() ->
-		{
-			ObservableList<MappingItem> mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
-			
-			Platform.runLater(() ->
+		clearMappingItems();
+		if (mappingSet != null) {
+			mappingItemTableView.setPlaceholder(new ProgressBar(-1.0));
+			Utility.execute(() ->
 			{
-				mappingItemTableView.setItems(mappingItems);
-				mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
+				ObservableList<MappingItem> mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
 				
-				mappingItemListTitleLabel.setText(mappingSet.getName());
-				plusMappingItemButton.setDisable(false);
-				minusMappingSetButton.setDisable(false);
-				editMappingSetButton.setDisable(false);
-				mappingSetSummaryLabel.setText(mappingSet.getSummary());
+				Platform.runLater(() ->
+				{
+					mappingItemTableView.setItems(mappingItems);
+					mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
+					
+					mappingItemListTitleLabel.setText(mappingSet.getName());
+					plusMappingItemButton.setDisable(false);
+					minusMappingSetButton.setDisable(false);
+					editMappingSetButton.setDisable(false);
+					mappingSetSummaryLabel.setText(mappingSet.getSummary());
+				});
 			});
-		});
+		}
 	}
 
 	private MappingSet getSelectedMappingSet() {
@@ -364,10 +359,6 @@ public class MappingController {
 	
 	private MappingItem getSelectedMappingItem() {
 		return mappingItemTableView.getSelectionModel().getSelectedItem();
-	}
-	
-	private ObservableList<MappingSet> getSelectedMappingSets() {
-		return mappingSetTableView.getSelectionModel().getSelectedItems();
 	}
 	
 	private ObservableList<MappingItem> getSelectedMappingItems() {
@@ -382,6 +373,7 @@ public class MappingController {
 	{
 		ObservableList<MappingSet> mappingSets;
 		boolean activeOnly = activeOnlyToggle.isSelected();
+		MappingSet selectedMappingSet = getSelectedMappingSet();
 		try
 		{
 			mappingSets = FXCollections.observableList(MappingSetDAO.getMappingSets(activeOnly));
@@ -393,12 +385,19 @@ public class MappingController {
 			mappingSets = FXCollections.observableArrayList();
 		}
 		mappingSetTableView.setItems(mappingSets);
+		
+		if (selectedMappingSet != getSelectedMappingSet()) {
+			refreshMappingItems();
+		}
 	}
 
 	protected void refreshMappingItems() {
 		MappingSet selectedMappingSet = getSelectedMappingSet();
-		if (selectedMappingSet != null) {
-			updateMappingItemsList(selectedMappingSet);
-		}
+		updateMappingItemsList(selectedMappingSet);
+	}
+	
+	protected void clearMappingItems() {
+		mappingItemTableView.getItems().clear();
+		mappingItemTableView.setPlaceholder(new Label("No Mapping Set is selected."));
 	}
 }
