@@ -65,7 +65,7 @@ public class MappingItemCommentDAO extends MappingDAO
 			ExtendedAppContext.getDataStore().addUncommitted(cc);
 			ExtendedAppContext.getDataStore().commit(cc);
 
-			return new MappingItemComment((RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponentVersion(OTFUtility.getViewCoordinate(), rdc.getPrimordialUuid()));
+			return new MappingItemComment((RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), rdc.getPrimordialUuid()));
 		}
 		catch (InvalidCAB | ContradictionException | PropertyVetoException e)
 		{
@@ -93,7 +93,7 @@ public class MappingItemCommentDAO extends MappingDAO
 			for (SearchResult sr : search(ISAAC.COMMENT_ATTRIBUTE.getPrimodialUuid()))
 			{
 				RefexDynamicVersionBI<?> rc = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().
-						getComponentVersion(OTFUtility.getViewCoordinate(), sr.getNid());
+						getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), sr.getNid());
 				if (rc != null)
 				{
 					if (activeOnly && !rc.isActive())
@@ -143,7 +143,7 @@ public class MappingItemCommentDAO extends MappingDAO
 		try
 		{
 			RefexDynamicVersionBI<?> rdv = readCurrentRefex(comment.getPrimordialUUID());
-			RefexDynamicCAB commentCab = rdv.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			RefexDynamicCAB commentCab = rdv.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			commentCab.getData()[0] = new RefexDynamicString(comment.getCommentText());
 			commentCab.getData()[1] = (StringUtils.isNotBlank(comment.getCommentContext()) ? new RefexDynamicString(comment.getCommentContext()) : null);
 			commentCab.validate(null);

@@ -68,12 +68,12 @@ public class MappingSet extends MappingObject
 		this.readFromRefex(refex); //Sets Name, inverseName and Description, etc
 	}
 
-	public List<MappingItem> getMappingItems()
+	public List<MappingItem> getMappingItems(boolean activeOnly)
 	{
 		List<MappingItem> mappingItems = null;
 		try
 		{
-			mappingItems = MappingItemDAO.getMappingItems(this.getPrimordialUUID());
+			mappingItems = MappingItemDAO.getMappingItems(this.getPrimordialUUID(), activeOnly);
 		}
 		catch (Exception e)
 		{
@@ -181,10 +181,10 @@ public class MappingSet extends MappingObject
 	/**
 	 * @return The summary of the mapping set
 	 */
-	public String getSummary()
+	public String getSummary(boolean activeOnly)
 	{
 		List<MappingItem> mappingItems;
-		mappingItems = this.getMappingItems();
+		mappingItems = this.getMappingItems(activeOnly);
 		return Integer.toString(mappingItems.size()) + " Mapping Items";
 	}
 

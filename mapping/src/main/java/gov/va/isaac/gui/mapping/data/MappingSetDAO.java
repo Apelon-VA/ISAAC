@@ -101,7 +101,7 @@ public class MappingSetDAO extends MappingDAO
 			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), MappingConstants.MAPPING_SEMEME_TYPE.getNid());
 			mappingAnnotation.setData(new RefexDynamicDataBI[] {
 					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus)),
-					(StringUtils.isBlank(purpose) ? null : new RefexDynamicString(purpose))}, OTFUtility.getViewCoordinate());
+					(StringUtils.isBlank(purpose) ? null : new RefexDynamicString(purpose))}, OTFUtility.getViewCoordinateAllowInactive());
 			OTFUtility.getBuilder().construct(mappingAnnotation);
 			
 			RefexDynamicCAB associationAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), ISAAC.ASSOCIATION_REFEX.getNid());
@@ -114,7 +114,7 @@ public class MappingSetDAO extends MappingDAO
 			
 			//Find the constructed dynamic refset
 			return new MappingSet((RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID())
-					.getVersion(OTFUtility.getViewCoordinate()));
+					.getVersion(OTFUtility.getViewCoordinateAllowInactive()));
 		
 		}
 		catch (ContradictionException | InvalidCAB | PropertyVetoException e)
@@ -136,7 +136,7 @@ public class MappingSetDAO extends MappingDAO
 	public static void updateMappingSet(MappingSet mappingSet) throws IOException {
 		try
 		{
-			ConceptVersionBI mappingConcept = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), mappingSet.getPrimordialUUID());
+			ConceptVersionBI mappingConcept = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinateAllowInactive(), mappingSet.getPrimordialUUID());
 			
 			for (DescriptionVersionBI<?> desc : mappingConcept.getDescriptionsActive())
 			{
@@ -145,7 +145,7 @@ public class MappingSetDAO extends MappingDAO
 					if (OTFUtility.isPreferred(desc.getAnnotations()))
 					{
 						//Set the name
-						DescriptionCAB dCab = desc.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+						DescriptionCAB dCab = desc.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dCab.setText(mappingSet.getName());
 						OTFUtility.getBuilder().construct(dCab);
 					}
@@ -157,7 +157,7 @@ public class MappingSetDAO extends MappingDAO
 							if (annotation.getAssemblageNid() == ISAAC.ASSOCIATION_INVERSE_NAME.getNid())
 							{
 								//set the inverse name
-								DescriptionCAB dCab = desc.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+								DescriptionCAB dCab = desc.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 								dCab.setText(mappingSet.getInverseName());
 								OTFUtility.getBuilder().construct(dCab);
 								break;
@@ -170,7 +170,7 @@ public class MappingSetDAO extends MappingDAO
 					if (OTFUtility.isPreferred(desc.getAnnotations()))
 					{
 						//set the description
-						DescriptionCAB dCab = desc.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+						DescriptionCAB dCab = desc.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 						dCab.setText(mappingSet.getDescription());
 						OTFUtility.getBuilder().construct(dCab);
 					}
@@ -182,7 +182,7 @@ public class MappingSetDAO extends MappingDAO
 			{
 				if (refex.getAssemblageNid() == MappingConstants.MAPPING_SEMEME_TYPE.getNid())
 				{
-					mappingRefex = refex.getVersion(OTFUtility.getViewCoordinate());
+					mappingRefex = refex.getVersion(OTFUtility.getViewCoordinateAllowInactive());
 					break;
 				}
 			}
@@ -193,10 +193,10 @@ public class MappingSetDAO extends MappingDAO
 				throw new IOException("internal error");
 			}
 			
-			RefexDynamicCAB mappingRefexCab = mappingRefex.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			RefexDynamicCAB mappingRefexCab = mappingRefex.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			mappingRefexCab.setData(new RefexDynamicDataBI[] {
 					(mappingSet.getEditorStatusConcept() == null ? null : new RefexDynamicUUID(mappingSet.getEditorStatusConcept())),
-					(StringUtils.isBlank(mappingSet.getPurpose()) ? null : new RefexDynamicString(mappingSet.getPurpose()))}, OTFUtility.getViewCoordinate());
+					(StringUtils.isBlank(mappingSet.getPurpose()) ? null : new RefexDynamicString(mappingSet.getPurpose()))}, OTFUtility.getViewCoordinateAllowInactive());
 			OTFUtility.getBuilder().construct(mappingRefexCab);
 
 			AppContext.getRuntimeGlobals().disableAllCommitListeners();
@@ -222,10 +222,11 @@ public class MappingSetDAO extends MappingDAO
 			for (SearchResult sr : search(MappingConstants.MAPPING_SEMEME_TYPE.getPrimodialUuid()))
 			{
 				RefexDynamicVersionBI<?> rc = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().
-						getComponentVersion(OTFUtility.getViewCoordinate(), sr.getNid());
+						getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), sr.getNid());
 				if (rc != null)
 				{
-					ConceptVersionBI con = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), rc.getReferencedComponentNid());
+					ConceptVersionBI con = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinateAllowInactive(), 
+							rc.getReferencedComponentNid());
 					if (activeOnly && !con.isActive())
 					{
 						continue;

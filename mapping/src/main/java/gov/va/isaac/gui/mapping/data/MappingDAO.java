@@ -53,15 +53,15 @@ public abstract class MappingDAO
 	
 	protected static RefexDynamicVersionBI<?> readCurrentRefex(UUID refexUUID) throws IOException, ContradictionException
 	{
-		return (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponentVersion(OTFUtility.getViewCoordinate(), refexUUID);
+		return (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), refexUUID);
 	}
 	
 	protected static void setConceptStatus(UUID conceptUUID, Status status) throws IOException
 	{
 		try
 		{
-			ConceptVersionBI concept = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), conceptUUID);
-			ConceptAttributeVersionBI<?> conAttrib = concept.getConceptAttributes().getVersion(OTFUtility.getViewCoordinate());
+			ConceptVersionBI concept = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinateAllowInactive(), conceptUUID);
+			ConceptAttributeVersionBI<?> conAttrib = concept.getConceptAttributes().getVersion(OTFUtility.getViewCoordinateAllowInactive());
 			if (conAttrib.getStatus() == status)
 			{
 				LOG.warn("Tried set the status to the value it already has.  Doing nothing");
@@ -69,7 +69,7 @@ public abstract class MappingDAO
 			else
 			{
 				
-				ConceptAttributeAB conceptAttribCab = conAttrib.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				ConceptAttributeAB conceptAttribCab = conAttrib.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				conceptAttribCab.setStatus(status);
 				OTFUtility.getBuilder().construct(conceptAttribCab);
 
@@ -100,7 +100,7 @@ public abstract class MappingDAO
 			}
 			else
 			{
-				RefexDynamicCAB mappingCab = rdv.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+				RefexDynamicCAB mappingCab = rdv.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 				mappingCab.setStatus(status);
 				RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(mappingCab);
 

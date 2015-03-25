@@ -48,7 +48,7 @@ public class MappingItemDAO extends MappingDAO
 			mappingAnnotation.setData(new RefexDynamicDataBI[] {
 					(targetConcept == null ? null : new RefexDynamicUUID(targetConcept)),
 					(qualifier == null ? null : new RefexDynamicUUID(qualifier)),
-					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinate());
+					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinateAllowInactive());
 			
 			
 			UUID mappingItemUUID = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
@@ -89,21 +89,45 @@ public class MappingItemDAO extends MappingDAO
 	 * @return
 	 * @throws IOException
 	 */
-	public static List<MappingItem> getMappingItems(UUID mappingSetID) throws IOException
+	public static List<MappingItem> getMappingItems(UUID mappingSetID, boolean activeOnly) throws IOException
 	{
-		ArrayList<MappingItem> result = new ArrayList<>();
-		for (SearchResult sr : search(mappingSetID))
+		try
 		{
-			RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
-			//TODO revert this masking of retired item bug
-			try {
-				result.add(new MappingItem(rc));
-			} catch (Exception e) {
-				// temporarily masking bug - do nothing
+			ArrayList<MappingItem> result = new ArrayList<>();
+			boolean hadError = false;
+			for (SearchResult sr : search(mappingSetID))
+			{
+				RefexDynamicVersionBI<?> rc = (RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore()
+						.getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), sr.getNid());
+				try
+				{
+					if (rc != null)
+					{
+						if (activeOnly && !rc.isActive())
+						{
+							continue;
+						}
+						result.add(new MappingItem(rc));
+					}
+				}
+				catch (Exception e)
+				{
+					LOG.error("Unexpected error reading mapping " + rc, e);
+					hadError = true;
+				}
 			}
+			if (hadError)
+			{
+				AppContext.getCommonDialogs().showErrorDialog("Internal Error", "Internal Error", "There was an internal error reading all of the mappings.  See logs.");
+			}
+			
+			return result;
 		}
-
-		return result;
+		catch (ContradictionException e)
+		{
+			LOG.error("Unexpected error reading comments", e);
+			throw new IOException("internal error reading comments");
+		}
 	}
 
 	/**
@@ -152,9 +176,9 @@ public class MappingItemDAO extends MappingDAO
 		try
 		{
 			RefexDynamicVersionBI<?> rdv = readCurrentRefex(mappingItem.getPrimordialUUID());
-			RefexDynamicCAB mappingItemCab = rdv.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
+			RefexDynamicCAB mappingItemCab = rdv.makeBlueprint(OTFUtility.getViewCoordinateAllowInactive(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			mappingItemCab.getData()[2] = (mappingItem.getEditorStatusConcept() != null ? new RefexDynamicUUID(mappingItem.getEditorStatusConcept()) : null);
-			mappingItemCab.validate(OTFUtility.getViewCoordinate());
+			mappingItemCab.validate(OTFUtility.getViewCoordinateAllowInactive());
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(mappingItemCab);
 
 			ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(rdc.getConceptNid());

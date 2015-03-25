@@ -9,11 +9,8 @@ import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.Utility;
-
 import java.io.IOException;
 import java.net.URL;
-import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
@@ -29,17 +26,14 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
-import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.control.Toggle;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -340,7 +334,7 @@ public class MappingController {
 			mappingItemTableView.setPlaceholder(new ProgressBar(-1.0));
 			Utility.execute(() ->
 			{
-				ObservableList<MappingItem> mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
+				ObservableList<MappingItem> mappingItems = FXCollections.observableList(mappingSet.getMappingItems(activeOnlyToggle.isSelected()));
 				
 				Platform.runLater(() ->
 				{
@@ -351,7 +345,7 @@ public class MappingController {
 					plusMappingItemButton.setDisable(false);
 					minusMappingSetButton.setDisable(false);
 					editMappingSetButton.setDisable(false);
-					mappingSetSummaryLabel.setText(mappingSet.getSummary());
+					mappingSetSummaryLabel.setText(mappingSet.getSummary(activeOnlyToggle.isSelected()));
 				});
 			});
 		}
@@ -391,7 +385,7 @@ public class MappingController {
 		// TODO maybe come up with a way to preserve the selection, if possible.
 		mappingSetTableView.getSelectionModel().clearSelection();
 		
-		mappingSetRetiredTableColumn.setVisible(!activeOnly);
+		//mappingSetRetiredTableColumn.setVisible(!activeOnly);
 		
 		refreshMappingItems();
 	}

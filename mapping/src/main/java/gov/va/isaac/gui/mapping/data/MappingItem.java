@@ -22,13 +22,10 @@ import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
@@ -50,16 +47,9 @@ public class MappingItem extends MappingObject
 	
 	private static UUID commentsHack = UUID.randomUUID();
 
-	protected MappingItem(RefexDynamicChronicleBI<?> refex) throws IOException
+	protected MappingItem(RefexDynamicVersionBI<?> refex) throws IOException
 	{
-		try
-		{
-			read(refex.getVersion(OTFUtility.getViewCoordinate()));
-		}
-		catch (ContradictionException e)
-		{
-			LOG.error("Unexpected error", e);
-		}
+		read(refex);
 	}
 	
 	private void read(RefexDynamicVersionBI<?> refex) throws IOException
