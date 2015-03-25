@@ -196,7 +196,7 @@ public class MappingSetDAO extends MappingDAO
 			RefexDynamicCAB mappingRefexCab = mappingRefex.makeBlueprint(OTFUtility.getViewCoordinate(), IdDirective.PRESERVE, RefexDirective.EXCLUDE);
 			mappingRefexCab.setData(new RefexDynamicDataBI[] {
 					(mappingSet.getEditorStatus() == null ? null : new RefexDynamicUUID(mappingSet.getEditorStatus())),
-					(StringUtils.isBlank(mappingSet.getPurpose()) ? null : new RefexDynamicString(mappingSet.getPurpose()))}, null);
+					(StringUtils.isBlank(mappingSet.getPurpose()) ? null : new RefexDynamicString(mappingSet.getPurpose()))}, OTFUtility.getViewCoordinate());
 			OTFUtility.getBuilder().construct(mappingRefexCab);
 
 			AppContext.getRuntimeGlobals().disableAllCommitListeners();
