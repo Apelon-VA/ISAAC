@@ -2,18 +2,17 @@ package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.mapping.data.MappingItem;
-import gov.va.isaac.gui.mapping.data.MappingItemComment;
 import gov.va.isaac.gui.mapping.data.MappingItemDAO;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
-import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
 import java.util.UUID;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -26,6 +25,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -35,7 +35,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.AnchorPane;
 import javafx.util.Callback;
-import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,22 +49,22 @@ import org.slf4j.LoggerFactory;
 public class MappingController {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 
-    @FXML private AnchorPane	mainPane;
-    @FXML private AnchorPane	mappingPane;
-    @FXML private AnchorPane	listPane;
-    @FXML private ToggleButton 	activeOnlyToggle;
-    @FXML private Button 		plusMappingSetButton;
-    @FXML private Button 		minusMappingSetButton;
-    @FXML private Button 		editMappingSetButton;
+	@FXML private AnchorPane	mainPane;
+	@FXML private AnchorPane	mappingPane;
+	@FXML private AnchorPane	listPane;
+	@FXML private ToggleButton 	activeOnlyToggle;
+	@FXML private Button 		plusMappingSetButton;
+	@FXML private Button 		minusMappingSetButton;
+	@FXML private Button 		editMappingSetButton;
 	@FXML private TableView<MappingSet> mappingSetTableView;
 	@FXML private Label			mappingItemListTitleLabel;
 	@FXML private TableView<MappingItem> mappingItemTableView;
-    @FXML private Button 		plusMappingItemButton;
-    @FXML private Button 		minusMappingItemButton;
-    @FXML private Button 		commentButton;
+	@FXML private Button 		plusMappingItemButton;
+	@FXML private Button 		minusMappingItemButton;
+	@FXML private Button 		commentButton;
 	@FXML private Label			mappingSetSummaryLabel;
-    @FXML private Label			mappingItemSummaryLabel;
-    
+	@FXML private Label			mappingItemSummaryLabel;
+	
 	public static MappingController init() throws IOException {
 		// Load from FXML.
 		URL resource = MappingController.class.getResource("Mapping.fxml");
@@ -112,7 +111,7 @@ public class MappingController {
 		activeOnlyToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
 			@Override
 			public void changed(ObservableValue<? extends Toggle> ov, Toggle toggle, Toggle new_toggle) {
-	        	refreshMappingSets();
+				refreshMappingSets();
 			}
 		});
 		
@@ -282,42 +281,23 @@ public class MappingController {
 				{
 					if (param.getTableColumn().getText().equals("Source Concept Name"))
 					{
-						return new SimpleStringProperty(OTFUtility.getDescription(param.getValue().getSourceConcept()));
+						return param.getValue().getSourceConceptProperty();
 					}
 					else if (param.getTableColumn().getText().equals("Target Concept Name"))
 					{
-						return new SimpleStringProperty(OTFUtility.getDescription(param.getValue().getTargetConcept()));
+						return param.getValue().getTargetConceptProperty();
 					}
 					else if (param.getTableColumn().getText().equals("Qualifier"))
 					{
-						UUID qualifierConcept = param.getValue().getQualifierConcept();
-						return new SimpleStringProperty((qualifierConcept == null)? "" : OTFUtility.getDescription(qualifierConcept));
+						return param.getValue().getQualifierConceptProperty();
 					}
 					else if (param.getTableColumn().getText().equals("Comments"))
 					{
-						String commentValue = "";
-						try
-						{
-							List<MappingItemComment> comments = param.getValue().getComments();
-							if (comments.size() > 0) {
-								commentValue = comments.get(0).getCommentText();
-							}
-							if (comments.size() > 1) {
-								commentValue += " (+" + Integer.toString(comments.size() - 1) + " more)";
-							}
-						}
-						catch (IOException e)
-						{
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						return new SimpleStringProperty(commentValue);
+						return param.getValue().getCommentsProperty();
 					}
 					else if (param.getTableColumn().getText().equals("Status"))
 					{
-						UUID editorStatus = param.getValue().getEditorStatusConcept();
-						String statusString = (editorStatus == null) ? "" : editorStatus.toString().trim(); 
-						return new SimpleStringProperty(statusString);
+						return param.getValue().getEditorStatusConceptProperty();
 					}
 					else
 					{
@@ -357,18 +337,25 @@ public class MappingController {
 	
 	private void updateMappingItemsList(MappingSet mappingSet)
 	{
-		ObservableList<MappingItem> mappingItems;
-		mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
-		mappingItemTableView.setItems(mappingItems);
-		if (mappingItems.size() == 0) {
-			mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
-		}
+		mappingItemTableView.getItems().clear();
+		mappingItemTableView.setPlaceholder(new ProgressBar(-1.0));
 		
-		mappingItemListTitleLabel.setText(mappingSet.getName());
-		plusMappingItemButton.setDisable(false);
-		minusMappingSetButton.setDisable(false);
-		editMappingSetButton.setDisable(false);
-		mappingSetSummaryLabel.setText(mappingSet.getSummary());
+		Utility.execute(() ->
+		{
+			ObservableList<MappingItem> mappingItems = FXCollections.observableList(mappingSet.getMappingItems());
+			
+			Platform.runLater(() ->
+			{
+				mappingItemTableView.setItems(mappingItems);
+				mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
+				
+				mappingItemListTitleLabel.setText(mappingSet.getName());
+				plusMappingItemButton.setDisable(false);
+				minusMappingSetButton.setDisable(false);
+				editMappingSetButton.setDisable(false);
+				mappingSetSummaryLabel.setText(mappingSet.getSummary());
+			});
+		});
 	}
 
 	private MappingSet getSelectedMappingSet() {

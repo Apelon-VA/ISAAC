@@ -20,9 +20,13 @@ package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
@@ -43,6 +47,9 @@ public class MappingItem
 	private UUID editorStatusConcept, primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
 	boolean isActive;
 	long creationTime;
+	
+	private HashMap<UUID, SimpleStringProperty> cachedValues = new HashMap<>();
+	private static UUID commentsHack = UUID.randomUUID();
 
 	protected MappingItem(RefexDynamicChronicleBI<?> refex) throws IOException
 	{
@@ -84,6 +91,45 @@ public class MappingItem
 	public List<MappingItemComment> getComments() throws IOException
 	{
 		return MappingItemCommentDAO.getComments(getPrimordialUUID(), false);
+	}
+	
+	public SimpleStringProperty getCommentsProperty()
+	{
+		SimpleStringProperty ssp = cachedValues.get(commentsHack);
+		if (ssp == null)
+		{
+			ssp = new SimpleStringProperty("-");
+			cachedValues.put(commentsHack, ssp);
+		}
+		
+		SimpleStringProperty ssp2 = cachedValues.get(commentsHack);
+		
+		if (ssp2.get().equals("-"))
+		{
+			Utility.execute(() ->
+			{
+				StringBuilder commentValue = new StringBuilder();
+				try
+				{
+					List<MappingItemComment> comments = getComments();
+					if (comments.size() > 0) {
+						commentValue.append(comments.get(0).getCommentText());
+					}
+					if (comments.size() > 1) {
+						commentValue.append(" (+" + Integer.toString(comments.size() - 1) + " more)");
+					}
+				}
+				catch (IOException e)
+				{
+					LOG.error("Error reading comments!", e);
+				}
+				Platform.runLater(() ->
+				{
+					ssp2.set(commentValue.toString());
+				});
+			});
+		}
+		return ssp2;
 	}
 	
 	/**
@@ -165,6 +211,56 @@ public class MappingItem
 	public UUID getTargetConcept()
 	{
 		return targetConcept;
+	}
+	
+	public SimpleStringProperty getTargetConceptProperty()
+	{
+		return propertyLookup(getTargetConcept());
+	}
+	
+	public SimpleStringProperty getSourceConceptProperty()
+	{
+		return propertyLookup(getSourceConcept());
+	}
+	
+	public SimpleStringProperty getQualifierConceptProperty()
+	{
+		return propertyLookup(getQualifierConcept());
+	}
+	
+	public SimpleStringProperty getEditorStatusConceptProperty()
+	{
+		return propertyLookup(getEditorStatusConcept());
+	}
+	
+	private SimpleStringProperty propertyLookup(UUID uuid)
+	{
+		if (uuid == null)
+		{
+			return new SimpleStringProperty("");
+		}
+		SimpleStringProperty ssp = cachedValues.get(uuid);
+		if (ssp == null)
+		{
+			ssp = new SimpleStringProperty("-");
+			cachedValues.put(uuid, ssp);
+		}
+		
+		SimpleStringProperty ssp2 = cachedValues.get(uuid);
+		
+		if (ssp.get().equals("-"))
+		{
+			Utility.execute(() ->
+			{
+				String s = OTFUtility.getDescription(uuid);
+				Platform.runLater(() ->
+				{
+					ssp2.set(s);
+				});
+			});
+		}
+		
+		return ssp2;
 	}
 	
 	/**
