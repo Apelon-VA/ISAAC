@@ -204,7 +204,6 @@ public class CreateMappingItemController {
 	}
 	
 	public void setSourceConcept(UUID sourceConceptID) {
-		//TODO set source concept node
 		ConceptVersionBI sourceConcept = OTFUtility.getConceptVersion(sourceConceptID);
 		if (sourceConcept != null) {
 			sourceConceptNode.set(sourceConcept);

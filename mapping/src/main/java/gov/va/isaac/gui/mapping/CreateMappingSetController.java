@@ -1,17 +1,26 @@
 package gov.va.isaac.gui.mapping;
 
+import java.util.List;
+import java.util.UUID;
+
 import gov.va.isaac.AppContext;
+import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
+import gov.va.isaac.gui.mapping.data.MappingUtils;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.TaskCompleteCallback;
+import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
+import javafx.application.Platform;
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -34,7 +43,7 @@ import org.slf4j.LoggerFactory;
  */
 
 public class CreateMappingSetController {
-	private static final Logger logger = LoggerFactory.getLogger(MappingController.class);
+	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 	
 	@FXML private BorderPane	mainPane;
 	@FXML private TextField		nameInput;
@@ -43,6 +52,7 @@ public class CreateMappingSetController {
 	@FXML private Button		createButton;
 	@FXML private Button		cancelButton;
 	@FXML private GridPane		gridPane;
+	@FXML private ComboBox<SimpleDisplayConcept>	statusCombo;
 	
 	private Label title = new Label();
 	private MappingSet mappingSet_ = null;
@@ -63,13 +73,30 @@ public class CreateMappingSetController {
 		assert purposeInput 		!= null : "fx:id=\"purposeInput\" was not injected: check your FXML file 'CreateMapping.fxml'.";
 		assert createButton 		!= null : "fx:id=\"createButton\" was not injected: check your FXML file 'CreateMapping.fxml'.";
 		assert cancelButton 		!= null : "fx:id=\"cancelButton\" was not injected: check your FXML file 'CreateMapping.fxml'.";
-		
-
-//		nameInput.setPromptText("CURRENT NAME"); TODO: vk EDIT MAPPING FILLS THIS OUT
-//		descInput.setPromptText("CURRENT DESC"); TODO: VK EDIT MAPPING FILLS THS OUT
-//		promptInput.setPromptText("CURRENT PROMPT") TODO: VK EDIT MAPPING FILLS THIS OUT 
+		assert statusCombo 			!= null : "fx:id=\"statusCombo\" was not injected: check your FXML file 'CreateMapping.fxml'.";
 		
 		title.setText("Create Mapping Set");;
+
+		statusCombo.setEditable(false);
+		Utility.execute(() ->
+		{
+			try
+			{
+				List<SimpleDisplayConcept> status = MappingUtils.getStatusConcepts();
+				status.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
+				
+				Platform.runLater(() ->
+				{
+					statusCombo.getItems().addAll(status);
+					statusCombo.getSelectionModel().select(0);
+				});
+			}
+			catch (Exception e1)
+			{
+				LOG.error("Unexpected error populating qualifier and/or status combo fields", e1);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error configuring status options.  See logs.", e1);
+			}
+		});
 		
 		final ValidBooleanBinding nameInputValid = new ValidBooleanBinding() {
 			{
@@ -110,17 +137,17 @@ public class CreateMappingSetController {
 		createButton.setOnAction((event) -> {
 			try
 			{
+				UUID statusUUID = (statusCombo.getSelectionModel().getSelectedItem().getNid() == Integer.MIN_VALUE ? null : 
+					ExtendedAppContext.getDataStore().getUuidPrimordialForNid(statusCombo.getSelectionModel().getSelectedItem().getNid()));
+				
 				if (mappingSet_ == null) {
-					// TODO status, inverseName?
-					//TODO dan wonders why this wasn't setting the mappingSet_ variable?
-					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), null);
+					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), statusUUID);
 				} else {
 					// Edit mapping set
 					mappingSet_.setName(nameInput.getText());
 					mappingSet_.setPurpose(purposeInput.getText());
 					mappingSet_.setDescription(descInput.getText());
-					//TODO Status
-					mappingSet_.setEditorStatus(null);
+					mappingSet_.setEditorStatus(statusUUID);
 					MappingSetDAO.updateMappingSet(mappingSet_);
 				}
 				

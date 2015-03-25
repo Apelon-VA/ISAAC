@@ -42,6 +42,7 @@
 				<TextField fx:id="nameInput" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" />
 				<TextField fx:id="purposeInput" maxWidth="1.7976931348623157E308" GridPane.columnIndex="1" GridPane.rowIndex="1" />
 				<TextArea fx:id="descInput" maxWidth="1.7976931348623157E308" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <ComboBox fx:id="statusCombo" prefHeight="25.0" prefWidth="507.0" GridPane.columnIndex="1" GridPane.rowIndex="3" />
 			</children>
 		</GridPane>
 	</center>
