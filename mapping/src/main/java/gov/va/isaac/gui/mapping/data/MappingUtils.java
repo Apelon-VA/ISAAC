@@ -20,7 +20,10 @@ package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.search.SearchHandle;
+import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.TaskCompleteCallback;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -77,4 +80,8 @@ public class MappingUtils
 		return result;
 	}
 	
+	public static SearchHandle search(String searchString, TaskCompleteCallback callback) throws IOException
+	{
+		return SearchHandler.descriptionSearch(searchString, Integer.MAX_VALUE, callback, true);
+	}
 }
