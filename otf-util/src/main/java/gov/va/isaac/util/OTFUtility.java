@@ -119,7 +119,7 @@ public class OTFUtility {
 	private static Set<UUID> rootNodeList = null;
 
 	public static TerminologyBuilderBI getBuilder() {
-		return new BdbTermBuilder(getEditCoordinate(), getViewCoordinate());
+		return new BdbTermBuilder(getEditCoordinate(), getViewCoordinateAllowInactive());
 	}
 	public static TerminologyBuilderBI getBuilder(EditCoordinate ec, ViewCoordinate vc) {
 		return new BdbTermBuilder(ec, vc);
@@ -164,6 +164,14 @@ public class OTFUtility {
 			LOG.error("Unexpected error fetching view coordinates!", e);
 		}
 
+		return vc;
+	}
+	
+	public static ViewCoordinate getViewCoordinateAllowInactive() 
+	{
+		ViewCoordinate vc = getViewCoordinate();
+		vc.getAllowedStatus().add(Status.INACTIVE);
+		vc.getAllowedStatus().add(Status.ACTIVE);
 		return vc;
 	}
 
