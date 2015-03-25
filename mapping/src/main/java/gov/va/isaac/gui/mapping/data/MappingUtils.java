@@ -80,6 +80,14 @@ public class MappingUtils
 		return result;
 	}
 	
+	/**
+	 * Launch a search in a background thread (returns immediately) handing back a handle to the search.
+	 * 
+	 * @param searchString - the query string
+	 * @param callback - (optional) the class instance that desires a callback when the background threaded search completes
+	 * @return
+	 * @throws IOException
+	 */
 	public static SearchHandle search(String searchString, TaskCompleteCallback callback) throws IOException
 	{
 		return SearchHandler.descriptionSearch(searchString, Integer.MAX_VALUE, callback, true);
