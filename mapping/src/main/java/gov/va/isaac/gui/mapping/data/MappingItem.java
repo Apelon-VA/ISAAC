@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class MappingItem
+public class MappingItem extends MappingObject
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
 
@@ -48,7 +48,6 @@ public class MappingItem
 	boolean isActive;
 	long creationTime;
 	
-	private HashMap<UUID, SimpleStringProperty> cachedValues = new HashMap<>();
 	private static UUID commentsHack = UUID.randomUUID();
 
 	protected MappingItem(RefexDynamicChronicleBI<?> refex) throws IOException
@@ -231,36 +230,6 @@ public class MappingItem
 	public SimpleStringProperty getEditorStatusConceptProperty()
 	{
 		return propertyLookup(getEditorStatusConcept());
-	}
-	
-	private SimpleStringProperty propertyLookup(UUID uuid)
-	{
-		if (uuid == null)
-		{
-			return new SimpleStringProperty("");
-		}
-		SimpleStringProperty ssp = cachedValues.get(uuid);
-		if (ssp == null)
-		{
-			ssp = new SimpleStringProperty("-");
-			cachedValues.put(uuid, ssp);
-		}
-		
-		SimpleStringProperty ssp2 = cachedValues.get(uuid);
-		
-		if (ssp.get().equals("-"))
-		{
-			Utility.execute(() ->
-			{
-				String s = OTFUtility.getDescription(uuid);
-				Platform.runLater(() ->
-				{
-					ssp2.set(s);
-				});
-			});
-		}
-		
-		return ssp2;
 	}
 	
 	/**

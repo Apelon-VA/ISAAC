@@ -20,10 +20,14 @@ package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.util.OTFUtility;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
+import javafx.beans.property.SimpleStringProperty;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
@@ -43,12 +47,12 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class MappingSet
+public class MappingSet extends MappingObject
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingSet.class);
 
 	private String name, inverseName, description, purpose;
-	private UUID primordialUUID, editorStatus;
+	private UUID primordialUUID, editorStatusConcept;
 	private boolean active;
 	private long creationDate;
 
@@ -89,20 +93,26 @@ public class MappingSet
 
 	/**
 	 * Change the editor status concept - may specify null
-	 * @param editorStatus
+	 * @param editorStatusConcept
 	 */
-	public void setEditorStatus(UUID editorStatus)
+	public void setEditorStatusConcept(UUID editorStatusConcept)
 	{
-		this.editorStatus = editorStatus;
+		this.editorStatusConcept = editorStatusConcept;
 	}
 
 	/**
 	 * @return The UUID of the concept that represents the editor selected status of the mapping set. May return null.
 	 */
-	public UUID getEditorStatus()
+	public UUID getEditorStatusConcept()
 	{
-		return editorStatus;
+		return editorStatusConcept;
 	}
+
+	public SimpleStringProperty getEditorStatusConceptProperty()
+	{
+		return propertyLookup(getEditorStatusConcept());
+	}
+	
 
 	/**
 	 * @param purpose - The 'purpose' of the mapping set. May specify null.
@@ -212,7 +222,7 @@ public class MappingSet
 				creationDate = mappingConcept.getTime();
 				if (refex.getData().length > 0 && refex.getData()[0] != null)
 				{
-					editorStatus = ((RefexDynamicUUID) refex.getData()[0]).getDataUUID();
+					editorStatusConcept = ((RefexDynamicUUID) refex.getData()[0]).getDataUUID();
 				}
 				if (refex.getData().length > 1 && refex.getData()[1] != null)
 				{

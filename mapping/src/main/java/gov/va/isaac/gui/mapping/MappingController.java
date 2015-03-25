@@ -61,14 +61,16 @@ public class MappingController {
 	@FXML private Button 		plusMappingSetButton;
 	@FXML private Button 		minusMappingSetButton;
 	@FXML private Button 		editMappingSetButton;
-	@FXML private TableView<MappingSet> mappingSetTableView;
 	@FXML private Label			mappingItemListTitleLabel;
-	@FXML private TableView<MappingItem> mappingItemTableView;
 	@FXML private Button 		plusMappingItemButton;
 	@FXML private Button 		minusMappingItemButton;
 	@FXML private Button 		commentButton;
 	@FXML private Label			mappingSetSummaryLabel;
 	@FXML private Label			mappingItemSummaryLabel;
+
+	@FXML private TableView<MappingSet> 	 mappingSetTableView;
+	@FXML private TableView<MappingItem> 	 mappingItemTableView;
+	@FXML private TableColumn<MappingSet, ?> mappingSetRetiredTableColumn;
 	
 	public static MappingController init() throws IOException {
 		// Load from FXML.
@@ -89,21 +91,21 @@ public class MappingController {
 		assert minusMappingSetButton	!= null : "fx:id=\"minusMappingButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert editMappingSetButton 	!= null : "fx:id=\"editMappingButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 
-		assert mappingSetSummaryLabel 	!= null : "fx:id=\"mappingSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert mappingSetTableView 	!= null : "fx:id=\"mappingTableView\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert mappingItemListTitleLabel 		!= null : "fx:id=\"listTitleLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert mappingItemTableView != null : "fx:id=\"listTableView\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingSetSummaryLabel 		!= null : "fx:id=\"mappingSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingSetTableView 			!= null : "fx:id=\"mappingTableView\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingItemListTitleLabel 	!= null : "fx:id=\"listTitleLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingItemTableView 		!= null : "fx:id=\"listTableView\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert plusMappingItemButton 		!= null : "fx:id=\"plusListButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert minusMappingItemButton 		!= null : "fx:id=\"minusListButton\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert commentButton 		!= null : "fx:id=\"commentButton\" was not injected: check your FXML file 'Mapping.fxml'.";
-		assert mappingItemSummaryLabel 	!= null : "fx:id=\"listSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
-
-		
+		assert commentButton 				!= null : "fx:id=\"commentButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingItemSummaryLabel 		!= null : "fx:id=\"listSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingSetRetiredTableColumn != null : "fx:id=\"mappingSetRetiredTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
+        
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
 		FxUtils.assignImageToButton(activeOnlyToggle, 		Images.FILTER_16.createImageView(), "Show Active Only / Show All");
 		FxUtils.assignImageToButton(plusMappingSetButton, 	Images.PLUS.createImageView(), 		"Create Mapping Set");
-		FxUtils.assignImageToButton(minusMappingSetButton, 	Images.MINUS.createImageView(), 	"Retire Mapping Set");
+		FxUtils.assignImageToButton(minusMappingSetButton, 	Images.MINUS.createImageView(), 	"Retire/Unretire Mapping Set");
 		FxUtils.assignImageToButton(editMappingSetButton, 	Images.EDIT.createImageView(), 		"Edit Mapping Set");
 		FxUtils.assignImageToButton(plusMappingItemButton, 	Images.PLUS.createImageView(), 		"Create Mapping");
 		FxUtils.assignImageToButton(minusMappingItemButton, Images.MINUS.createImageView(), 	"Retire Mapping");
@@ -145,11 +147,16 @@ public class MappingController {
 			public void handle(ActionEvent e) {
 				MappingSet selectedMappingSet = getSelectedMappingSet();
 				if (selectedMappingSet != null) {
-					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + selectedMappingSet.getName() + "?");
+					String verb = (selectedMappingSet.isActive())? "retire" : "unretire";
+					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to " + verb + " " + selectedMappingSet.getName() + "?");
 					if (response == DialogResponse.YES) {
 						try
 						{
-							MappingSetDAO.retireMappingSet(selectedMappingSet.getPrimordialUUID());
+							if (selectedMappingSet.isActive()) {
+								MappingSetDAO.retireMappingSet(selectedMappingSet.getPrimordialUUID());
+							} else {
+								MappingSetDAO.unRetireMappingSet(selectedMappingSet.getPrimordialUUID());
+							}
 						}
 						catch (IOException e1)
 						{
@@ -240,19 +247,16 @@ public class MappingController {
 						property = new SimpleStringProperty(mappingSet.getPurpose());
 						break;
 					case "Status":
-						UUID editorStatus = mappingSet.getEditorStatus();
-						if (editorStatus != null) {
-							property = new SimpleStringProperty(editorStatus.toString().trim());
-						}
+						property = mappingSet.getEditorStatusConceptProperty();
 						break;
 					case "Description":
 						property = new SimpleStringProperty(mappingSet.getDescription());
 						break;
+					case "Retired":
+						property = new SimpleStringProperty((mappingSet.isActive())?"":"Y");
+						break;
 					default:
 						System.out.println(param.getTableColumn().getText());
-					}
-					if (!mappingSet.isActive()) {
-						//TODO can we decorate the cell here to indicate inactive?
 					}
 					return property;
 				}
@@ -373,7 +377,6 @@ public class MappingController {
 	{
 		ObservableList<MappingSet> mappingSets;
 		boolean activeOnly = activeOnlyToggle.isSelected();
-		MappingSet selectedMappingSet = getSelectedMappingSet();
 		try
 		{
 			mappingSets = FXCollections.observableList(MappingSetDAO.getMappingSets(activeOnly));
@@ -385,10 +388,12 @@ public class MappingController {
 			mappingSets = FXCollections.observableArrayList();
 		}
 		mappingSetTableView.setItems(mappingSets);
+		// TODO maybe come up with a way to preserve the selection, if possible.
+		mappingSetTableView.getSelectionModel().clearSelection();
 		
-		if (selectedMappingSet != getSelectedMappingSet()) {
-			refreshMappingItems();
-		}
+		mappingSetRetiredTableColumn.setVisible(!activeOnly);
+		
+		refreshMappingItems();
 	}
 
 	protected void refreshMappingItems() {

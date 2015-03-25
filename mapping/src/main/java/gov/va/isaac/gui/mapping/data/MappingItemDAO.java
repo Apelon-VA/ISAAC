@@ -95,7 +95,12 @@ public class MappingItemDAO extends MappingDAO
 		for (SearchResult sr : search(mappingSetID))
 		{
 			RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
-			result.add(new MappingItem(rc));
+			//TODO revert this masking of retired item bug
+			try {
+				result.add(new MappingItem(rc));
+			} catch (Exception e) {
+				// temporarily masking bug - do nothing
+			}
 		}
 
 		return result;

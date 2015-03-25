@@ -147,7 +147,7 @@ public class CreateMappingSetController {
 					mappingSet_.setName(nameInput.getText());
 					mappingSet_.setPurpose(purposeInput.getText());
 					mappingSet_.setDescription(descInput.getText());
-					mappingSet_.setEditorStatus(statusUUID);
+					mappingSet_.setEditorStatusConcept(statusUUID);
 					MappingSetDAO.updateMappingSet(mappingSet_);
 				}
 				
