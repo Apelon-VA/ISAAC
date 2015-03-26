@@ -225,13 +225,11 @@ public class MappingSetDAO extends MappingDAO
 						getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), sr.getNid());
 				if (rc != null)
 				{
-					ConceptVersionBI con = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinateAllowInactive(), 
-							rc.getReferencedComponentNid());
-					if (activeOnly && !con.isActive())
+					ConceptVersionBI mappingConcept = getMappingConcept(rc);
+					if (mappingConcept.isActive() || !activeOnly)
 					{
-						continue;
+						result.add(new MappingSet(rc));
 					}
-					result.add(new MappingSet(rc));
 				}
 			}
 			
@@ -252,5 +250,9 @@ public class MappingSetDAO extends MappingDAO
 	public static void unRetireMappingSet(UUID mappingSetPrimordialUUID) throws IOException
 	{
 		setConceptStatus(mappingSetPrimordialUUID, Status.ACTIVE);
+	}
+	
+	public static ConceptVersionBI getMappingConcept(RefexDynamicVersionBI<?> refex) {
+		return OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
 	}
 }

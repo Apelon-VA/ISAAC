@@ -8,9 +8,11 @@ import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.ValidBooleanBinding;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.List;
+
 import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -23,8 +25,11 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +44,6 @@ public class CommentDialogController implements TaskCompleteCallback {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 
     @FXML    private AnchorPane titlePane;
-    @FXML    private Label 		mappingItemLabel;
     @FXML    private Button 	closeButton;
     @FXML    private TextArea 	newCommentTextArea;
     @FXML    private ScrollPane commentsPane;
@@ -48,12 +52,15 @@ public class CommentDialogController implements TaskCompleteCallback {
     @FXML    private AnchorPane newCommentPane;
     @FXML    private Button 	saveButton;
     @FXML    private Label		titleLabel;
-	
+    @FXML    private VBox 		commentListVBox;
+    @FXML    private Label 		sourceLabel;
+    @FXML    private Label 		qualifierLabel;
+    @FXML    private Label 		targetLabel;
+    @FXML    private GridPane 	titleGridPane;
+
     private MappingItem mappingItem_;
-    private VBox commentListVBox = new VBox();
     
 	public Region getRootNode() {
-		//return region;
 		return mainPane;
 	}
 	
@@ -63,8 +70,24 @@ public class CommentDialogController implements TaskCompleteCallback {
 	
 	@FXML
 	public void initialize() {
-		commentsPane.setContent(commentListVBox);
-
+		assert titleLabel 			!= null : "fx:id=\"titleLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert sourceLabel 			!= null : "fx:id=\"sourceLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert qualifierLabel 		!= null : "fx:id=\"qualifierLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert closeButton 			!= null : "fx:id=\"closeButton\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert targetLabel 			!= null : "fx:id=\"targetLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert newCommentTextArea 	!= null : "fx:id=\"newCommentTextArea\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert commentsPane 		!= null : "fx:id=\"commentsPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert mappingSetLabel 		!= null : "fx:id=\"mappingSetLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert mainPane 			!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert newCommentPane 		!= null : "fx:id=\"newCommentPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert saveButton 			!= null : "fx:id=\"saveButton\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert commentListVBox 		!= null : "fx:id=\"commentListVBox\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+        assert titleGridPane 		!= null : "fx:id=\"titleGridPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		
+		commentListVBox.setPrefHeight(0);
+		commentsPane.setFitToWidth(true);
+		commentListVBox.setFillWidth(true);
+		
 		saveButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
@@ -117,9 +140,9 @@ public class CommentDialogController implements TaskCompleteCallback {
 	public void setMappingSetAndItem(MappingSet mappingSet, MappingItem mappingItem) {
 		mappingItem_ = mappingItem;
 		mappingSetLabel.setText(mappingSet.getName());
-		//TODO dan isn't sure what this was for
-		mappingItemLabel.setText("dan broke it"); //mappingItem.getName());
-		
+		sourceLabel.setText(mappingItem.getSourceConceptProperty().getValueSafe());
+		targetLabel.setText(mappingItem.getTargetConceptProperty().getValueSafe());
+		qualifierLabel.setText(mappingItem.getQualifierConceptProperty().getValueSafe());
 		try
 		{
 			List<MappingItemComment> comments = mappingItem.getComments();
@@ -136,8 +159,6 @@ public class CommentDialogController implements TaskCompleteCallback {
 	
 	private void addCommentToList(MappingItemComment comment) {
 		CommentControl cc = new CommentControl();
-		AnchorPane.setLeftAnchor(cc, 0.0);
-		AnchorPane.setRightAnchor(cc, 10.0);
 		cc.setPrefWidth(commentListVBox.getPrefWidth());
 		cc.setComment(comment);
 		commentListVBox.setPrefHeight(commentListVBox.getPrefHeight() + cc.getPrefHeight());
