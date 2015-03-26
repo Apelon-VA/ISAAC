@@ -35,6 +35,8 @@ import org.slf4j.LoggerFactory;
 /**
  * SearchResultsIntersectionFilter
  * 
+ * Just a Utility class to allow chaining multiple filters together for passing them into the SearchHandeler search API calls.
+ * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
