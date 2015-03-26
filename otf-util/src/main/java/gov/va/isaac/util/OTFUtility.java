@@ -784,21 +784,35 @@ public class OTFUtility {
 	}
 	
 	/**
-	 * Recursively get Is a children of a concept
+	 * Recursively find the leaf nodes of a concept hierarchy
+	 * @param nid - starting concept
 	 */
-	public static Set<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
+	public static Set<ConceptVersionBI> getAllLeafChildrenOfConcept(int nid) throws IOException, ContradictionException
 	{
-		return getAllChildrenOfConcept(new HashSet<>(), getConceptVersion(nid), recursive);
-	}
-	public static Set<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
-	{
-		return getAllChildrenOfConcept(new HashSet<>(), concept, recursive);
+		return getAllChildrenOfConcept(new HashSet<>(), getConceptVersion(nid), true, true);
 	}
 	
 	/**
 	 * Recursively get Is a children of a concept
 	 */
-	private static Set<ConceptVersionBI> getAllChildrenOfConcept(Set<Integer> handledConceptNids, ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
+	public static Set<ConceptVersionBI> getAllChildrenOfConcept(int nid, boolean recursive) throws IOException, ContradictionException
+	{
+		return getAllChildrenOfConcept(new HashSet<>(), getConceptVersion(nid), recursive, false);
+	}
+	
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	public static Set<ConceptVersionBI> getAllChildrenOfConcept(ConceptVersionBI concept, boolean recursive) throws IOException, ContradictionException
+	{
+		return getAllChildrenOfConcept(new HashSet<>(), concept, recursive, false);
+	}
+	
+	/**
+	 * Recursively get Is a children of a concept
+	 */
+	private static Set<ConceptVersionBI> getAllChildrenOfConcept(Set<Integer> handledConceptNids, ConceptVersionBI concept, boolean recursive, boolean leafOnly) 
+			throws IOException, ContradictionException
 	{
 		Set<ConceptVersionBI> results = new HashSet<>();
 		
@@ -809,8 +823,10 @@ public class OTFUtility {
 		}
 
 		//TODO OTF Bug - OTF is broken, this returns all kinds of duplicates  https://jira.ihtsdotools.org/browse/OTFISSUE-21
+		int size = 0;
 		for (RelationshipVersionBI<?> r : concept.getRelationshipsIncomingActiveIsa())
 		{
+			size++;
 			if (handledConceptNids.contains(r.getOriginNid())) {
 				// avoids processing or returning of duplicates
 				LOG.debug("Encountered already-handled ORIGIN child concept \"{}\".  May be result of OTF-returned duplicate or source of potential infinite loop", OTFUtility.getDescription(r.getOriginNid()));
@@ -819,15 +835,21 @@ public class OTFUtility {
 			}
 
 			ConceptVersionBI originConcept = getConceptVersion(r.getOriginNid());
-			results.add(originConcept);
+			if (!leafOnly)
+			{
+				results.add(originConcept);
+			}
 			if (recursive)
 			{
-				results.addAll(getAllChildrenOfConcept(handledConceptNids, originConcept, recursive));
+				results.addAll(getAllChildrenOfConcept(handledConceptNids, originConcept, recursive, leafOnly));
 			}
 		}
 		
+		if (leafOnly && size == 0 && !handledConceptNids.contains(concept.getNid()))
+		{
+			results.add(concept);
+		}
 		handledConceptNids.add(concept.getNid());
-		
 		return results;
 	}
 
