@@ -30,8 +30,10 @@ import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.TaskCompleteCallback;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
@@ -39,6 +41,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.slf4j.Logger;
@@ -251,5 +254,25 @@ public class MappingUtils
 		}
 		
 		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, childOfNid);
+	}
+	
+	public List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
+	{
+		Set<ConceptVersionBI> extendedDescriptionTypes;
+		try
+		{
+			extendedDescriptionTypes = OTFUtility.getAllLeafChildrenOfConcept(SnomedMetadataRf2.DESCRIPTION_NAME_IN_SOURCE_TERM_RF2.getNid());
+			ArrayList<SimpleDisplayConcept> temp = new ArrayList<>();
+			for (ConceptVersionBI c : extendedDescriptionTypes)
+			{
+				temp.add(new SimpleDisplayConcept(c));
+			}
+			Collections.sort(temp);
+			return temp;
+		}
+		catch (ContradictionException e)
+		{
+			throw new IOException(e);
+		}
 	}
 }
