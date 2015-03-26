@@ -3,7 +3,6 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.ExtendedAppContext;
 import java.io.IOException;
 import java.util.UUID;
-import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 
 /**
@@ -11,15 +10,13 @@ import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
  *
  * @author David Triglianos
  */
-public class MappingItemComment
+public class MappingItemComment extends StampedItem
 {
 	private String commentText;
 	private String commentContext;
 	private UUID mappingItemUUID;
 	private UUID primoridalUUID;
-	private UUID authorUUID;
-	private long creationDate;
-	private boolean isActive;
+
 
 	protected MappingItemComment(RefexDynamicVersionBI<?> comment) throws IOException
 	{
@@ -32,9 +29,7 @@ public class MappingItemComment
 		commentContext = ((commentRefex.getData().length > 1 && commentRefex.getData()[1] != null) ? commentRefex.getData()[1].getDataObject().toString() : null);
 		mappingItemUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(commentRefex.getReferencedComponentNid());
 		primoridalUUID = commentRefex.getPrimordialUuid();
-		authorUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(commentRefex.getAuthorNid());
-		creationDate = commentRefex.getTime();
-		isActive = commentRefex.getStatus() == Status.ACTIVE;
+		readStampDetails(commentRefex);
 	}
 
 	/**
@@ -86,29 +81,5 @@ public class MappingItemComment
 	public UUID getPrimordialUUID()
 	{
 		return primoridalUUID;
-	}
-
-	/**
-	 * @return the authorName - a UUID that identifies a concept that represents the Author
-	 */
-	public UUID getAuthorName()
-	{
-		return authorUUID;
-	}
-
-	/**
-	 * @return the creationDate
-	 */
-	public long getCreationDate()
-	{
-		return creationDate;
-	}
-
-	/**
-	 * @return the isActive
-	 */
-	public boolean isActive()
-	{
-		return isActive;
 	}
 }

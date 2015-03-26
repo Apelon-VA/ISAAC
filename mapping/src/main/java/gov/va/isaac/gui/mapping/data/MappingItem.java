@@ -42,8 +42,6 @@ public class MappingItem extends MappingObject
 	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
 
 	private UUID editorStatusConcept, primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
-	boolean isActive;
-	long creationTime;
 	
 	private static UUID commentsHack = UUID.randomUUID();
 
@@ -57,8 +55,7 @@ public class MappingItem extends MappingObject
 		primordialUUID = refex.getPrimordialUuid();
 		sourceConcept = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex.getReferencedComponentNid());
 		mappingSetIDConcept = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex.getAssemblageNid());
-		isActive = refex.isActive();
-		creationTime = refex.getTime();
+		readStampDetails(refex);
 		
 		RefexDynamicDataBI[] data = refex.getData();
 		targetConcept = ((data != null && data.length > 0) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null);
@@ -68,7 +65,7 @@ public class MappingItem extends MappingObject
 
 	
 	public String getSummary() {
-		return  (isActive ? "Active " : "Retired ") + "Mapping: " + OTFUtility.getDescription(sourceConcept) + "-" + OTFUtility.getDescription(mappingSetIDConcept)
+		return  (isActive() ? "Active " : "Retired ") + "Mapping: " + OTFUtility.getDescription(sourceConcept) + "-" + OTFUtility.getDescription(mappingSetIDConcept)
 				+ "-" + OTFUtility.getDescription(targetConcept) + "-" + (qualifierConcept == null ? "no qualifier" : OTFUtility.getDescription(qualifierConcept)) 
 				+ "-" + (editorStatusConcept == null ? "no status" : OTFUtility.getDescription(editorStatusConcept)) + "-" + primordialUUID.toString();
 	}
@@ -154,14 +151,6 @@ public class MappingItem extends MappingObject
 	}
 
 	/**
-	 * @return the isActive
-	 */
-	public boolean isActive()
-	{
-		return isActive;
-	}
-
-	/**
 	 * @return the primordialUUID of this Mapping Item.  Note that this doesn't uniquely identify a mapping item within the system
 	 * as changes to the mapping item will retain the same ID - there will now be multiple versions.  They will differ by date.
 	 */
@@ -220,13 +209,5 @@ public class MappingItem extends MappingObject
 	public SimpleStringProperty getEditorStatusConceptProperty()
 	{
 		return propertyLookup(getEditorStatusConcept());
-	}
-	
-	/**
-	 * @return the creationTime
-	 */
-	public long getCreationTime()
-	{
-		return creationTime;
 	}
 }

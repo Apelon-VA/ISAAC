@@ -53,8 +53,6 @@ public class MappingSet extends MappingObject
 
 	private String name, inverseName, description, purpose;
 	private UUID primordialUUID, editorStatusConcept;
-	private boolean active;
-	private long creationDate;
 
 	/**
 	 * 
@@ -81,14 +79,6 @@ public class MappingSet extends MappingObject
 			mappingItems = new ArrayList<MappingItem>();
 		}
 		return mappingItems;
-	}
-
-	/**
-	 * Is this mapping concept active or retired?
-	 */
-	public boolean isActive()
-	{
-		return active;
 	}
 
 	/**
@@ -195,11 +185,6 @@ public class MappingSet extends MappingObject
 	{
 		return primordialUUID;
 	}
-	
-	public long getCreationDate()
-	{
-		return creationDate;
-	}
 
 	/**
 	 * @return Any comments attached to this mapping set.
@@ -219,8 +204,7 @@ public class MappingSet extends MappingObject
 			if (mappingConcept != null)
 			{
 				primordialUUID = mappingConcept.getPrimordialUuid();
-				active = mappingConcept.isActive();
-				creationDate = mappingConcept.getTime();
+				readStampDetails(mappingConcept);
 				if (refex.getData().length > 0 && refex.getData()[0] != null)
 				{
 					editorStatusConcept = ((RefexDynamicUUID) refex.getData()[0]).getDataUUID();

@@ -9,7 +9,7 @@ import java.util.UUID;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 
-public class MappingObject {
+public class MappingObject extends StampedItem {
 	protected HashMap<UUID, SimpleStringProperty> cachedValues = new HashMap<>();
 	
 	protected SimpleStringProperty propertyLookup(UUID uuid)
