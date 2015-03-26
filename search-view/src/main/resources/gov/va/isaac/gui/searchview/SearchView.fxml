@@ -70,6 +70,12 @@
 										</Label>
 									</children>
 								</HBox>
+								<HBox fx:id="searchInDescriptionHBox" spacing="10.0">
+									<children>
+										<Label maxHeight="1.7976931348623157E308" text="Description Type" />
+										<ChoiceBox fx:id="descriptionTypeSelection" maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
+									</children>
+								</HBox>
 							</children>
 						</VBox>
 					</content>
