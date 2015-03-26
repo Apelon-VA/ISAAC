@@ -103,11 +103,10 @@ public class MappingItemDAO extends MappingDAO
 				{
 					if (rc != null)
 					{
-						if (activeOnly && !rc.isActive())
+						if (rc.isActive() || !activeOnly)
 						{
-							continue;
+							result.add(new MappingItem(rc));
 						}
-						result.add(new MappingItem(rc));
 					}
 				}
 				catch (Exception e)

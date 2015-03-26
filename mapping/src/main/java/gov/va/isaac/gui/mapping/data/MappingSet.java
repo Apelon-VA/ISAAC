@@ -214,7 +214,8 @@ public class MappingSet extends MappingObject
 	{
 		try
 		{
-			ConceptVersionBI mappingConcept = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
+			//ConceptVersionBI mappingConcept = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
+			ConceptVersionBI mappingConcept = MappingSetDAO.getMappingConcept(refex); 
 			if (mappingConcept != null)
 			{
 				primordialUUID = mappingConcept.getPrimordialUuid();

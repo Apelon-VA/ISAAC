@@ -65,6 +65,7 @@ public class MappingController {
 	@FXML private TableView<MappingSet> 	 mappingSetTableView;
 	@FXML private TableView<MappingItem> 	 mappingItemTableView;
 	@FXML private TableColumn<MappingSet, ?> mappingSetRetiredTableColumn;
+	@FXML private TableColumn<MappingSet, ?> mappingItemRetiredTableColumn;
 	
 	public static MappingController init() throws IOException {
 		// Load from FXML.
@@ -94,6 +95,7 @@ public class MappingController {
 		assert commentButton 				!= null : "fx:id=\"commentButton\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert mappingItemSummaryLabel 		!= null : "fx:id=\"listSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
 		assert mappingSetRetiredTableColumn != null : "fx:id=\"mappingSetRetiredTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
+		assert mappingItemRetiredTableColumn != null : "fx:id=\"mappingItemRetiredTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
@@ -186,22 +188,36 @@ public class MappingController {
 			public void handle(ActionEvent e) {
 				ObservableList<MappingItem> selectedMappingItems = getSelectedMappingItems();
 				if (selectedMappingItems.size() >= 0) {
-					String clause = (selectedMappingItems.size() == 1) ? "this Mapping Item" : "these " + Integer.toString(selectedMappingItems.size()) + " Mapping Items";
-					DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + clause + "?");
-
-					if (response == DialogResponse.YES) {
-						for (MappingItem mappingItem : selectedMappingItems) {
-							try
-							{
-								MappingItemDAO.retireMappingItem(mappingItem.getPrimordialUUID());
-							}
-							catch (IOException e1)
-							{
-								// TODO Auto-generated catch block
+					if (selectedMappingItems.size() == 1 && !selectedMappingItems.get(0).isActive()) {
+						// One inactive item selected; unretire
+						DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to unretire this Mapping Item?");
+						if (response == DialogResponse.YES) {
+							try {
+								MappingItemDAO.unRetireMappingItem(selectedMappingItems.get(0).getPrimordialUUID());
+							} catch (IOException e1) {
+								//TODO prompt
 								e1.printStackTrace();
 							}
+							updateMappingItemsList(getSelectedMappingSet());
 						}
-						updateMappingItemsList(getSelectedMappingSet());
+					} else {
+						String clause = (selectedMappingItems.size() == 1) ? "this Mapping Item" : "these " + Integer.toString(selectedMappingItems.size()) + " Mapping Items";
+						DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire " + clause + "?");
+						if (response == DialogResponse.YES) {
+							for (MappingItem mappingItem : selectedMappingItems) {
+								if (mappingItem.isActive()) {
+									// Don't bother trying to retire inactive items
+									try {
+										MappingItemDAO.retireMappingItem(mappingItem.getPrimordialUUID());
+									
+									} catch (IOException e1) {
+										// TODO Auto-generated catch block
+										e1.printStackTrace();
+									}
+								}
+							}
+							updateMappingItemsList(getSelectedMappingSet());
+						}
 					}
 				}
 			}
@@ -292,6 +308,9 @@ public class MappingController {
 						break;
 					case "Status":
 						property = mappingItem.getEditorStatusConceptProperty();
+						break;
+					case "Retired":
+						property = new SimpleStringProperty((mappingItem.isActive())?"":"Y");
 						break;
 					default:
 						System.out.println(param.getTableColumn().getText());
@@ -386,6 +405,7 @@ public class MappingController {
 		mappingSetTableView.getSelectionModel().clearSelection();
 		
 		//mappingSetRetiredTableColumn.setVisible(!activeOnly);
+		//mappingItemRetiredTableColumn.setVisible(!activeOnly);
 		
 		refreshMappingItems();
 	}

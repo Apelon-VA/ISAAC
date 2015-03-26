@@ -44,6 +44,7 @@
                         <TableColumn editable="false" minWidth="0.0" prefWidth="182.0" text="Qualifier" />
                         <TableColumn editable="false" prefWidth="179.0" text="Comments" />
                         <TableColumn editable="false" prefWidth="136.0" text="Status" />
+                        <TableColumn fx:id="mappingItemRetiredTableColumn" editable="false" prefWidth="57.0" text="Retired" />
                     </columns>
                   </TableView>
                   <Button fx:id="commentButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="C" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
