@@ -28,15 +28,18 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Hashtable;
 import java.util.List;
-import java.util.Set;
+import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionIndexer;
+import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionAnalogBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
@@ -69,7 +72,7 @@ public class SearchHandler
 	 * @param callback - (optional) Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
 	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
 	 *   requests to this method with callbacks.
-	 * @param filters - An optional filter than can add or remove items from the tenative result set before it is returned.
+	 * @param filter - An optional filter than can add or remove items from the tentative result set before it is returned.
 	 * @param comparator - The comparator to use for sorting the results - optional - uses {@link CompositeSearchResultComparator} if none is
 	 *  provided.
 	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
@@ -83,11 +86,180 @@ public class SearchHandler
 			final boolean prefixSearch, 
 			final TaskCompleteCallback callback, 
 			final Integer taskId, 
-			final SearchResultsFilter filters,
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter,
 			Comparator<CompositeSearchResult> comparator,
-			boolean mergeOnConcepts,
-			Supplier<Set<CompositeSearchResult>> filterList)
+			boolean mergeOnConcepts)
 	{
+		return descriptionSearch(query, 
+				(index, queryString) ->
+				{
+					try
+					{
+						return index.query(queryString, prefixSearch, ComponentProperty.DESCRIPTION_TEXT, resultLimit, Long.MIN_VALUE);
+					}
+					catch (Exception e)
+					{
+						throw new RuntimeException(e);
+					}
+				},
+		prefixSearch, callback, taskId, filter, comparator, mergeOnConcepts); 
+	}
+	
+	/**
+	 * Execute a Query against a specific type of description in a background thread, hand back a handle to the search object which will 
+	 * allow you to get the results (when they are ready) and also cancel an in-progress query.
+	 * 
+	 * If there is a problem with the internal indexes - an error will be logged, and the exception will be re-thrown when the 
+	 * {@link SearchHandle#getResults()} method of the SearchHandle is called.
+	 * 
+	 * @param query - The query text
+	 * @param resultLimit - limit to X results.  Use {@link Integer#MAX_VALUE} for no limit.
+	 * @param prefixSearch - true to use the "prefex search" algorithm.  False to use the standard lucene algorithm.  
+	 *   See {@link LuceneDescriptionIndexer#query(String, boolean, ComponentProperty, int, Long)} for more details on this algorithm.
+	 * @param descriptionType - The type to search within (FSN / Synonym / Description)
+	 * @param callback - (optional) Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
+	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
+	 *   requests to this method with callbacks.
+	 * @param filter - An optional filter than can add or remove items from the tentative result set before it is returned.
+	 * @param comparator - The comparator to use for sorting the results - optional - uses {@link CompositeSearchResultComparator} if none is
+	 *  provided.
+	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
+	 *   as a single result representing the concept - with each matching string listed, and the score being the best score of any of the 
+	 *   matching strings.  When false, you will get one search result per description match - so concepts can be returned multiple times.
+	 * @return A handle to the running search.
+	 */
+	public static SearchHandle descriptionSearch(
+			String query, 
+			final int resultLimit, 
+			final boolean prefixSearch, 
+			final LuceneDescriptionType descriptionType,
+			final TaskCompleteCallback callback, 
+			final Integer taskId, 
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter,
+			Comparator<CompositeSearchResult> comparator,
+			boolean mergeOnConcepts)
+	{
+		
+		return descriptionSearch(query, 
+				(index, queryString) ->
+				{
+					try
+					{
+						return index.query(queryString, descriptionType, resultLimit, Long.MIN_VALUE);
+					}
+					catch (Exception e)
+					{
+						throw new RuntimeException(e);
+					}
+				},
+		prefixSearch, callback, taskId, filter, comparator, mergeOnConcepts); 
+	}
+	
+	/**
+	 * Execute a Query against a specific type of description in a background thread, hand back a handle to the search object which will 
+	 * allow you to get the results (when they are ready) and also cancel an in-progress query.
+	 * 
+	 * If there is a problem with the internal indexes - an error will be logged, and the exception will be re-thrown when the 
+	 * {@link SearchHandle#getResults()} method of the SearchHandle is called.
+	 * 
+	 * @param query - The query text
+	 * @param resultLimit - limit to X results.  Use {@link Integer#MAX_VALUE} for no limit.
+	 * @param prefixSearch - true to use the "prefex search" algorithm.  False to use the standard lucene algorithm.  
+	 *   See {@link LuceneDescriptionIndexer#query(String, boolean, ComponentProperty, int, Long)} for more details on this algorithm.
+	 * @param extendedDescriptionType - The UUID of the concept that represents the extended (terminology specific) description type.
+	 * This concept should be a child of {@link SnomedMetadataRf2#DESCRIPTION_NAME_IN_SOURCE_TERM_RF2 }
+	 * @param callback - (optional) Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
+	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
+	 *   requests to this method with callbacks.
+	 * @param filter - An optional filter than can add or remove items from the tentative result set before it is returned.
+	 * @param comparator - The comparator to use for sorting the results - optional - uses {@link CompositeSearchResultComparator} if none is
+	 *  provided.
+	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
+	 *   as a single result representing the concept - with each matching string listed, and the score being the best score of any of the 
+	 *   matching strings.  When false, you will get one search result per description match - so concepts can be returned multiple times.
+	 * @return A handle to the running search.
+	 */
+	public static SearchHandle descriptionSearch(
+			String query, 
+			final int resultLimit, 
+			final boolean prefixSearch, 
+			final UUID extendedDescriptionType,
+			final TaskCompleteCallback callback, 
+			final Integer taskId, 
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter,
+			Comparator<CompositeSearchResult> comparator,
+			boolean mergeOnConcepts)
+	{
+		
+		return descriptionSearch(query, 
+				(index, queryString) ->
+				{
+					try
+					{
+						return index.query(queryString, extendedDescriptionType, resultLimit, Long.MIN_VALUE);
+					}
+					catch (Exception e)
+					{
+						throw new RuntimeException(e);
+					}
+				},
+		prefixSearch, callback, taskId, filter, comparator, mergeOnConcepts); 
+	}
+	
+	/**
+	 * Calls {@link #descriptionSearch(String, int, boolean, TaskCompleteCallback, Integer, SearchResultsFilter, Comparator, boolean, Supplier)}
+	 * passing false for prefixSearch, null for the taskID, null for the filter, null for the comparator
+	 * @param query - The query string
+	 * @param resultLimit - limit to X results.  Use {@link Integer#MAX_VALUE} for no limit.
+	 * @param callback - (optional) Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
+	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
+	 *   as a single result representing the concept - with each matching string listed, and the score being the best score of any of the 
+	 *   matching strings.  When false, you will get one search result per description match - so concepts can be returned multiple times.
+	 * @return A handle to the running search.
+	 */
+	public static SearchHandle descriptionSearch(String query, int resultLimit, TaskCompleteCallback callback, boolean mergeResultsOnConcepts) {
+		return descriptionSearch(query, resultLimit, false, callback, (Integer)null, null, null, mergeResultsOnConcepts);
+	}
+	
+	
+	/**
+	 * ** ADVANCED API** - you probably don't want this method....
+	 * 
+	 * 	 This is really just a convenience wrapper with threading and results conversion on top of the APIs available in {@link LuceneDescriptionIndexer}
+	 * 
+	 * Execute a Query against the description indexes in a background thread, hand back a handle to the search object which will 
+	 * allow you to get the results (when they are ready) and also cancel an in-progress query.
+	 * 
+	 * If there is a problem with the internal indexes - an error will be logged, and the exception will be re-thrown when the 
+	 * {@link SearchHandle#getResults()} method of the SearchHandle is called.
+	 * 
+	 * @param query - The query string
+	 * @param searchFunction -  A function that will call one of the query(...) methods within {@link LuceneDescriptionIndexer}.  See
+	 * that class for documentation on the various search types supported.
+	 * @param prefixSearch - true to use the "prefex search" algorithm.  False to use the standard lucene algorithm.  
+	 *   See {@link LuceneDescriptionIndexer#query(String, boolean, ComponentProperty, int, Long)} for more details on this algorithm.
+	 * @param callback - (optional) Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
+	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
+	 *   requests to this method with callbacks.
+	 * @param filter - An optional filter than can add or remove items from the tentative result set before it is returned.
+	 * @param comparator - The comparator to use for sorting the results - optional - uses {@link CompositeSearchResultComparator} if none is
+	 *  provided.
+	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
+	 *   as a single result representing the concept - with each matching string listed, and the score being the best score of any of the 
+	 *   matching strings.  When false, you will get one search result per description match - so concepts can be returned multiple times.
+	 * @return A handle to the running search.
+	 */
+	public static SearchHandle descriptionSearch(
+			String query,
+			final BiFunction<LuceneDescriptionIndexer, String, List<SearchResult>> searchFunction,
+			final boolean prefixSearch, 
+			final TaskCompleteCallback callback, 
+			final Integer taskId, 
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter,
+			Comparator<CompositeSearchResult> comparator,
+			boolean mergeOnConcepts)
+	{
+		
 		final SearchHandle searchHandle = new SearchHandle();
 
 		if (!prefixSearch)
@@ -134,9 +306,7 @@ public class SearchHandler
 						else
 						{
 							// Look for description matches.
-							ComponentProperty field = ComponentProperty.DESCRIPTION_TEXT;
-							int limit = resultLimit;
-							List<SearchResult> searchResults = descriptionIndexer.query(localQuery, prefixSearch, field, limit, Long.MIN_VALUE);
+							List<SearchResult> searchResults = searchFunction.apply(descriptionIndexer, localQuery);
 							final int resultCount = searchResults.size();
 							LOG.debug(resultCount + " results");
 
@@ -197,13 +367,8 @@ public class SearchHandler
 							}
 						}
 					} 
-					else if (filterList != null) 
-					{
-						initialSearchResults.addAll(filterList.get());
-					}
-
 					// sort, filter and merge the results as necessary
-					processResults(searchHandle, initialSearchResults, filters, comparator, mergeOnConcepts);
+					processResults(searchHandle, initialSearchResults, filter, comparator, mergeOnConcepts);
 				}
 				catch (Exception ex)
 				{
@@ -221,73 +386,6 @@ public class SearchHandler
 		return searchHandle;
 	}
 	
-	/**
-	 * Calls {@link #descriptionSearch(String, int, boolean, TaskCompleteCallback, Integer, SearchResultsFilter, Comparator, boolean)}
-	 * passing false for prefixSearch, null for the taskID, null for the filters, null for the comparator, null for the filterList
-	 */
-	public static SearchHandle descriptionSearch(String query, int resultLimit, TaskCompleteCallback callback, boolean mergeResultsOnConcepts) {
-		return descriptionSearch(query, resultLimit, false, callback, (Integer)null, (SearchResultsFilter)null, null, 
-				mergeResultsOnConcepts, null);
-	}
-
-	/**
-	 * An alternative way of passing in parameters... not really sure why needed.  
-	 * See {@link #descriptionSearch(String, int, boolean, TaskCompleteCallback, Integer, SearchResultsFilter, Comparator, boolean)}
-	 */
-	public static SearchHandle descriptionSearch(SearchBuilder builder) {
-		return descriptionSearch(
-				builder.getQuery(), 
-				builder.getSizeLimit(), 
-				builder.isPrefixSearch(), 
-				builder.getCallback(), 
-				builder.getTaskId(), 
-				builder.getFilter(),
-				builder.getComparator(),
-				builder.getMergeResultsOnConcept(), null);
-	}
-
-	private static void processResults(SearchHandle searchHandle, List<CompositeSearchResult> rawResults, 
-			final SearchResultsFilter filter, Comparator<CompositeSearchResult> comparator, boolean mergeOnConcepts) throws SearchResultsFilterException {
-		
-		//filter and sort the results
-		
-		if (filter != null) {
-			LOG.debug("Applying SearchResultsFilter " + filter + " to " + rawResults.size() + " search results");
-			rawResults = filter.filter(rawResults);
-
-			LOG.debug(rawResults.size() + " results remained after running the filter");
-		} 
-		
-		if (mergeOnConcepts)
-		{
-			Hashtable<Integer, CompositeSearchResult> merged = new Hashtable<>();
-			ArrayList<CompositeSearchResult> unmergeable = new ArrayList<>();
-			for (CompositeSearchResult csr : rawResults)
-			{
-				if (csr.getContainingConcept() == null)
-				{
-					unmergeable.add(csr);
-					continue;
-				}
-				CompositeSearchResult found = merged.get(csr.getContainingConcept().getNid());
-				if (found == null)
-				{
-					merged.put(csr.getContainingConcept().getNid(), csr);
-				}
-				else
-				{
-					found.merge(csr);
-				}
-			}
-			rawResults.clear();
-			rawResults.addAll(merged.values());
-			rawResults.addAll(unmergeable);
-		}
-		
-		Collections.sort(rawResults, (comparator == null ? new CompositeSearchResultComparator() : comparator));
-		
-		searchHandle.setResults(rawResults);
-	}
 	
 	/**
 	 * Execute a Query against the dynamic refex indexes in a background thread, hand back a handle to the search object which will 
@@ -303,7 +401,7 @@ public class SearchHandler
 	 * @param callback - Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
 	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
 	 *   requests to this method with callbacks.
-	 * @param filters - An optional filter than can add or remove items from the tenative result set before it is returned.
+	 * @param filter - An optional filter than can add or remove items from the tentative result set before it is returned.
 	 * @param comparator - The comparator to use for sorting the results
 	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
 	 *   as a single result representing the concept - with each matching string listed, and the score being the best score of any of the 
@@ -314,7 +412,7 @@ public class SearchHandler
 			Function<LuceneDynamicRefexIndexer, List<SearchResult>> searchFunction,
 			final TaskCompleteCallback callback, 
 			final Integer taskId, 
-			final SearchResultsFilter filters,
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter,
 			Comparator<CompositeSearchResult> comparator,
 			boolean mergeOnConcepts)
 	{
@@ -379,7 +477,7 @@ public class SearchHandler
 					}
 
 					// sort, filter and merge the results as necessary
-					processResults(searchHandle, initialSearchResults, filters, comparator, mergeOnConcepts);
+					processResults(searchHandle, initialSearchResults, filter, comparator, mergeOnConcepts);
 				}
 				catch (Exception ex)
 				{
@@ -395,16 +493,23 @@ public class SearchHandler
 	}
 	
 	/**
-	 * A convenience wrapper for {@link #dynamicRefexSearch(Function, TaskCompleteCallback, Integer, SearchResultsFilter, Comparator, boolean)}
+	 * A convenience wrapper for {@link #dynamicRefexSearch(Function, TaskCompleteCallback, Integer, Function, Comparator, boolean)}
 	 * which builds a function that handles basic string searches.
 	 * 
 	 * @param searchString - The value to search for within the refex index
 	 * @param resultLimit - cap the number of results
-	 * @param prefixSearch - use the prefix search text algorithm.  See {@link LuceneDescriptionIndexer#query(String, boolean, ComponentProperty, int, Long) for 
+	 * @param prefixSearch - use the prefix search text algorithm.  See {@link LuceneDescriptionIndexer#query(String, boolean, ComponentProperty, int, Long)} for 
 	 *  a description on the prefix search algorithm.
 	 * @param assemblageNid - (optional) limit the search to the specified assemblage type, or all assemblage objects (if null)
-	 * See {@link #dynamicRefexSearch(Function, TaskCompleteCallback, Integer, SearchResultsFilter, Comparator, boolean)} for a description of 
-	 * the rest of the parameters.
+	 * @param callback - Pass the handle that you want to have notified when the search is complete, and the results are ready for use.
+	 * @param taskId - An optional field that is simply handed back during the callback when results are complete.  Useful for matching 
+	 *   requests to this method with callbacks.
+	 * @param filter - An optional filter than can add or remove items from the tentative result set before it is returned.
+	 * @param comparator - The comparator to use for sorting the results
+	 * @param mergeOnConcepts - If true, when multiple description objects within the same concept match the search, this will be returned 
+	 *   as a single result representing the concept - with each matching string listed, and the score being the best score of any of the 
+	 *   matching strings.  When false, you will get one search result per description match - so concepts can be returned multiple times.
+	 * @return A handle to the running search.
 	 */
 	public static SearchHandle dynamicRefexSearch(
 			String searchString, 
@@ -413,7 +518,7 @@ public class SearchHandler
 			Integer assemblageNid,
 			final TaskCompleteCallback callback, 
 			final Integer taskId, 
-			final SearchResultsFilter filters,
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter,
 			Comparator<CompositeSearchResult> comparator,
 			boolean mergeOnConcepts)
 	{
@@ -427,20 +532,50 @@ public class SearchHandler
 				{
 					throw new RuntimeException(e);
 				}
-			}, callback, taskId, filters, comparator, mergeOnConcepts);
+			}, callback, taskId, filter, comparator, mergeOnConcepts);
 	}
+	
+	private static void processResults(SearchHandle searchHandle, List<CompositeSearchResult> rawResults, 
+			final Function<List<CompositeSearchResult>, List<CompositeSearchResult>>  filter, Comparator<CompositeSearchResult> comparator, boolean mergeOnConcepts)
+					throws SearchResultsFilterException {
+		
+		//filter and sort the results
+		
+		if (filter != null) {
+			LOG.debug("Applying SearchResultsFilter " + filter + " to " + rawResults.size() + " search results");
+			rawResults = filter.apply(rawResults);
 
-	public static SearchHandle descriptionSearch(SearchBuilder builder,
-			Supplier<Set<CompositeSearchResult>> filterList) {
-		return descriptionSearch(
-				builder.getQuery(), 
-				builder.getSizeLimit(), 
-				builder.isPrefixSearch(), 
-				builder.getCallback(), 
-				builder.getTaskId(), 
-				builder.getFilter(),
-				builder.getComparator(),
-				builder.getMergeResultsOnConcept(),
-				filterList);
+			LOG.debug(rawResults.size() + " results remained after running the filter");
+		} 
+		
+		if (mergeOnConcepts)
+		{
+			Hashtable<Integer, CompositeSearchResult> merged = new Hashtable<>();
+			ArrayList<CompositeSearchResult> unmergeable = new ArrayList<>();
+			for (CompositeSearchResult csr : rawResults)
+			{
+				if (csr.getContainingConcept() == null)
+				{
+					unmergeable.add(csr);
+					continue;
+				}
+				CompositeSearchResult found = merged.get(csr.getContainingConcept().getNid());
+				if (found == null)
+				{
+					merged.put(csr.getContainingConcept().getNid(), csr);
+				}
+				else
+				{
+					found.merge(csr);
+				}
+			}
+			rawResults.clear();
+			rawResults.addAll(merged.values());
+			rawResults.addAll(unmergeable);
+		}
+		
+		Collections.sort(rawResults, (comparator == null ? new CompositeSearchResultComparator() : comparator));
+		
+		searchHandle.setResults(rawResults);
 	}
 }

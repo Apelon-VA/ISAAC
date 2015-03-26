@@ -25,8 +25,9 @@
 package gov.va.isaac.search;
 
 import gov.va.isaac.util.TaskCompleteCallback;
-
 import java.util.Comparator;
+import java.util.List;
+import java.util.function.Function;
 
 public class SearchBuilder {
 	String query;
@@ -34,7 +35,7 @@ public class SearchBuilder {
 	Integer taskId;
 	boolean prefixSearch;
 	boolean mergeResultsOnConcept = false;
-	SearchResultsFilter filter = null;
+	Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter = null;
 	
 	Comparator<CompositeSearchResult> comparator;
 	TaskCompleteCallback callback;
@@ -151,13 +152,13 @@ public class SearchBuilder {
 	/**
 	 * @return the filter
 	 */
-	public SearchResultsFilter getFilter() {
+	public Function<List<CompositeSearchResult>, List<CompositeSearchResult>> getFilter() {
 		return filter;
 	}
 	/**
 	 * @param filter the SearchResultsFilter to set
 	 */
-	public void setFilter(SearchResultsFilter filter) {
+	public void setFilter(Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter) {
 		this.filter = filter;
 	}
 	

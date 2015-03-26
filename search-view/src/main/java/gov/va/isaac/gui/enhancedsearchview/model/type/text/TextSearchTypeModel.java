@@ -14,19 +14,18 @@ import gov.va.isaac.gui.enhancedsearchview.searchresultsfilters.SearchResultsFil
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchBuilder;
 import gov.va.isaac.search.SearchHandle;
-import gov.va.isaac.search.SearchHandler;
-import gov.va.isaac.search.SearchResultsFilter;
+import gov.va.isaac.search.SearchHandleBuilder;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
-import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.TaskCompleteCallback;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.Function;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -231,13 +230,14 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			return;
 		}
 
-		SearchResultsFilter searchResultsFilter = null;
+		Function<List<CompositeSearchResult>, List<CompositeSearchResult>> searchResultsFilter = null;
 		if (getFilters() != null) {
-			List<SearchResultsFilter> searchResultsFilters = new ArrayList<>();
+			List<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> searchResultsFilters = new ArrayList<>();
 
 			try {
 				for (NonSearchTypeFilter<?> nonSearchTypeFilter : getFilters()) {
-					SearchResultsFilter newSearchResultsFilter = SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
+					Function<List<CompositeSearchResult>, List<CompositeSearchResult>> newSearchResultsFilter = 
+							SearchResultsFilterHelper.createSearchResultsFilter(nonSearchTypeFilter);
 
 					searchResultsFilters.add(newSearchResultsFilter);
 				}
@@ -278,14 +278,15 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 			builder.setMergeResultsOnConcept(true);
 
 			if (getSearchType().getSearchParameter() != null && !getSearchType().getSearchParameter().isEmpty()) {
-				ssh = SearchHandler.descriptionSearch(builder);
+				ssh = SearchHandleBuilder.descriptionSearch(builder);
 			} else {
 				builder.setQuery("");
 				
-				Supplier<Set<CompositeSearchResult>> filterSupplier = new Supplier<Set<CompositeSearchResult>>()
+				Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filterSupplier = 
+						new Function<List<CompositeSearchResult>, List<CompositeSearchResult>>()
 				{
 					@Override
-					public Set<CompositeSearchResult> get()
+					public List<CompositeSearchResult> apply(List<CompositeSearchResult> t)
 					{
 						Set<Integer> filterList = new HashSet<Integer>();
 						for (NonSearchTypeFilter<? extends NonSearchTypeFilter<?>> f : filters) {
@@ -298,11 +299,25 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 							filterCompositeSearchResultList.add(new CompositeSearchResult(OTFUtility.getConceptVersion(c), 0));
 						}
 						
-						return filterCompositeSearchResultList;
+						t.addAll(filterCompositeSearchResultList);
+						return t;
 					}
 				};
+				
+				if (builder.getFilter() == null)
+				{
+					builder.setFilter(filterSupplier);
+				}
+				else if (builder.getFilter() instanceof SearchResultsIntersectionFilter)
+				{
+					((SearchResultsIntersectionFilter)builder.getFilter()).getFilters().add(filterSupplier);
+				}
+				else
+				{
+					builder.setFilter(new SearchResultsIntersectionFilter(builder.getFilter(), filterSupplier));
+				}
 
-				ssh = SearchHandler.descriptionSearch(builder, filterSupplier);
+				ssh = SearchHandleBuilder.descriptionSearch(builder);
 			}
 			break;
 		}
@@ -320,7 +335,7 @@ public class TextSearchTypeModel extends SearchTypeModel implements TaskComplete
 					builder.setSizeLimit(maxResults);
 				}
 			}
-			ssh = SearchHandler.descriptionSearch(builder);
+			ssh = SearchHandleBuilder.descriptionSearch(builder);
 			break;
 		}
 		default:

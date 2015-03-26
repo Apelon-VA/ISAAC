@@ -27,7 +27,7 @@ package gov.va.isaac.search;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.function.Function;
 import org.apache.mahout.math.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,38 +38,38 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class SearchResultsIntersectionFilter implements SearchResultsFilter {
+public class SearchResultsIntersectionFilter implements Function<List<CompositeSearchResult>, List<CompositeSearchResult>> {
 	private static final Logger LOG = LoggerFactory.getLogger(SearchResultsIntersectionFilter.class);
 
-	List<SearchResultsFilter> filters = new ArrayList<>();
+	List<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> filters = new ArrayList<>();
 	
-	public SearchResultsIntersectionFilter(List<SearchResultsFilter> passedFilters) {
+	public SearchResultsIntersectionFilter(List<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> passedFilters) {
 		filters.addAll(passedFilters);
 	}
 		
-	public SearchResultsIntersectionFilter(SearchResultsFilter...passedFilters) {
+	@SafeVarargs
+	public SearchResultsIntersectionFilter(Function<List<CompositeSearchResult>, List<CompositeSearchResult>>...passedFilters) {
 		if (passedFilters != null) {
-			for (SearchResultsFilter filter : passedFilters) {
+			for (Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter : passedFilters) {
 				filters.add(filter);
 			}
 		}
 	}
 
-	public Collection<SearchResultsFilter> getFilters() { return filters; }
-	
-	/* (non-Javadoc)
-	 * @see gov.va.isaac.search.SearchResultsFilter#filter(java.util.Collection)
+	public Collection<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> getFilters() { return filters; }
+
+	/**
+	 * @see java.util.function.Function#apply(java.lang.Object)
 	 */
 	@Override
-	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results)
-			throws SearchResultsFilterException {
-
+	public List<CompositeSearchResult> apply(List<CompositeSearchResult> results)
+	{
 		List<CompositeSearchResult> filteredResults = results;
-		for (SearchResultsFilter filter : filters) {
+		for (Function<List<CompositeSearchResult>, List<CompositeSearchResult>> filter : filters) {
 			int numResultsToFilter = filteredResults.size();
 			LOG.debug("Applying SearchResultsFilter " + filter + " to " + numResultsToFilter + " search results");
 
-			filteredResults = filter.filter(filteredResults);
+			filteredResults = filter.apply(filteredResults);
 			
 			LOG.debug(filteredResults.size() + " results remained after filtering a total of " + numResultsToFilter + " search results");
 		}

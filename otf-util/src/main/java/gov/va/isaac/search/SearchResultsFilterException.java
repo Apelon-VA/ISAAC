@@ -24,30 +24,33 @@
  */
 package gov.va.isaac.search;
 
+import java.util.List;
+import java.util.function.Function;
+
 /**
  * SearchResultsFilterException
  * 
  * @author <a href="mailto:joel.kniaz@gmail.com">Joel Kniaz</a>
  *
  */
-public class SearchResultsFilterException extends Exception {
+public class SearchResultsFilterException extends RuntimeException {
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 	
-	private final SearchResultsFilter failedFilter;
+	private final Function<List<CompositeSearchResult>, List<CompositeSearchResult>> failedFilter;
 	/**
 	 * 
 	 */
-	public SearchResultsFilterException(SearchResultsFilter failedFilter) {
+	public SearchResultsFilterException(Function<List<CompositeSearchResult>, List<CompositeSearchResult>> failedFilter) {
 		this.failedFilter = failedFilter;
 	}
 
 	/**
 	 * @param message
 	 */
-	public SearchResultsFilterException(SearchResultsFilter failedFilter, String message) {
+	public SearchResultsFilterException(Function<List<CompositeSearchResult>, List<CompositeSearchResult>> failedFilter, String message) {
 		super(message);
 		this.failedFilter = failedFilter;
 	}
@@ -62,7 +65,7 @@ public class SearchResultsFilterException extends Exception {
 	/**
 	 * @param cause
 	 */
-	public SearchResultsFilterException(SearchResultsFilter failedFilter, Throwable cause) {
+	public SearchResultsFilterException(Function<List<CompositeSearchResult>, List<CompositeSearchResult>> failedFilter, Throwable cause) {
 		super(cause);
 		this.failedFilter = failedFilter;
 	}
@@ -71,7 +74,7 @@ public class SearchResultsFilterException extends Exception {
 	 * @param message
 	 * @param cause
 	 */
-	public SearchResultsFilterException(SearchResultsFilter failedFilter, String message, Throwable cause) {
+	public SearchResultsFilterException(Function<List<CompositeSearchResult>, List<CompositeSearchResult>> failedFilter, String message, Throwable cause) {
 		super(message, cause);
 		this.failedFilter = failedFilter;
 	}
@@ -83,7 +86,7 @@ public class SearchResultsFilterException extends Exception {
 	 * @param writableStackTrace
 	 */
 	public SearchResultsFilterException(
-			SearchResultsFilter failedFilter,
+			Function<List<CompositeSearchResult>, List<CompositeSearchResult>> failedFilter,
 			String message, 
 			Throwable cause,
 			boolean enableSuppression, 
