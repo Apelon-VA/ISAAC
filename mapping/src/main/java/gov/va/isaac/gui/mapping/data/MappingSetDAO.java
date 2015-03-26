@@ -252,7 +252,7 @@ public class MappingSetDAO extends MappingDAO
 		setConceptStatus(mappingSetPrimordialUUID, Status.ACTIVE);
 	}
 	
-	public static ConceptVersionBI getMappingConcept(RefexDynamicVersionBI<?> refex) {
-		return OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
+	public static ConceptVersionBI getMappingConcept(RefexDynamicVersionBI<?> refex) throws IOException {
+		return ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinateAllowInactive(), refex.getReferencedComponentNid());
 	}
 }
