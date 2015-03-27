@@ -2,7 +2,6 @@ package gov.va.isaac.mojos.export;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ie.exporter.EConceptExporter;
-import gov.va.isaac.model.ExportType;
 import gov.va.isaac.mojos.dbBuilder.MojoConceptSpec;
 import gov.va.isaac.mojos.dbBuilder.Setup;
 import gov.va.isaac.util.OTFUtility;
@@ -12,28 +11,18 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
+import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 //import org.apache.maven.execution.MavenSession;
 //import org.apache.maven.plugin.MojoExecution;
 //import org.apache.maven.plugin.descriptor.PluginDescriptor;
-import org.apache.maven.plugins.annotations.Component;
-import org.apache.maven.plugins.annotations.Execute;
-import org.apache.maven.plugins.annotations.InstantiationStrategy;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
-import org.apache.maven.plugins.annotations.ResolutionScope;
-import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
-import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
-import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
-import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
-import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 
 
 /**
@@ -45,7 +34,7 @@ import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 public class Export extends AbstractMojo
 {
 	
-	public enum ExportType {
+	public enum ExportReleaseType {
 		SNAPSHOT,
 		DELTA,
 		FULL
@@ -62,7 +51,7 @@ public class Export extends AbstractMojo
 	private File outputFolder;
  
 	@Parameter (name = "exportType", required = true)
-	private ExportType[] exportType;
+	private ExportReleaseType[] exportType;
 	
 	@Parameter (name = "path", required = true)
 	private MojoConceptSpec path;
@@ -140,7 +129,8 @@ public class Export extends AbstractMojo
 			boolean pathFound = false;
 			for(ConceptChronicleBI thisPath : allPaths) {
 				if(thisPath.getPrimordialUuid().equals(path.getConceptSpec().getPrimodialUuid())) {
-					eConExporter.export(thisPath.getNid());
+					int thisNid = thisPath.getConceptNid();
+					eConExporter.export(thisNid);
 					pathFound = true;
 					break;
 				}
@@ -167,12 +157,17 @@ public class Export extends AbstractMojo
 	}
 	
 	public static void main(String[] args) {
-		
 		Export export = new Export();
 		export.bdbFolderLocation = new File("../../ISAAC-PA/app/solor-snomed-2015.03.06-active-only.bdb");
 		export.outputFolder = new File("target/output");
-		export.exportType[0]= ExportType.valueOf("snapshot");
+		export.exportType = new ExportReleaseType[]{ExportReleaseType.SNAPSHOT};
 		export.userProfileLocation = new File("../../ISAAC-PA/app/profiles");
+		
+		MojoConceptSpec mojoConceptSpec = new MojoConceptSpec();
+		mojoConceptSpec.setFsn("ISAAC development path");
+		mojoConceptSpec.setUuid("f5c0a264-15af-5b94-a964-bb912ea5634f");
+		
+		export.path = mojoConceptSpec;
 		
 		try {
 	        export.execute();
