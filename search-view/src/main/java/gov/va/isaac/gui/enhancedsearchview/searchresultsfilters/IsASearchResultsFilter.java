@@ -26,18 +26,16 @@ package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.util.OTFUtility;
-
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.function.Function;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class IsASearchResultsFilter implements SearchResultsFilter {
+class IsASearchResultsFilter implements Function<List<CompositeSearchResult>, List<CompositeSearchResult>> {
 	static final Logger LOG = LoggerFactory.getLogger(IsASearchResultsFilter.class);
 
 	private final IsAFilter filter;
@@ -45,9 +43,13 @@ class IsASearchResultsFilter implements SearchResultsFilter {
 	public IsASearchResultsFilter(IsAFilter filter) {
 		this.filter = filter;
 	}
-	
+
+	/**
+	 * @see java.util.function.Function#apply(java.lang.Object)
+	 */
 	@Override
-	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> apply(List<CompositeSearchResult> results)
+	{
 		final ConceptVersionBI possibleMatchingConcept = OTFUtility.getConceptVersion(filter.getNid());
 
 		CompositeSearchResult currentResult = null;

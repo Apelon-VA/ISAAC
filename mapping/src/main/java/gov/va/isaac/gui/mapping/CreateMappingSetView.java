@@ -3,6 +3,7 @@ package gov.va.isaac.gui.mapping;
 import java.io.IOException;
 import java.net.URL;
 
+import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import javafx.application.Platform;
@@ -53,8 +54,8 @@ public class CreateMappingSetView implements PopupViewI{
 	    
     }
 	
-	public void setMapping(String name, String desc, String purpose) {
-		//Catch exceptions and throw up a dialog box
+	public void setMappingSet(MappingSet mappingSet) {
+		controller.setMappingSet(mappingSet);
 	}
 	
 	

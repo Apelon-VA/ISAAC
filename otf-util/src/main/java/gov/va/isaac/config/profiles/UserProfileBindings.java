@@ -19,6 +19,7 @@
 package gov.va.isaac.config.profiles;
 
 import gov.va.isaac.config.generated.StatedInferredOptions;
+import java.util.Objects;
 import java.util.UUID;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -108,7 +109,7 @@ public class UserProfileBindings
 		{
 			displayRelDirection.set(up.getDisplayRelDirection());
 		}
-		if ((editCoordinatePath.get() == null && up.getEditCoordinatePath() != null) || !editCoordinatePath.get().equals(up.getEditCoordinatePath()))
+		if ((editCoordinatePath.get() == null && up.getEditCoordinatePath() != null) || !Objects.equals(editCoordinatePath.get(), up.getEditCoordinatePath()))
 		{
 			editCoordinatePath.set(up.getEditCoordinatePath());
 		}
@@ -116,11 +117,11 @@ public class UserProfileBindings
 		{
 			statedInferredPolicy.set(up.getStatedInferredPolicy());
 		}
-		if ((viewCoordinatePath.get() == null && up.getViewCoordinatePath() != null) || !viewCoordinatePath.get().equals(up.getViewCoordinatePath()))
+		if ((viewCoordinatePath.get() == null && up.getViewCoordinatePath() != null) || !Objects.equals(viewCoordinatePath.get(), up.getViewCoordinatePath()))
 		{
 			viewCoordinatePath.set(up.getViewCoordinatePath());
 		}
-		if ((workflowUsername.get() == null && up.getWorkflowUsername() != null) || !workflowUsername.get().equals(up.getWorkflowUsername()))
+		if ((workflowUsername.get() == null && up.getWorkflowUsername() != null) || !Objects.equals(workflowUsername.get(), up.getWorkflowUsername()))
 		{
 			workflowUsername.set(up.getWorkflowUsername());
 		}

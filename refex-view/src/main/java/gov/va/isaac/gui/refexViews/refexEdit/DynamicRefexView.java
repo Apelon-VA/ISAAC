@@ -31,6 +31,7 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.gui.util.TableHeaderRowTooltipInstaller;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.RefexViewI;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.refexDynamic.RefexAnnotationSearcher;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;

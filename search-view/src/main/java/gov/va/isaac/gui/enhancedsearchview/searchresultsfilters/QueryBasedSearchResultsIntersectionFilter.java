@@ -30,16 +30,14 @@ import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsRefsetMemberFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
 import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-
+import java.util.function.Function;
 import org.ihtsdo.otf.query.implementation.Clause;
 import org.ihtsdo.otf.query.implementation.Query;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -57,7 +55,7 @@ import org.slf4j.LoggerFactory;
  * refset member filter
  * 
  */
-class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
+class QueryBasedSearchResultsIntersectionFilter implements Function<List<CompositeSearchResult>, List<CompositeSearchResult>>  {
 	private static final Logger LOG = LoggerFactory.getLogger(QueryBasedSearchResultsIntersectionFilter.class);
 
 	private final List<NonSearchTypeFilter<?>> filters = new ArrayList<>();
@@ -73,19 +71,23 @@ class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
 	}
 	
 	
+	/**
+	 * @see java.util.function.Function#apply(java.lang.Object)
+	 */
 	@Override
-	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> apply(List<CompositeSearchResult> results)
+	{
 		SearchResultsFilterHelper.validateFilters(filters);
 		
-        List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
+		List<CompositeSearchResult> filteredResults = new ArrayList<>(results.size());
 
-        // If no filters, pass all results straight through
-        if (filters.size() == 0) {
-        	filteredResults.addAll(results);
-        	
-        	return filteredResults;
-        }
-        
+		// If no filters, pass all results straight through
+		if (filters.size() == 0) {
+			filteredResults.addAll(results);
+			
+			return filteredResults;
+		}
+		
 		NativeIdSetBI inputNids = new IntSet();
 
 		for (CompositeSearchResult result : results) {
@@ -126,9 +128,9 @@ class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
 
 			@Override
 			public Clause Where() {
-				//		                return And(ConceptIsKindOf("Physical force"),
-				//		                            Xor(ConceptIsKindOf("Motion"),
-				//		    
+				//						return And(ConceptIsKindOf("Physical force"),
+				//									Xor(ConceptIsKindOf("Motion"),
+				//			
 //				Clause c = (first one)
 //						for (filter f : filters)
 //						{
@@ -180,8 +182,8 @@ class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
 			}
 		};
 
-        NativeIdSetBI outputNids = null;
-        try {
+		NativeIdSetBI outputNids = null;
+		try {
 			SearchResultsFilterHelper.LOG.debug("Applying " + filters.size() + " clauses to " + finalInputNids.size() + " nids");
 
 			outputNids = q.compute();
@@ -192,7 +194,7 @@ class QueryBasedSearchResultsIntersectionFilter implements SearchResultsFilter {
 			LOG.error(msg);
 			throw new SearchResultsFilterException(this, msg, e);
 		}
-        
+		
 		for (CompositeSearchResult result : results) {
 			if (outputNids.contains(result.getContainingConcept().getNid())) {
 				filteredResults.add(result);

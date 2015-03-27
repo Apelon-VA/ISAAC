@@ -52,6 +52,7 @@ public enum Images {
     LEGO_EXPORT(setupImage("/icons/silk/16x16/brick_go.png")),
     LEGO_LIST_VIEW(setupImage("/icons/silk/16x16/bricks.png")),
     SEARCH(setupImage("/icons/fugue/16x16/icons-shadowless/application-search-result.png")),
+    SEARCH2(setupImage("/icons/fugue/16x16/icons-shadowless/box-search-result.png")),
     CONCEPT_VIEW(setupImage("/icons/fugue/16x16/icons-shadowless/gear.png")),
     CONTENT_REQUEST(setupImage("/icons/fugue/16x16/icons-shadowless/application-dock.png")),
     COPY(setupImage("/icons/fugue/16x16/icons-shadowless/document-copy.png")),

@@ -25,11 +25,12 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.constants.ConceptViewMode;
 import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PopupConceptViewI;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -96,7 +97,7 @@ public class ConceptView implements PopupConceptViewI {
 			protected ConceptChronicleDdo call() throws Exception
 			{
 				LOG.info("Loading concept with UUID " + conceptUUID);
-				ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, OTFUtility.getViewCoordinate(),
+				ConceptChronicleDdo concept = ExtendedAppContext.getDataStore().getFxConcept(conceptUUID, OTFUtility.getViewCoordinateAllowInactive(),
 						VersionPolicy.ACTIVE_VERSIONS, RefexPolicy.REFEX_MEMBERS, RelationshipPolicy.ORIGINATING_RELATIONSHIPS);
 				 LOG.info("Finished loading concept with UUID " + conceptUUID);
 
@@ -183,7 +184,14 @@ public class ConceptView implements PopupConceptViewI {
 		{
 			s.setScene(null);
 			//No other way to force a timely release of all of the bindings that would still fire / still recalculate data..
-			Utility.schedule(() -> System.gc(), 250, TimeUnit.MILLISECONDS);
+			try
+			{
+				Utility.schedule(() -> System.gc(), 250, TimeUnit.MILLISECONDS);
+			}
+			catch (RejectedExecutionException e)
+			{
+				//Probably because the app is shutting down - we don't actually care.
+			}
 		});
 		
 		s.show();
