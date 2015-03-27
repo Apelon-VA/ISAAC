@@ -284,36 +284,4 @@ public class MappingUtils
 		}
 	}
 	
-	public static void sizeAndPosition(Node node, StackPane sp, Pos position)
-	{
-		if (node instanceof ImageView)
-		{
-			((ImageView)node).setFitHeight(12);
-			((ImageView)node).setFitWidth(12);
-		}
-		
-		if (position == Pos.TOP_LEFT)
-		{
-			StackPane.setMargin(node, new Insets(0, 0, 0, 0));
-		}
-		else if (position == Pos.TOP_RIGHT)
-		{
-			StackPane.setMargin(node, new Insets(0, 0, 0, 13));
-		}
-		else if (position == Pos.BOTTOM_LEFT)
-		{
-			StackPane.setMargin(node, new Insets(13, 0, 0, 0));
-		}
-		else if (position == Pos.BOTTOM_RIGHT)
-		{
-			StackPane.setMargin(node, new Insets(13, 0, 0, 13));
-		}
-		else
-		{
-			throw new RuntimeException("Unsupported Position!");
-		}
-		sp.getChildren().add(node);
-		StackPane.setAlignment(node, Pos.TOP_LEFT);
-	}
-
 }
