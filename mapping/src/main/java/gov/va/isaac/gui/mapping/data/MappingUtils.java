@@ -28,6 +28,7 @@ import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.TaskCompleteCallback;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +37,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -256,7 +264,7 @@ public class MappingUtils
 		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, childOfNid);
 	}
 	
-	public List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
+	public static List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
 	{
 		Set<ConceptVersionBI> extendedDescriptionTypes;
 		try
@@ -275,4 +283,37 @@ public class MappingUtils
 			throw new IOException(e);
 		}
 	}
+	
+	public static void sizeAndPosition(Node node, StackPane sp, Pos position)
+	{
+		if (node instanceof ImageView)
+		{
+			((ImageView)node).setFitHeight(12);
+			((ImageView)node).setFitWidth(12);
+		}
+		
+		if (position == Pos.TOP_LEFT)
+		{
+			StackPane.setMargin(node, new Insets(0, 0, 0, 0));
+		}
+		else if (position == Pos.TOP_RIGHT)
+		{
+			StackPane.setMargin(node, new Insets(0, 0, 0, 13));
+		}
+		else if (position == Pos.BOTTOM_LEFT)
+		{
+			StackPane.setMargin(node, new Insets(13, 0, 0, 0));
+		}
+		else if (position == Pos.BOTTOM_RIGHT)
+		{
+			StackPane.setMargin(node, new Insets(13, 0, 0, 13));
+		}
+		else
+		{
+			throw new RuntimeException("Unsupported Position!");
+		}
+		sp.getChildren().add(node);
+		StackPane.setAlignment(node, Pos.TOP_LEFT);
+	}
+
 }
