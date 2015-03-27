@@ -351,7 +351,7 @@ public class OTFUtility {
 	public static int getLangTypeNid() {
 		// Lazily load.
 		if (langTypeNid == null) {
-			langTypeNid = dataStore.getNidForUuids(Snomed.US_LANGUAGE_REFEX.getPrimodialUuid());
+			langTypeNid = dataStore.getNidForUuids(Snomed.LANGUAGE_REFEX.getPrimodialUuid());
 		}
 		return langTypeNid;
 	}
