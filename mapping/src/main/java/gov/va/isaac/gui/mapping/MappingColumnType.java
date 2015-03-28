@@ -1,7 +1,7 @@
 package gov.va.isaac.gui.mapping;
 
 public enum MappingColumnType {
-	STATUS_CONDENSED("s"),
+	STATUS_CONDENSED("Status Condensed"),
 	NAME("Name"),
 	DESCRIPTION("Description"),
 	PURPOSE("Purpose"),
@@ -19,9 +19,9 @@ public enum MappingColumnType {
 	STAMP("STAMP"),
 	STATUS_STRING("Active"),
 	TIME("Time"),
-	AUTHOR("Author"),
-	MODULE("Module"),
-	PATH("Path");
+	AUTHOR("Author",true),
+	MODULE("Module",true),
+	PATH("Path",true);
 	
 	private String niceName_;
 	private boolean isConcept_ = false;
