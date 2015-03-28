@@ -23,7 +23,7 @@
                       <TableColumn fx:id="mappingSetEditorStatusTableColumn" editable="false" prefWidth="131.0" text="Status" />
                         <TableColumn fx:id="mappingSetSTAMPTableColumn" prefWidth="241.0" text="STAMP Fields">
                            <columns>
-                              <TableColumn fx:id="mappingSetActiveTableColumn" prefWidth="75.0" text="Status" />
+                              <TableColumn fx:id="mappingSetStatusTableColumn" prefWidth="75.0" text="Status" />
                               <TableColumn fx:id="mappingSetTimeTableColumn" prefWidth="75.0" text="Time" />
                               <TableColumn fx:id="mappingSetAuthorTableColumn" prefWidth="75.0" text="Author" />
                               <TableColumn fx:id="mappingSetModuleTableColumn" prefWidth="75.0" text="Module" />
@@ -57,7 +57,7 @@
                         <TableColumn fx:id="mappingItemEditorStatusTableColumn" editable="false" prefWidth="136.0" text="Status" />
                         <TableColumn fx:id="mappingItemSTAMPTableColumn" prefWidth="241.0" text="STAMP Fields">
                            <columns>
-                              <TableColumn fx:id="mappingItemActiveTableColumn" prefWidth="75.0" text="Status" />
+                              <TableColumn fx:id="mappingItemStatusTableColumn" prefWidth="75.0" text="Status" />
                               <TableColumn fx:id="mappingItemTimeTableColumn" prefWidth="75.0" text="Time" />
                               <TableColumn fx:id="mappingItemAuthorTableColumn" prefWidth="75.0" text="Author" />
                               <TableColumn fx:id="mappingItemModuleTableColumn" prefWidth="75.0" text="Module" />

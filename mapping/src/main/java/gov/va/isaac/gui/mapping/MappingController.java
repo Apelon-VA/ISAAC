@@ -1,17 +1,25 @@
 package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemDAO;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
+import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
+import gov.va.isaac.util.CommonMenus;
+import gov.va.isaac.util.CommonMenusNIdProvider;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -31,6 +39,7 @@ import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.SelectionMode;
 import javafx.scene.control.TableCell;
@@ -87,7 +96,7 @@ public class MappingController {
     @FXML private TableColumn<MappingSet, ?> mappingSetEditorStatusTableColumn;
 
     @FXML private TableColumn<MappingSet, ?> mappingSetSTAMPTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetActiveTableColumn;
+    @FXML private TableColumn<MappingSet, ?> mappingSetStatusTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingSetTimeTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingSetAuthorTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingSetModuleTableColumn;
@@ -101,7 +110,7 @@ public class MappingController {
     @FXML private TableColumn<MappingSet, ?> mappingItemEditorStatusTableColumn;
 	
     @FXML private TableColumn<MappingSet, ?> mappingItemSTAMPTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemActiveTableColumn;
+    @FXML private TableColumn<MappingSet, ?> mappingItemStatusTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingItemTimeTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingItemAuthorTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingItemModuleTableColumn;
@@ -126,7 +135,7 @@ public class MappingController {
         assert mappingSetDescriptionTableColumn != null : "fx:id=\"mappingSetDescriptionTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemAuthorTableColumn != null : "fx:id=\"mappingItemAuthorTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemSourceTableColumn != null : "fx:id=\"mappingItemSourceTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
-        assert mappingSetActiveTableColumn != null : "fx:id=\"mappingSetActiveTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
+        assert mappingSetStatusTableColumn != null : "fx:id=\"mappingSetActiveTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert minusMappingSetButton != null : "fx:id=\"minusMappingSetButton\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingSetEditorStatusTableColumn != null : "fx:id=\"mappingSetEditorStatusTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingSetPathTableColumn != null : "fx:id=\"mappingSetPathTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
@@ -147,7 +156,7 @@ public class MappingController {
         assert minusMappingItemButton != null : "fx:id=\"minusMappingItemButton\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemSTAMPTableColumn != null : "fx:id=\"mappingItemSTAMPTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert editMappingItemButton != null : "fx:id=\"editMappingItemButton\" was not injected: check your FXML file 'Mapping.fxml'.";
-        assert mappingItemActiveTableColumn != null : "fx:id=\"mappingItemActiveTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
+        assert mappingItemStatusTableColumn != null : "fx:id=\"mappingItemActiveTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingSetSummaryLabel != null : "fx:id=\"mappingSetSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert activeOnlyToggle != null : "fx:id=\"activeOnlyToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert stampToggle != null : "fx:id=\"stampToggleToggle\" was not injected: check your FXML file 'Mapping.fxml'.";
@@ -320,9 +329,10 @@ public class MappingController {
 					public void updateItem(final MappingItem mappingItem, boolean empty) {
 						super.updateItem(mappingItem, empty);
 						if (!isEmpty() && mappingItem != null) {
-							Node node = null;
 							ContextMenu cm = new ContextMenu();
 							setContextMenu(cm);
+							SimpleStringProperty property = null;
+							UUID conceptUUID = null;
 							MappingColumnType columnType = (MappingColumnType) getTableColumn().getUserData();
 							
 							switch (columnType) {
@@ -332,25 +342,33 @@ public class MappingController {
 								String tooltipText = mappingItem.isActive()? "Active" : "Inactive";
 								ImageView image    = mappingItem.isActive()? Images.BLACK_DOT.createImageView() : Images.GREY_DOT.createImageView();
 								sizeAndPosition(image, sp, Pos.CENTER);
-								node = sp;
 								setTooltip(new Tooltip(tooltipText));
-								setGraphic(node);
+								setGraphic(sp);
 								break;
 								
 							case SOURCE:
-								setText(mappingItem.getSourceConceptProperty().getValueSafe());
-								//node = new Text(mappingItem.getSourceConceptProperty().getValueSafe());
+								property = mappingItem.getSourceConceptProperty();
+								conceptUUID = mappingItem.getSourceConcept();
 								break;
 							case TARGET:
-								setText(mappingItem.getTargetConceptProperty().getValueSafe());
+								property = mappingItem.getTargetConceptProperty();
+								conceptUUID = mappingItem.getTargetConcept();
 								break;
 							case QUALIFIER:
+								property = mappingItem.getQualifierConceptProperty();
+								conceptUUID = mappingItem.getQualifierConcept();
 								break;
 							case COMMENTS:
+								property = mappingItem.getCommentsProperty();
 								break;
 							case EDITOR_STATUS:
+								property = mappingItem.getEditorStatusConceptProperty();
 								break;
+							case STAMP:
+								ObservableList<TableColumn<MappingItem, ?>> cols = this.getTableColumn().getColumns();
+								setText("Hello");
 							case STATUS_STRING:
+								setText("Hi!");
 								break;
 							case TIME:
 								break;
@@ -361,10 +379,40 @@ public class MappingController {
 							case PATH:
 								break;
 							default:
-								// nothing;
+								// Nothing
 							}
-							//this.setGraphic(node);
-							//this.setText("Hi");
+							
+							if (property != null) {
+								Text text = new Text();
+								text.textProperty().bind(property);
+								text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
+								setGraphic(text);
+
+								MenuItem mi = new MenuItem("Copy Value");
+								mi.setOnAction(new EventHandler<ActionEvent>() {
+									@Override
+									public void handle(ActionEvent arg0) {
+										CustomClipboard.set(((Text)getGraphic()).getText());
+									}
+								});
+								mi.setGraphic(Images.COPY.createImageView());
+								cm.getItems().add(mi);
+
+								if (columnType.isConcept() && conceptUUID != null) {
+									final UUID fConceptUUID = conceptUUID;
+									Utility.execute(() -> {
+										int nid = OTFUtility.getConceptVersion(fConceptUUID).getNid();
+										Platform.runLater(() -> {
+											CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider() {
+											   @Override
+											   public Collection<Integer> getNIds() {
+												   return Arrays.asList(new Integer[] {nid});
+											   }
+											  });
+										});
+									});
+								}
+							}
 						}
 					}
 					
@@ -381,6 +429,8 @@ public class MappingController {
 		};
 		
 		for (TableColumn<MappingItem, ?> tableColumn : mappingItemTableView.getColumns()) {
+			System.out.println(tableColumn.getUserData().toString());
+			
 			TableColumn<MappingItem, MappingItem> mappingItemTableColumn = (TableColumn<MappingItem, MappingItem>)tableColumn;
 			mappingItemTableColumn.setCellValueFactory(mappingItemCellValueFactory);
 			mappingItemTableColumn.setCellFactory(mappingItemCellFactory);
@@ -611,7 +661,7 @@ public class MappingController {
 		mappingSetEditorStatusTableColumn.setUserData(MappingColumnType.EDITOR_STATUS);
 
 		mappingSetSTAMPTableColumn.setUserData(MappingColumnType.STAMP);
-		mappingSetActiveTableColumn.setUserData(MappingColumnType.STATUS_STRING);
+		mappingSetStatusTableColumn.setUserData(MappingColumnType.STATUS_STRING);
 		mappingSetTimeTableColumn.setUserData(MappingColumnType.TIME);
 		mappingSetAuthorTableColumn.setUserData(MappingColumnType.AUTHOR);
 		mappingSetModuleTableColumn.setUserData(MappingColumnType.MODULE);
@@ -625,7 +675,7 @@ public class MappingController {
 		mappingItemEditorStatusTableColumn.setUserData(MappingColumnType.EDITOR_STATUS);
 
 		mappingItemSTAMPTableColumn.setUserData(MappingColumnType.STAMP);
-		mappingItemActiveTableColumn.setUserData(MappingColumnType.STATUS_STRING);
+		mappingItemStatusTableColumn.setUserData(MappingColumnType.STATUS_STRING);
 		mappingItemTimeTableColumn.setUserData(MappingColumnType.TIME);
 		mappingItemAuthorTableColumn.setUserData(MappingColumnType.AUTHOR);
 		mappingItemModuleTableColumn.setUserData(MappingColumnType.MODULE);
