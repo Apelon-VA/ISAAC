@@ -43,4 +43,20 @@ public class MojoConceptSpec
 	{
 		return new ConceptSpec(fsn, uuid);
 	}
+	
+	public void setFsn(String thisFsn) {
+		fsn = thisFsn;
+	}
+	
+	public String getFsn() {
+		return fsn;
+	}
+	
+	public void setUuid(String uuidInput) {
+		uuid = uuidInput;
+	}
+	
+	public String getUuid() {
+		return uuid;
+	}
 }

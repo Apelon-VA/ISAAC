@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>Sprint_20-mapping-SNAPSHOT</version>
+		<version>Sprint_20-SNAPSHOT</version>
 	</parent>
 
 	<groupId>gov.va.isaac.modules</groupId>
@@ -72,14 +72,22 @@
 			<artifactId>sync-svn</artifactId>
 			<version>${project.parent.version}</version>
 		</dependency>
+		
+		<!-- dependencies to annotations -->
+		<dependency>
+			<groupId>org.apache.maven.plugin-tools</groupId>
+			<artifactId>maven-plugin-annotations</artifactId>
+			<version>3.4</version>
+			<scope>provided</scope><!-- annotations are needed only to build the plugin -->
+		</dependency>
 	</dependencies>
-	<build>
+	<build>		
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
-				<version>3.3</version>
-			</plugin>
+				<version>3.4</version>
+			</plugin>	
 		</plugins>
 	</build>
 </project>
