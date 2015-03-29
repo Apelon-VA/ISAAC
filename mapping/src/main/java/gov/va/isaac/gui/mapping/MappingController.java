@@ -460,6 +460,11 @@ public class MappingController {
 							}
 						}
 					}
+					else
+					{
+						setText(null);
+						setGraphic(null);
+					}
 				}
 				
 			};
