@@ -4,7 +4,7 @@
     
     <groupId>gov.va.isaac</groupId>
     <artifactId>isaac-parent</artifactId>
-    <version>Sprint_20-SNAPSHOT</version>
+    <version>Sprint_20-mapping-SNAPSHOT</version>
     <packaging>pom</packaging>
     
     <name>ISAAC Modules Parent</name>
