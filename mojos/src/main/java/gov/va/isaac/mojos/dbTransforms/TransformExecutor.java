@@ -173,7 +173,9 @@ public class TransformExecutor extends AbstractMojo
 				{
 					String summary = "Transformer " + it.getName() + " completed:  " + it.getWorkResultSummary();
 					getLog().info(summary);
+					getLog().info(it.getWorkResultDocBookTable());
 					summaryInfo.append(summary);
+					summaryInfo.append(it.getWorkResultDocBookTable());
 					summaryInfo.append(System.getProperty("line.separator"));
 				}
 			}

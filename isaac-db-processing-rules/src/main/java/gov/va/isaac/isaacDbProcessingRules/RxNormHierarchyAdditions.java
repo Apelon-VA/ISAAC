@@ -217,4 +217,13 @@ public class RxNormHierarchyAdditions implements TransformArbitraryI
 	{
 		return "Examined " + examinedConcepts.get() + " concepts and generated " + addedRels.get() + " new relationships";
 	}
+	
+	/**
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()
+	 */
+	@Override
+	public String getWorkResultDocBookTable()
+	{
+		return "Not yet created";
+	}
 }

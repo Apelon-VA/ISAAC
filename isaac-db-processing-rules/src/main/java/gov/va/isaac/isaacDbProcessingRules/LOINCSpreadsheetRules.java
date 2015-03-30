@@ -36,6 +36,7 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -107,11 +108,12 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 	private final UUID HAS_METHOD_TYPE = UUID.fromString("a0e9ca70-0c0e-5cc8-ad2f-442fff44be6f");
 	
 	private HashMap<UUID, Integer> uuidToNidMap_ = new HashMap<>();
-	private AtomicInteger generatedRels = new AtomicInteger();
-	private AtomicInteger mergedConcepts = new AtomicInteger();
+	private HashMap<Integer, AtomicInteger> generatedRels = new HashMap<>();
+	private HashMap<Integer, AtomicInteger> mergedConcepts = new HashMap<>();
 	private AtomicInteger examinedConcepts = new AtomicInteger();
 	private TreeMap<Integer, AtomicInteger> ruleHits = new TreeMap<>();
 	private List<RuleDefinition> rules;
+	private long startTime;
 
 	private TerminologyStoreDI ts_;
 	private ViewCoordinate vc_;
@@ -132,6 +134,7 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 	@Override
 	public void configure(File configFile, TerminologyStoreDI ts) throws IOException
 	{
+		startTime = System.currentTimeMillis();
 		//TODO pass in the spreadsheet?  But then where to store it?
 		ts_ = ts;
 		vc_ = StandardViewCoordinates.getSnomedStatedLatest();
@@ -144,6 +147,8 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		for (RuleDefinition rd : rules)
 		{
 			ruleHits.put(rd.getId(), new AtomicInteger());
+			generatedRels.put(rd.getId(), new AtomicInteger());
+			mergedConcepts.put(rd.getId(), new AtomicInteger());
 		}
 	}
 	
@@ -289,9 +294,11 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		{
 			case CHILD_OF:
 				addRel(cc, sctTargetConcept);
+				generatedRels.get(rd.getId()).getAndIncrement();
 				break;
 			case SAME_AS:
 				mergeConcepts(cc, sctTargetConcept);
+				mergedConcepts.get(rd.getId()).incrementAndGet();
 				break;
 			default :
 				throw new RuntimeException("Unhandled Action");
@@ -339,8 +346,9 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 				}
 			}
 			//TODO maybe fail?
-			System.err.println("-------------------");
-			System.err.println("The concept " + cc + " did not have a description that matched the expected value of '" + sc.getValue() + "' from the spreadsheet");
+			System.err.println("ERROR -------------------");
+			System.err.println("ERROR - The concept '" + cc + "' did not have a description that matched the expected value of '" + sc.getValue() + "' from the spreadsheet");
+			System.err.println("ERROR -------------------");
 			return cc.getNid();
 		}
 		else
@@ -418,8 +426,6 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		ts_.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.UNSPECIFIED_MODULE.getLenient().getNid(), 
 				getNid(LOINC_PATH)), StandardViewCoordinates.getWbAuxiliary()).construct(rCab);
 		ts_.addUncommitted(source);
-		
-		generatedRels.getAndIncrement();
 	}
 	
 	private void mergeConcepts(ConceptChronicleBI source, UUID mergeOnto) throws IOException, InvalidCAB, ContradictionException
@@ -466,8 +472,6 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 //		
 //		ConceptChronicle.mergeWithEConcept(tcc, mergeOntoCC);
 //		ts.addUncommittedNoChecks(mergeOntoCC);
-		
-		mergedConcepts.incrementAndGet();
 	}
 
 	/**
@@ -487,13 +491,86 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 	{
 		String eol = System.getProperty("line.separator");
 		StringBuilder sb = new StringBuilder();
-		sb.append("Examined " + examinedConcepts.get() + " concepts and added hierarchy linkages to " + generatedRels.get() + " concepts.  "
-				+ "Merged " + mergedConcepts.get() + " concepts" + eol);
+		
+		int totalRelCount = sum(generatedRels.values());
+		int totalMergedCount = sum(generatedRels.values());
+		
+		sb.append("Examined " + examinedConcepts.get() + " concepts and added hierarchy linkages to " + totalRelCount + " concepts.  "
+				+ "Merged " + totalMergedCount + " concepts" + eol);
 		
 		for (Entry<Integer, AtomicInteger> x : ruleHits.entrySet())
 		{
 			sb.append("  Rule " + x.getKey() + " hit on " + x.getValue() + " concepts" + eol);
 		}
+		
+		return sb.toString();
+	}
+	
+	private int sum(Collection<AtomicInteger> values)
+	{
+		int total = 0;
+		for (AtomicInteger ai : values)
+		{
+			total += ai.get();
+		}
+		return total;
+	}
+	
+	/**
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()
+	 */
+	@Override
+	public String getWorkResultDocBookTable()
+	{
+		StringBuilder sb = new StringBuilder();
+		String eol = System.getProperty("line.separator");
+
+		sb.append("<table frame='all'>" + eol);
+		sb.append("\t<title>Results</title>" + eol);
+		sb.append("\t<tgroup cols='6' align='center' colsep='1' rowsep='1'>" + eol);
+		for (int i = 1; i <= 6; i++)
+		{
+			sb.append("\t\t<colspec colname='c" + i + "' colwidth='1*' />" + eol);
+		}
+		sb.append("\t\t<thead>" + eol);
+		sb.append("\t\t\t<row>" + eol);
+		sb.append("\t\t\t\t<entry>Transform</entry>" + eol);
+		sb.append("\t\t\t\t<entry>Examined Concepts</entry>" + eol);
+		sb.append("\t\t\t\t<entry>Generated Descriptions</entry>" + eol);
+		sb.append("\t\t\t\t<entry>Generated Relationships</entry>" + eol);
+		sb.append("\t\t\t\t<entry>Merged Concepts</entry>" + eol);
+		sb.append("\t\t\t\t<entry>Execution Time</entry>" + eol);
+		sb.append("\t\t\t</row>" + eol);
+		sb.append("\t\t</thead>" + eol);
+		
+		sb.append("\t\t<tbody>" + eol);
+		
+		int i = 0;
+		for (Entry<Integer, AtomicInteger> x : ruleHits.entrySet())
+		{
+			i++;
+			sb.append("\t\t\t<row>" + eol);
+			sb.append("\t\t\t\t<entry>LOINC " + x.getKey() + "</entry>" + eol);
+			if (i == 1)
+			{
+				sb.append("\t\t\t\t<entry morerows='" + (ruleHits.size() - 1) + "'>" + examinedConcepts.get() + "</entry>" + eol);
+				sb.append("\t\t\t\t<entry morerows='" + (ruleHits.size() - 1) + "'>-</entry>" + eol);  //no descriptions generated here
+			}
+			sb.append("\t\t\t\t<entry>" + generatedRels.get(x.getKey()).get() + "</entry>" + eol);
+			sb.append("\t\t\t\t<entry>" + mergedConcepts.get(x.getKey()).get() + "</entry>" + eol);
+			if (i == 1)
+			{
+				long temp = System.currentTimeMillis() - startTime;
+				int seconds = (int)(temp / 1000l);
+				sb.append("\t\t\t\t<entry morerows='" + (ruleHits.size() - 1) + "'>" + seconds + " seconds</entry>" + eol);
+			}
+			
+			sb.append("\t\t\t</row>" + eol);
+		}
+	
+		sb.append("\t\t</tbody>" + eol);
+		sb.append("\t</tgroup>" + eol);
+		sb.append("</table>" + eol);
 		
 		return sb.toString();
 	}
@@ -511,5 +588,7 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		LOINCSpreadsheetRules lsr = new LOINCSpreadsheetRules();
 		lsr.configure(null, ExtendedAppContext.getDataStore());
 		lsr.transform(ExtendedAppContext.getDataStore(), ExtendedAppContext.getDataStore().getConcept(UUID.fromString("b8a86aff-a33d-5ab9-88fe-bb3cfd8dce39")));
+		System.out.println(lsr.getWorkResultSummary());
+		System.out.println(lsr.getWorkResultDocBookTable());
 	}
 }

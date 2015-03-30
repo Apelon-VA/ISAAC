@@ -189,4 +189,13 @@ public class GenerateMissingPreferredTerms implements TransformConceptIterateI
 		return "Examined " + examinedConcepts.get() + " concepts and generated " + generatedDescriptions.get() + " new descriptions"
 				+ (missingFSNs.get() > 0 ? ".  ERROR: [" + missingFSNs.get() + " concepts were missing FSNs]" : "");
 	}
+
+	/**
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()
+	 */
+	@Override
+	public String getWorkResultDocBookTable()
+	{
+		return "Not yet created";
+	}
 }

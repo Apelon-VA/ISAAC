@@ -51,4 +51,9 @@ public abstract interface TransformI
 	 * @return a user-friendly description of the amount and type of work that was performed
 	 */
 	public String getWorkResultSummary();
+	
+	/**
+	 * @return a doc-book formated table of the amount and type of work that was performed
+	 */
+	public String getWorkResultDocBookTable();
 }
