@@ -48,7 +48,7 @@ public class Setup extends AbstractMojo
 	 * @parameter
 	 * @required
 	 */
-	private String bdbFolderLocation;
+	private String bdbFolderLocation; //TODO: Dan - change this from a String to a File type variable
 	
 	/**
 	 * Location of the folder that contains the user profiles
@@ -97,4 +97,14 @@ public class Setup extends AbstractMojo
 			throw new MojoExecutionException("Database build failure", e);
 		}
 	}
+	
+	
+	public void setBdbFolderLocation(String inputBdbFolderlocation) {
+		bdbFolderLocation = inputBdbFolderlocation;
+	}
+	
+	public void setUserProfileFolderLocation(File inputUserProfileLocation) {
+		userProfileFolderLocation = inputUserProfileLocation;
+	}
+	
 }

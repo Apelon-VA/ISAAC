@@ -246,6 +246,10 @@ public class DescriptionTableView
 												po.setContentNode(bp);
 												po.setAutoHide(true);
 												po.detachedTitleProperty().set("Sememes attached to Description");
+												po.detachedProperty().addListener((change) ->
+												{
+													po.setAutoHide(false);
+												});
 												
 												Point2D point = b.localToScreen(b.getWidth(), -32);
 												po.show(b.getScene().getWindow(), point.getX(), point.getY());

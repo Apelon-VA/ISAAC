@@ -533,25 +533,14 @@ public class DynamicRefexView implements RefexViewI
 			{
 				try
 				{
-					ExtendedAppContext.getDataStore().cancel();
-					//TODO (artf231427) Cancel isn't working properly on annotation-style refexes - works on member style.
-					HashSet<Integer> componentNids = getAllComponentNids(treeRoot_.getChildren());
-					for (Integer i : componentNids)
-					{
-						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConceptForNid(i);
-						if (cc.isUncommitted() || cc.getConceptAttributes().isUncommitted())
-						{
-							ExtendedAppContext.getDataStore().cancel(cc);
-						}
-					}
-					
+					forgetAllUncommitted(treeRoot_.getChildren());
 					HashSet<Integer> assemblageNids = getAllAssemblageNids(treeRoot_.getChildren());
 					for (Integer i : assemblageNids)
 					{
-						ConceptChronicleBI cc = ExtendedAppContext.getDataStore().getConcept(i);
-						if (!cc.isAnnotationStyleRefex() && cc.isUncommitted())
+						ConceptVersionBI cv = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), i);
+						if (!cv.isAnnotationStyleRefex() && cv.isUncommitted())
 						{
-							ExtendedAppContext.getDataStore().cancel(cc);
+							cv.cancel();
 						}
 					}
 					ExtendedAppContext.getDataStore().waitTillWritesFinished();
@@ -786,6 +775,12 @@ public class DynamicRefexView implements RefexViewI
 			logger_.info("Skip refresh of dynamic refex due to wait count {}" + noRefresh_.get());
 			return;
 		}
+		
+		Platform.runLater(() ->
+		{
+			ttv_.setPlaceholder(progressBar_);
+			treeRoot_.getChildren().clear();
+		});
 
 		Utility.execute(() ->
 		{
@@ -1355,9 +1350,13 @@ public class DynamicRefexView implements RefexViewI
 		//Are they guaranteed to remain in order?  What order?  Same question with versions.  Is the order maintained?  What order is it?
 		for (RefexDynamicChronicleBI<?> refexChronicle: refexChronicles)
 		{
-			for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
+			//null check in case the lucene search returned a ref to something that didn't exist (which is an error I've seen before)
+			if (refexChronicle != null)
 			{
-				allVersions.add(refexVersion);
+				for (RefexDynamicVersionBI<?> refexVersion : refexChronicle.getVersions())
+				{
+					allVersions.add(refexVersion);
+				}
 			}
 		}
 		
@@ -1533,6 +1532,33 @@ public class DynamicRefexView implements RefexViewI
 			results.addAll(getAllAssemblageNids(item.getChildren()));
 		}
 		return results;
+	}
+	
+	private void forgetAllUncommitted(List<TreeItem<RefexDynamicGUI>> items) throws IOException
+	{
+		
+		if (items == null)
+		{
+			return;
+		}
+		for (TreeItem<RefexDynamicGUI> item : items)
+		{
+			if (item.getValue() != null)
+			{
+				RefexDynamicVersionBI<? extends RefexDynamicVersionBI<?>> refex = item.getValue().getRefex();
+				if (refex.isUncommitted())
+				{
+					ExtendedAppContext.getDataStore().forget(refex);
+					ConceptVersionBI cv = ExtendedAppContext.getDataStore().getConceptVersion(OTFUtility.getViewCoordinate(), refex.getReferencedComponentNid());
+					//if assemblageNid != concept nid - this means it is an annotation style refex
+					if ((refex.getAssemblageNid() != refex.getConceptNid()) && cv.isUncommitted())
+					{
+						cv.cancel();
+					}
+				}
+			}
+			forgetAllUncommitted(item.getChildren());
+		}
 	}
 	
 	private HashSet<Integer> getAllComponentNids(List<TreeItem<RefexDynamicGUI>> items)

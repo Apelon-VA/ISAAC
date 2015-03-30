@@ -342,6 +342,7 @@ public class MappingController {
 		
 	}
 
+<<<<<<< HEAD
 	private void updateCell(TableCell<?, ?> cell, MappingObject mappingObject) {
 		if (!cell.isEmpty() && mappingObject != null) {
 			ContextMenu cm = new ContextMenu();
@@ -360,6 +361,108 @@ public class MappingController {
 				cell.setTooltip(new Tooltip(tooltipText));
 				cell.setGraphic(sp);
 				break;
+=======
+	private Callback<TableColumn<MappingItem, MappingItem>, TableCell<MappingItem, MappingItem>> mappingItemCellFactory =
+			new Callback<TableColumn<MappingItem, MappingItem>, TableCell<MappingItem, MappingItem>>() {
+
+		@Override
+		public TableCell<MappingItem, MappingItem> call(TableColumn<MappingItem, MappingItem> param) {
+			return new TableCell<MappingItem, MappingItem>() {
+				@Override
+				public void updateItem(final MappingItem mappingItem, boolean empty) {
+					super.updateItem(mappingItem, empty);
+					if (!isEmpty() && mappingItem != null) {
+						ContextMenu cm = new ContextMenu();
+						setContextMenu(cm);
+						SimpleStringProperty property = null;
+						int  conceptNid  = 0;
+						MappingColumnType columnType = (MappingColumnType) getTableColumn().getUserData();
+						
+						switch (columnType) {
+						case STATUS_CONDENSED:
+							StackPane sp = new StackPane();
+							sp.setPrefSize(25, 25);
+							String tooltipText = mappingItem.isActive()? "Active" : "Inactive";
+							ImageView image    = mappingItem.isActive()? Images.BLACK_DOT.createImageView() : Images.GREY_DOT.createImageView();
+							sizeAndPosition(image, sp, Pos.CENTER);
+							setTooltip(new Tooltip(tooltipText));
+							setGraphic(sp);
+							break;
+							
+						case SOURCE:
+							property = mappingItem.getSourceConceptProperty();
+							conceptNid = mappingItem.getSourceConceptNid();
+							break;
+						case TARGET:
+							property = mappingItem.getTargetConceptProperty();
+							conceptNid = mappingItem.getTargetConceptNid();
+							break;
+						case QUALIFIER:
+							property = mappingItem.getQualifierConceptProperty();
+							conceptNid = mappingItem.getQualifierConceptNid();
+							break;
+						case COMMENTS:
+							property = mappingItem.getCommentsProperty();
+							break;
+						case EDITOR_STATUS:
+							property = mappingItem.getEditorStatusConceptProperty();
+							break;
+						case STATUS_STRING:
+							property = mappingItem.getStatusProperty();
+							break;
+						case TIME:
+							property = mappingItem.getTimeProperty();
+							break;
+						case AUTHOR:
+							property = mappingItem.getAuthorProperty();
+							conceptNid = mappingItem.getAuthorNid();
+							break;
+						case MODULE:
+							property = mappingItem.getModuleProperty();
+							conceptNid = mappingItem.getModuleNid();
+							break;
+						case PATH:
+							property = mappingItem.getPathProperty();
+							conceptNid = mappingItem.getPathNid();
+							break;
+						default:
+							// Nothing
+						}
+						
+						if (property != null) {
+							Text text = new Text();
+							text.textProperty().bind(property);
+							text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
+							setGraphic(text);
+
+							MenuItem mi = new MenuItem("Copy Value");
+							mi.setOnAction(new EventHandler<ActionEvent>() {
+								@Override
+								public void handle(ActionEvent arg0) {
+									CustomClipboard.set(((Text)getGraphic()).getText());
+								}
+							});
+							mi.setGraphic(Images.COPY.createImageView());
+							cm.getItems().add(mi);
+
+							if (columnType.isConcept() && conceptNid != 0) {
+								final int nid = conceptNid;
+								CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider() {
+									@Override
+									public Collection<Integer> getNIds() {
+									   return Arrays.asList(new Integer[] {nid});
+									}
+								});
+							}
+						}
+					}
+					else
+					{
+						setText(null);
+						setGraphic(null);
+					}
+				}
+>>>>>>> branch 'feature-mapping' of https://github.com/Apelon-VA/ISAAC.git
 				
 			case NAME:
 				property = ((MappingSet)mappingObject).getNameProperty(); 
