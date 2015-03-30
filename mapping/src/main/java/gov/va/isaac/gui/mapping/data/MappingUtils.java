@@ -28,6 +28,7 @@ import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.TaskCompleteCallback;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +37,13 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -256,7 +264,7 @@ public class MappingUtils
 		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, childOfNid);
 	}
 	
-	public List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
+	public static List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
 	{
 		Set<ConceptVersionBI> extendedDescriptionTypes;
 		try
@@ -275,4 +283,5 @@ public class MappingUtils
 			throw new IOException(e);
 		}
 	}
+	
 }

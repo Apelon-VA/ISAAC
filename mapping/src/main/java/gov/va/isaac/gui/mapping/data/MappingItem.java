@@ -21,13 +21,17 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +45,8 @@ public class MappingItem extends MappingObject
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
 
-	private UUID editorStatusConcept, primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
+	private UUID primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
+	private int	sourceConceptNid, targetConceptNid, qualifierConceptNid;
 	
 	private static UUID commentsHack = UUID.randomUUID();
 
@@ -52,17 +57,27 @@ public class MappingItem extends MappingObject
 	
 	private void read(RefexDynamicVersionBI<?> refex) throws IOException
 	{
+		BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+		
+		sourceConceptNid = refex.getReferencedComponentNid();
+		
 		primordialUUID = refex.getPrimordialUuid();
-		sourceConcept = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex.getReferencedComponentNid());
-		mappingSetIDConcept = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(refex.getAssemblageNid());
+		sourceConcept = dataStore.getUuidPrimordialForNid(sourceConceptNid);
+		mappingSetIDConcept = dataStore.getUuidPrimordialForNid(refex.getAssemblageNid());
 		readStampDetails(refex);
 		
 		RefexDynamicDataBI[] data = refex.getData();
 		targetConcept = ((data != null && data.length > 0) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null);
 		qualifierConcept = ((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null); 
 		editorStatusConcept = ((data != null && data.length > 2 && data[2] != null) ? ((RefexDynamicUUID) data[2]).getDataUUID() : null);
+		
+		targetConceptNid    = (targetConcept == null)?    0 : dataStore.getNidForUuids(new UUID[] {targetConcept});
+		qualifierConceptNid = (qualifierConcept == null)? 0 : dataStore.getNidForUuids(new UUID[] {qualifierConcept});
 	}
 
+	public int getSourceConceptNid() 	{ return sourceConceptNid; }
+	public int getTargetConceptNid() 	{ return targetConceptNid; }
+	public int getQualifierConceptNid() { return qualifierConceptNid; }
 	
 	public String getSummary() {
 		return  (isActive() ? "Active " : "Retired ") + "Mapping: " + OTFUtility.getDescription(sourceConcept) + "-" + OTFUtility.getDescription(mappingSetIDConcept)
@@ -131,26 +146,6 @@ public class MappingItem extends MappingObject
 	}
 
 	/**
-	 * @return the editorStatusConcept
-	 */
-	public UUID getEditorStatusConcept()
-	{
-		return editorStatusConcept;
-	}
-
-	//TODO not sure if we should allow changes to the qualifier concept.  I would say yes... but the qualifier concept ID 
-	//is part of the value that is hashed to create the UUID of the map item... it may be best to retire and create a new one in this case.
-	
-	
-	/**
-	 * @param editorStatusConcept the editorStatusConcept to set
-	 */
-	public void setEditorStatusConcept(UUID editorStatusConcept)
-	{
-		this.editorStatusConcept = editorStatusConcept;
-	}
-
-	/**
 	 * @return the primordialUUID of this Mapping Item.  Note that this doesn't uniquely identify a mapping item within the system
 	 * as changes to the mapping item will retain the same ID - there will now be multiple versions.  They will differ by date.
 	 */
@@ -167,6 +162,8 @@ public class MappingItem extends MappingObject
 		return mappingSetIDConcept;
 	}
 
+	//TODO not sure if we should allow changes to the qualifier concept.  I would say yes... but the qualifier concept ID 
+	//is part of the value that is hashed to create the UUID of the map item... it may be best to retire and create a new one in this case.
 	/**
 	 * @return the qualifierConcept
 	 */
@@ -206,8 +203,4 @@ public class MappingItem extends MappingObject
 		return propertyLookup(getQualifierConcept());
 	}
 	
-	public SimpleStringProperty getEditorStatusConceptProperty()
-	{
-		return propertyLookup(getEditorStatusConcept());
-	}
 }

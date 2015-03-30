@@ -10,7 +10,31 @@ import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 
 public class MappingObject extends StampedItem {
+	
+	protected UUID editorStatusConcept;
 	protected HashMap<UUID, SimpleStringProperty> cachedValues = new HashMap<>();
+	
+	/**
+	 * @return the editorStatusConcept
+	 */
+	public UUID getEditorStatusConcept()
+	{
+		return editorStatusConcept;
+	}
+
+	/**
+	 * @param editorStatusConcept the editorStatusConcept to set
+	 */
+	public void setEditorStatusConcept(UUID editorStatusConcept)
+	{
+		this.editorStatusConcept = editorStatusConcept;
+	}
+
+	public SimpleStringProperty getEditorStatusConceptProperty()
+	{
+		return propertyLookup(getEditorStatusConcept());
+	}
+
 	
 	protected SimpleStringProperty propertyLookup(UUID uuid)
 	{

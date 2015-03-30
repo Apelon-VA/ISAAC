@@ -52,7 +52,7 @@ public class MappingSet extends MappingObject
 	private static final Logger LOG = LoggerFactory.getLogger(MappingSet.class);
 
 	private String name, inverseName, description, purpose;
-	private UUID primordialUUID, editorStatusConcept;
+	private UUID primordialUUID;
 
 	/**
 	 * 
@@ -80,30 +80,12 @@ public class MappingSet extends MappingObject
 		}
 		return mappingItems;
 	}
-
-	/**
-	 * Change the editor status concept - may specify null
-	 * @param editorStatusConcept
-	 */
-	public void setEditorStatusConcept(UUID editorStatusConcept)
-	{
-		this.editorStatusConcept = editorStatusConcept;
-	}
-
-	/**
-	 * @return The UUID of the concept that represents the editor selected status of the mapping set. May return null.
-	 */
-	public UUID getEditorStatusConcept()
-	{
-		return editorStatusConcept;
-	}
-
-	public SimpleStringProperty getEditorStatusConceptProperty()
-	{
-		return propertyLookup(getEditorStatusConcept());
-	}
 	
-
+	public SimpleStringProperty getNameProperty() 		 { return new SimpleStringProperty(name); }
+	public SimpleStringProperty getPurposeProperty() 	 { return new SimpleStringProperty(purpose); }
+	public SimpleStringProperty getDescriptionProperty() { return new SimpleStringProperty(description); }
+	public SimpleStringProperty getInverseNameProperty() { return new SimpleStringProperty(inverseName); }
+	
 	/**
 	 * @param purpose - The 'purpose' of the mapping set. May specify null.
 	 */

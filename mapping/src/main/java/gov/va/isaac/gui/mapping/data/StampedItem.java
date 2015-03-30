@@ -19,8 +19,17 @@
 package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
+
 import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.UUID;
+
+import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 
@@ -37,13 +46,37 @@ public abstract class StampedItem
 	private long creationTime;
 	private boolean isActive;
 	
+	private SimpleStringProperty authorSSP = new SimpleStringProperty("-");
+	private SimpleStringProperty moduleSSP = new SimpleStringProperty("-");;
+	private SimpleStringProperty pathSSP   = new SimpleStringProperty("-");;
+	
+	private int authorNid;
+	private int moduleNid;
+	private int pathNid;
+	
 	protected void readStampDetails(ComponentVersionBI componentVersion) throws IOException
 	{
-		authorUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(componentVersion.getAuthorNid());
+		authorNid = componentVersion.getAuthorNid();
+		moduleNid = componentVersion.getModuleNid();
+		pathNid   = componentVersion.getPathNid();
+		
+		authorUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(authorNid);
 		creationTime = componentVersion.getTime();
 		isActive = componentVersion.getStatus() == Status.ACTIVE;
-		moduleUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(componentVersion.getModuleNid());
-		pathUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(componentVersion.getPathNid());
+		moduleUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(moduleNid);
+		pathUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(pathNid);
+		
+		Utility.execute(() ->
+		{
+			String authorName = OTFUtility.getDescription(authorUUID);
+			String moduleName = OTFUtility.getDescription(moduleUUID);
+			String pathName =   OTFUtility.getDescription(pathUUID);
+			Platform.runLater(() -> {
+				authorSSP.set(authorName);
+				moduleSSP.set(moduleName);
+				pathSSP.set(pathName);
+			});
+		});
 	}
 	
 	/**
@@ -85,4 +118,24 @@ public abstract class StampedItem
 	{
 		return pathUUID;
 	}
+
+	public SimpleStringProperty getStatusProperty() { return new SimpleStringProperty(isActive? "Active" : "Inactive"); }
+	public SimpleStringProperty getTimeProperty()   {
+		SimpleStringProperty property = new SimpleStringProperty();
+		try {
+			property.set(new SimpleDateFormat("MM/dd/yy HH:mm").format(creationTime));
+		} catch (Exception e) {
+			//TODO something
+		}
+		return property;
+	}
+	public SimpleStringProperty getAuthorProperty() { return authorSSP; }
+	public SimpleStringProperty getModuleProperty() { return moduleSSP; }
+	public SimpleStringProperty getPathProperty()   { return pathSSP; }
+	
+	public int getAuthorNid() { return authorNid; }
+	public int getModuleNid() { return moduleNid; }
+	public int getPathNid()   { return pathNid; }
+	
+
 }
