@@ -283,6 +283,7 @@ public class MappingController {
 		});
 		
 		mappingSetSTableColumn.setVisible(false);
+		mappingSetSTAMPTableColumn.setVisible(false);
 		
 	}
 
@@ -309,6 +310,7 @@ public class MappingController {
 		mappingItemTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
 		mappingItemSTableColumn.setVisible(false);
+		mappingItemSTAMPTableColumn.setVisible(false);
 
 	}
 	
@@ -349,7 +351,10 @@ public class MappingController {
 			SimpleStringProperty property = null;
 			int  conceptNid  = 0;
 			MappingColumnType columnType = (MappingColumnType) cell.getTableColumn().getUserData();
-			
+
+			cell.setText(null);
+			cell.setGraphic(null);
+
 			switch (columnType) {
 			case STATUS_CONDENSED:
 				StackPane sp = new StackPane();
@@ -439,6 +444,9 @@ public class MappingController {
 					});
 				}
 			}
+		} else {
+			cell.setText(null);
+			cell.setGraphic(null);
 		}
 	}
 	
