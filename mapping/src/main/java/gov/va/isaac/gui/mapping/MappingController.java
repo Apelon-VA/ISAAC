@@ -4,6 +4,7 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemDAO;
+import gov.va.isaac.gui.mapping.data.MappingObject;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.util.CustomClipboard;
@@ -102,19 +103,19 @@ public class MappingController {
     @FXML private TableColumn<MappingSet, ?> mappingSetModuleTableColumn;
     @FXML private TableColumn<MappingSet, ?> mappingSetPathTableColumn;
     
-    @FXML private TableColumn<MappingSet, ?> mappingItemSTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemSourceTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemTargetTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemQualifierTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemCommentsTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemEditorStatusTableColumn;
-	
-    @FXML private TableColumn<MappingSet, ?> mappingItemSTAMPTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemStatusTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemTimeTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemAuthorTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemModuleTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingItemPathTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemSTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemSourceTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemTargetTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemQualifierTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemCommentsTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemEditorStatusTableColumn;
+
+    @FXML private TableColumn<MappingItem, ?> mappingItemSTAMPTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemStatusTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemTimeTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemAuthorTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemModuleTableColumn;
+    @FXML private TableColumn<MappingItem, ?> mappingItemPathTableColumn;
 	
 	
 	public static MappingController init() throws IOException {
@@ -219,7 +220,7 @@ public class MappingController {
 	}
 
 	private MappingSet getSelectedMappingSet() {
-		return mappingSetTableView.getSelectionModel().getSelectedItem();
+		return (MappingSet)mappingSetTableView.getSelectionModel().getSelectedItem();
 	}
 	
 	private MappingItem getSelectedMappingItem() {
@@ -269,40 +270,8 @@ public class MappingController {
 	}
 	
 	private void setupMappingSetTable() {
-		for (TableColumn<MappingSet, ?> x : mappingSetTableView.getColumns())
-		{
-			((TableColumn<MappingSet, String>)x).setCellValueFactory(new Callback<TableColumn.CellDataFeatures<MappingSet,String>, ObservableValue<String>>()
-			{
-				@Override
-				public ObservableValue<String> call(CellDataFeatures<MappingSet, String> param)
-				{
-					SimpleStringProperty property = new SimpleStringProperty();
-					MappingSet mappingSet = param.getValue();
-					String columnName = param.getTableColumn().getText().trim();
-					
-					switch (columnName) {
-					case "Name":
-						property = new SimpleStringProperty(mappingSet.getName());
-						break;
-					case "Purpose":
-						property = new SimpleStringProperty(mappingSet.getPurpose());
-						break;
-					case "Status":
-						property = mappingSet.getEditorStatusConceptProperty();
-						break;
-					case "Description":
-						property = new SimpleStringProperty(mappingSet.getDescription());
-						break;
-					case "Retired":
-						property = new SimpleStringProperty((mappingSet.isActive())?"":"Y");
-						break;
-					default:
-						// Nothing
-					}
-					return property;
-				}
-			});
-		}
+		
+		setMappingSetTableFactories(mappingSetTableView.getColumns());
 		
 		mappingSetTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<MappingSet>()
 		{
@@ -319,14 +288,6 @@ public class MappingController {
 
 	private void setupMappingItemTable() {
 
-		Callback<TableColumn.CellDataFeatures<MappingItem, MappingItem>, ObservableValue<MappingItem>> mappingItemCellValueFactory = 
-				new Callback<TableColumn.CellDataFeatures<MappingItem, MappingItem>, ObservableValue<MappingItem>>()	{
-			@Override
-			public ObservableValue<MappingItem> call(CellDataFeatures<MappingItem, MappingItem> param) {
-				return new SimpleObjectProperty<MappingItem>(param.getValue());
-			}
-		};
-		
 		setMappingItemTableFactories(mappingItemTableView.getColumns());
 		
 		mappingItemTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<MappingItem>() {
@@ -352,6 +313,21 @@ public class MappingController {
 	}
 	
 	@SuppressWarnings("unchecked")
+	private void setMappingSetTableFactories(ObservableList<TableColumn<MappingSet,?>> tableColumns) {
+		for (TableColumn<MappingSet, ?> tableColumn : tableColumns) {
+			TableColumn<MappingSet, MappingSet> mappingItemTableColumn = (TableColumn<MappingSet, MappingSet>)tableColumn;
+			mappingItemTableColumn.setCellValueFactory(mappingSetCellValueFactory);
+			mappingItemTableColumn.setCellFactory(mappingSetCellFactory);
+			
+			ObservableList<TableColumn<MappingSet,?>> nestedTableColumns = mappingItemTableColumn.getColumns();
+			if (nestedTableColumns.size() > 0) {
+				setMappingSetTableFactories(nestedTableColumns);
+			}
+		}
+		
+	}
+
+	@SuppressWarnings("unchecked")
 	private void setMappingItemTableFactories(ObservableList<TableColumn<MappingItem,?>> tableColumns) {
 		for (TableColumn<MappingItem, ?> tableColumn : tableColumns) {
 			TableColumn<MappingItem, MappingItem> mappingItemTableColumn = (TableColumn<MappingItem, MappingItem>)tableColumn;
@@ -366,114 +342,107 @@ public class MappingController {
 		
 	}
 
-	private Callback<TableColumn<MappingItem, MappingItem>, TableCell<MappingItem, MappingItem>> mappingItemCellFactory =
-			new Callback<TableColumn<MappingItem, MappingItem>, TableCell<MappingItem, MappingItem>>() {
-
-		@Override
-		public TableCell<MappingItem, MappingItem> call(TableColumn<MappingItem, MappingItem> param) {
-			return new TableCell<MappingItem, MappingItem>() {
-				@Override
-				public void updateItem(final MappingItem mappingItem, boolean empty) {
-					super.updateItem(mappingItem, empty);
-					if (!isEmpty() && mappingItem != null) {
-						ContextMenu cm = new ContextMenu();
-						setContextMenu(cm);
-						SimpleStringProperty property = null;
-						int  conceptNid  = 0;
-						MappingColumnType columnType = (MappingColumnType) getTableColumn().getUserData();
-						
-						switch (columnType) {
-						case STATUS_CONDENSED:
-							StackPane sp = new StackPane();
-							sp.setPrefSize(25, 25);
-							String tooltipText = mappingItem.isActive()? "Active" : "Inactive";
-							ImageView image    = mappingItem.isActive()? Images.BLACK_DOT.createImageView() : Images.GREY_DOT.createImageView();
-							sizeAndPosition(image, sp, Pos.CENTER);
-							setTooltip(new Tooltip(tooltipText));
-							setGraphic(sp);
-							break;
-							
-						case SOURCE:
-							property = mappingItem.getSourceConceptProperty();
-							conceptNid = mappingItem.getSourceConceptNid();
-							break;
-						case TARGET:
-							property = mappingItem.getTargetConceptProperty();
-							conceptNid = mappingItem.getTargetConceptNid();
-							break;
-						case QUALIFIER:
-							property = mappingItem.getQualifierConceptProperty();
-							conceptNid = mappingItem.getQualifierConceptNid();
-							break;
-						case COMMENTS:
-							property = mappingItem.getCommentsProperty();
-							break;
-						case EDITOR_STATUS:
-							property = mappingItem.getEditorStatusConceptProperty();
-							break;
-						case STATUS_STRING:
-							property = mappingItem.getStatusProperty();
-							break;
-						case TIME:
-							property = mappingItem.getTimeProperty();
-							break;
-						case AUTHOR:
-							property = mappingItem.getAuthorProperty();
-							conceptNid = mappingItem.getAuthorNid();
-							break;
-						case MODULE:
-							property = mappingItem.getModuleProperty();
-							conceptNid = mappingItem.getModuleNid();
-							break;
-						case PATH:
-							property = mappingItem.getPathProperty();
-							conceptNid = mappingItem.getPathNid();
-							break;
-						default:
-							// Nothing
-						}
-						
-						if (property != null) {
-							Text text = new Text();
-							text.textProperty().bind(property);
-							text.wrappingWidthProperty().bind(getTableColumn().widthProperty());
-							setGraphic(text);
-
-							MenuItem mi = new MenuItem("Copy Value");
-							mi.setOnAction(new EventHandler<ActionEvent>() {
-								@Override
-								public void handle(ActionEvent arg0) {
-									CustomClipboard.set(((Text)getGraphic()).getText());
-								}
-							});
-							mi.setGraphic(Images.COPY.createImageView());
-							cm.getItems().add(mi);
-
-							if (columnType.isConcept() && conceptNid != 0) {
-								final int nid = conceptNid;
-								CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider() {
-									@Override
-									public Collection<Integer> getNIds() {
-									   return Arrays.asList(new Integer[] {nid});
-									}
-								});
-							}
-						}
-					}
-				}
+	private void updateCell(TableCell<?, ?> cell, MappingObject mappingObject) {
+		if (!cell.isEmpty() && mappingObject != null) {
+			ContextMenu cm = new ContextMenu();
+			cell.setContextMenu(cm);
+			SimpleStringProperty property = null;
+			int  conceptNid  = 0;
+			MappingColumnType columnType = (MappingColumnType) cell.getTableColumn().getUserData();
+			
+			switch (columnType) {
+			case STATUS_CONDENSED:
+				StackPane sp = new StackPane();
+				sp.setPrefSize(25, 25);
+				String tooltipText = mappingObject.isActive()? "Active" : "Inactive";
+				ImageView image    = mappingObject.isActive()? Images.BLACK_DOT.createImageView() : Images.GREY_DOT.createImageView();
+				sizeAndPosition(image, sp, Pos.CENTER);
+				cell.setTooltip(new Tooltip(tooltipText));
+				cell.setGraphic(sp);
+				break;
 				
-			};
+			case NAME:
+				property = ((MappingSet)mappingObject).getNameProperty(); 
+				break;
+				
+			case PURPOSE:
+				property = ((MappingSet)mappingObject).getPurposeProperty(); 
+				break;
+				
+			case DESCRIPTION:
+				property = ((MappingSet)mappingObject).getDescriptionProperty(); 
+				break;
+				
+			case SOURCE:
+				property = ((MappingItem)mappingObject).getSourceConceptProperty();
+				conceptNid = ((MappingItem)mappingObject).getSourceConceptNid();
+				break;
+			case TARGET:
+				property = ((MappingItem)mappingObject).getTargetConceptProperty();
+				conceptNid = ((MappingItem)mappingObject).getTargetConceptNid();
+				break;
+			case QUALIFIER:
+				property = ((MappingItem)mappingObject).getQualifierConceptProperty();
+				conceptNid = ((MappingItem)mappingObject).getQualifierConceptNid();
+				break;
+			case COMMENTS:
+				property = ((MappingItem)mappingObject).getCommentsProperty();
+				break;
+			case EDITOR_STATUS:
+				property = mappingObject.getEditorStatusConceptProperty();
+				break;
+			case STATUS_STRING:
+				property = mappingObject.getStatusProperty();
+				break;
+			case TIME:
+				property = mappingObject.getTimeProperty();
+				break;
+			case AUTHOR:
+				property = mappingObject.getAuthorProperty();
+				conceptNid = mappingObject.getAuthorNid();
+				break;
+			case MODULE:
+				property = mappingObject.getModuleProperty();
+				conceptNid = mappingObject.getModuleNid();
+				break;
+			case PATH:
+				property = mappingObject.getPathProperty();
+				conceptNid = mappingObject.getPathNid();
+				break;
+			default:
+				// Nothing
+			}
+			
+			if (property != null) {
+				Text text = new Text();
+				text.textProperty().bind(property);
+				text.wrappingWidthProperty().bind(cell.getTableColumn().widthProperty());
+				cell.setGraphic(text);
+	
+				MenuItem mi = new MenuItem("Copy Value");
+				mi.setOnAction(new EventHandler<ActionEvent>() {
+					@Override
+					public void handle(ActionEvent arg0) {
+						CustomClipboard.set(((Text)cell.getGraphic()).getText());
+					}
+				});
+				mi.setGraphic(Images.COPY.createImageView());
+				cm.getItems().add(mi);
+	
+				if (columnType.isConcept() && conceptNid != 0) {
+					final int nid = conceptNid;
+					CommonMenus.addCommonMenus(cm, new CommonMenusNIdProvider() {
+						@Override
+						public Collection<Integer> getNIds() {
+						   return Arrays.asList(new Integer[] {nid});
+						}
+					});
+				}
+			}
 		}
-	};
-
-	private Callback<TableColumn.CellDataFeatures<MappingItem, MappingItem>, ObservableValue<MappingItem>> mappingItemCellValueFactory = 
-			new Callback<TableColumn.CellDataFeatures<MappingItem, MappingItem>, ObservableValue<MappingItem>>()	{
-		@Override
-		public ObservableValue<MappingItem> call(CellDataFeatures<MappingItem, MappingItem> param) {
-			return new SimpleObjectProperty<MappingItem>(param.getValue());
-		}
-	};
-
+	}
+	
+	
 	private void setupMappingSetButtons() {
 		editMappingSetButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
@@ -691,5 +660,51 @@ public class MappingController {
 		sp.getChildren().add(node);
 		StackPane.setAlignment(node, Pos.TOP_LEFT);
 	}
+
+	private Callback<TableColumn.CellDataFeatures<MappingItem, MappingItem>, ObservableValue<MappingItem>> mappingItemCellValueFactory = 
+			new Callback<TableColumn.CellDataFeatures<MappingItem, MappingItem>, ObservableValue<MappingItem>>()	{
+		@Override
+		public ObservableValue<MappingItem> call(CellDataFeatures<MappingItem, MappingItem> param) {
+			return new SimpleObjectProperty<MappingItem>(param.getValue());
+		}
+	};
+	
+	private Callback<TableColumn.CellDataFeatures<MappingSet, MappingSet>, ObservableValue<MappingSet>> mappingSetCellValueFactory = 
+			new Callback<TableColumn.CellDataFeatures<MappingSet, MappingSet>, ObservableValue<MappingSet>>()	{
+		@Override
+		public ObservableValue<MappingSet> call(CellDataFeatures<MappingSet, MappingSet> param) {
+			return new SimpleObjectProperty<MappingSet>(param.getValue());
+		}
+	};
+	
+	private Callback<TableColumn<MappingItem, MappingItem>, TableCell<MappingItem, MappingItem>> mappingItemCellFactory =
+			new Callback<TableColumn<MappingItem, MappingItem>, TableCell<MappingItem, MappingItem>>() {
+
+		@Override
+		public TableCell<MappingItem, MappingItem> call(TableColumn<MappingItem, MappingItem> param) {
+			return new TableCell<MappingItem, MappingItem>() {
+				@Override
+				public void updateItem(final MappingItem mappingItem, boolean empty) {
+					super.updateItem(mappingItem, empty);
+					updateCell(this, mappingItem);
+				}
+			};
+		}
+	};
+
+	private Callback<TableColumn<MappingSet, MappingSet>, TableCell<MappingSet, MappingSet>> mappingSetCellFactory =
+			new Callback<TableColumn<MappingSet, MappingSet>, TableCell<MappingSet, MappingSet>>() {
+
+		@Override
+		public TableCell<MappingSet, MappingSet> call(TableColumn<MappingSet, MappingSet> param) {
+			return new TableCell<MappingSet, MappingSet>() {
+				@Override
+				public void updateItem(final MappingSet mappingSet, boolean empty) {
+					super.updateItem(mappingSet, empty);
+					updateCell(this, mappingSet);
+				}
+			};
+		}
+	};
 
 }
