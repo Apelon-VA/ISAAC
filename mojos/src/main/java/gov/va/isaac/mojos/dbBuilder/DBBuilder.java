@@ -23,6 +23,7 @@ import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.constants.InformationModels;
 import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.constants.Search;
+import gov.va.isaac.util.DBLocator;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.List;
@@ -114,13 +115,13 @@ public class DBBuilder extends AbstractMojo
 		{
 			getLog().info("Start loading database data from econcepts files.");
 			long startTime = System.currentTimeMillis();
-			File bdbFolderFile = new File(bdbFolderLocation);
+			File bdbFolderFile = DBLocator.findDBFolder(new File(bdbFolderLocation));
 			boolean dbExists = bdbFolderFile.exists();
 
 			if (setupAndShutdown)
 			{
-				System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolderLocation);
-				System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, bdbFolderLocation);
+				System.setProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY, bdbFolderFile.getCanonicalPath());
+				System.setProperty(LuceneIndexer.LUCENE_ROOT_LOCATION_PROPERTY, DBLocator.findLuceneIndexFolder(bdbFolderFile).getCanonicalPath());
 
 				AppContext.setup();
 
@@ -211,18 +212,25 @@ public class DBBuilder extends AbstractMojo
 	}
 
 	/**
-	 * Alt application entry point.
+	 * Alt application entry point. 
 	 *
 	 * @param args the command line arguments
 	 * @throws Exception the exception
 	 */
 	public static void main(String[] args) throws Exception
 	{
-		DBBuilder foo = new DBBuilder();
-		foo.bdbFolderLocation = "target/berkeley-db";
-		FileIO.recursiveDelete(new File(foo.bdbFolderLocation));
-		foo.econFileStrings = new String[] { "/mnt/d/scratch/sct-econcept-2014.01.31-build-3-active-only.jbin" };
-		foo.moveToReadOnly = true;
-		foo.execute();
+		DBBuilder dbBuilder = new DBBuilder();
+		
+		dbBuilder.bdbFolderLocation = System.getProperty("bdbFolderLocation");
+		dbBuilder.econFileStrings = new String[] {System.getProperty("econFile")};
+		dbBuilder.loadDefaultMetadata = Boolean.parseBoolean(System.getProperty("loadDefaultMetadata"));
+		dbBuilder.moveToReadOnly = Boolean.parseBoolean(System.getProperty("moveToReadOnly"));
+		dbBuilder.setupAndShutdown = dbBuilder.moveToReadOnly = Boolean.parseBoolean(System.getProperty("setupAndShutdown"));
+//		
+//		foo.bdbFolderLocation = "target/berkeley-db";
+//		FileIO.recursiveDelete(new File(foo.bdbFolderLocation));
+//		foo.econFileStrings = new String[] { "/mnt/d/scratch/sct-econcept-2014.01.31-build-3-active-only.jbin" };
+//		foo.moveToReadOnly = true;
+		dbBuilder.execute();
 	}
 }
