@@ -151,7 +151,6 @@ public class CreateMappingSetController {
 					MappingSetDAO.updateMappingSet(mappingSet_);
 				}
 				
-				AppContext.getService(Mapping.class).refreshMappingSets();
 				createButton.getScene().getWindow().hide();
 			}
 			catch (Exception e)

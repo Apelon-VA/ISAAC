@@ -12,7 +12,8 @@ import javafx.beans.property.SimpleStringProperty;
 public class MappingObject extends StampedItem {
 	
 	protected UUID editorStatusConcept;
-	protected HashMap<UUID, SimpleStringProperty> cachedValues = new HashMap<>();
+	protected final SimpleStringProperty editorStatusConceptProperty = new SimpleStringProperty();
+	protected HashMap<UUID, String> cachedValues = new HashMap<>();
 	
 	/**
 	 * @return the editorStatusConcept
@@ -28,40 +29,29 @@ public class MappingObject extends StampedItem {
 	public void setEditorStatusConcept(UUID editorStatusConcept)
 	{
 		this.editorStatusConcept = editorStatusConcept;
+		propertyLookup(editorStatusConcept, editorStatusConceptProperty);
 	}
 
 	public SimpleStringProperty getEditorStatusConceptProperty()
 	{
-		return propertyLookup(getEditorStatusConcept());
+		return editorStatusConceptProperty;
 	}
 
-	
-	protected SimpleStringProperty propertyLookup(UUID uuid)
-	{
-		if (uuid == null)
-		{
-			return new SimpleStringProperty("");
-		}
-		SimpleStringProperty ssp = cachedValues.get(uuid);
-		if (ssp == null)
-		{
-			ssp = new SimpleStringProperty("-");
-			cachedValues.put(uuid, ssp);
-		}
-		
-		SimpleStringProperty ssp2 = cachedValues.get(uuid);
-		
-		if (ssp.get().equals("-"))
-		{
-			Utility.execute(() ->
-			{
-				String s = OTFUtility.getDescription(uuid);
-				Platform.runLater(() ->
-				{
-					ssp2.set(s);
+	protected void propertyLookup(UUID uuid, SimpleStringProperty property)	{
+		if (uuid == null) {
+			property.set(null);
+		} else {
+			String cachedValue = cachedValues.get(uuid);
+			if (cachedValue != null) {
+				property.set(cachedValue);
+			} else {
+				property.set("-");
+				Utility.execute(() -> {
+					String s = OTFUtility.getDescription(uuid);
+					cachedValues.put(uuid, s);
+					property.set(s);
 				});
-			});
+			}
 		}
-		return ssp2;
 	}
 }

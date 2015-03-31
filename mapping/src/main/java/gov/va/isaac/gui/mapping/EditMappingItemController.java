@@ -107,7 +107,6 @@ public class EditMappingItemController {
 			
 			if (saved) {
 				saveButton.getScene().getWindow().hide();
-				AppContext.getService(Mapping.class).refreshMappingItems();
 			} else {
 				saveButton.getScene().getWindow().requestFocus();
 			}
