@@ -141,6 +141,10 @@ public class EConceptExporter extends CommonBase implements
     }
   }
 
+  public int getCount() {
+	  return count;
+  }
+  
   /*
    * (non-Javadoc)
    * 

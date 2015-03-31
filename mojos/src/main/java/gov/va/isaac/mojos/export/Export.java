@@ -2,9 +2,12 @@ package gov.va.isaac.mojos.export;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ie.exporter.EConceptExporter;
+import gov.va.isaac.ie.exporter.Exporter;
 import gov.va.isaac.mojos.dbBuilder.MojoConceptSpec;
 import gov.va.isaac.mojos.dbBuilder.Setup;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.ProgressEvent;
+import gov.va.isaac.util.ProgressListener;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -19,6 +22,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 //import org.apache.maven.execution.MavenSession;
 //import org.apache.maven.plugin.MojoExecution;
@@ -34,13 +39,13 @@ import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 public class Export extends AbstractMojo
 {
 	
-	public enum ExportReleaseType {
+	public enum ExportReleaseType { //TODO: vk - break this out
 		SNAPSHOT,
 		DELTA,
 		FULL
 	}
 	
-	private int conCount = 0;
+	private EConceptExporter eConExporter;
 	private DataOutputStream dos_;
 	
 	//REQUIRED
@@ -72,7 +77,7 @@ public class Export extends AbstractMojo
 	
 	public void execute() throws MojoExecutionException 
 	{
-		String fileName = "EXPORT";
+		String fileName = "SOLOR_Snapshot_" + path.getFsn() + "";
 				
 		//Check if requireed Parameters are Empty
 		// We can proably remove these
@@ -104,10 +109,10 @@ public class Export extends AbstractMojo
 		
 		
 		if(namespace != null) {
-			fileName = fileName + "-" + namespace;
+			fileName = fileName + "_[" + namespace + "]";
 		}
 		if(releaseDate != null) {
-			fileName = fileName + "-" + releaseDate;
+			fileName = fileName + "_[" + releaseDate + "]";
 		}
 		
 		try
@@ -120,25 +125,58 @@ public class Export extends AbstractMojo
 			
 			getLog().info("Exporting the database " + fileName + " to " + outputFolder.getAbsolutePath());
 			
-			dos_ = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName + ".jbin")));
-			
-			EConceptExporter eConExporter = new EConceptExporter(dos_);
-			
+			dos_ = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(outputFolder, fileName + ".jbin"))));
+			eConExporter = new EConceptExporter(dos_);
 			List<ConceptChronicleBI> allPaths = OTFUtility.getPathConcepts(); 
+			
+			ProgressListener pListener = new ProgressListener() {
+				@Override
+				public void updateProgress(ProgressEvent pe) {
+					long percent = pe.getPercent();
+					if((percent % 10) == 0){
+						getLog().info(percent + "% complete");
+					} else if(percent == 1) {
+						getLog().info("Export started succesfully (1% complete)");
+					}
+				}
+			};
+			
+			eConExporter.addProgressListener(pListener);
 			
 			boolean pathFound = false;
 			for(ConceptChronicleBI thisPath : allPaths) {
-				if(thisPath.getPrimordialUuid().equals(path.getConceptSpec().getPrimodialUuid())) {
-					int thisNid = thisPath.getConceptNid();
-					eConExporter.export(thisNid);
-					pathFound = true;
-					break;
+				try {
+					if(thisPath.getPrimordialUuid().equals(path.getConceptSpec().getPrimodialUuid())) {
+						int thisNid = thisPath.getNid();
+						try {
+							eConExporter.export(thisNid);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						pathFound = true;
+						break;
+					}
+				} catch (Exception e) {
+					getLog().error("Exception Error");
+					e.printStackTrace();
 				}
 			}
-			
+				
 			if(!pathFound){
 				getLog().error("Could not find a matching path!");
-				throw new MojoExecutionException("We could not find a matching path");
+				//throw new MojoExecutionException("We could not find a matching path");
+			}
+		}
+		catch (Exception e) {
+			getLog().error("Error exporting DB");
+			throw new MojoExecutionException("Unexpected error exporting the DB", e);
+		} finally {
+			
+			//CLOSE DATA OUTPUT STREAM
+			try {
+				dos_.close();
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 			
 			//SHUTDOWN
@@ -146,13 +184,7 @@ public class Export extends AbstractMojo
 			getLog().info("  Shutting Down");
 			store.shutdown();
 			
-			dos_.close();
-			
-			getLog().info("Done exporting the DB - exported " + conCount + " concepts");
-		}
-		catch (Exception e)
-		{
-			throw new MojoExecutionException("Unexpected error exporting the DB", e);
+			getLog().info("Done exporting the DB - exported " + eConExporter.getCount() + " concepts");
 		}
 	}
 	
@@ -170,10 +202,10 @@ public class Export extends AbstractMojo
 		export.path = mojoConceptSpec;
 		
 		try {
-	        export.execute();
-        } catch (MojoExecutionException e) {
-	        e.printStackTrace();
-        }
+			export.execute();
+		} catch (MojoExecutionException e) {
+			e.printStackTrace();
+		}
 		
 		
 	}
