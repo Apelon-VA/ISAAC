@@ -301,6 +301,7 @@ public class MappingController {
 					selectedMappingItem = null;
 				}
 				minusMappingItemButton.setDisable(selectedMappingItem == null);
+				editMappingItemButton.setDisable(selectedMappingItem == null);
 				commentButton.setDisable(selectedMappingItem == null);
 				
 				mappingItemSummaryLabel.setText((selectedMappingItem == null)? "" : selectedMappingItem.getSummary());
@@ -458,8 +459,8 @@ public class MappingController {
 				MappingSet selectedMappingSet = getSelectedMappingSet();
 				if (selectedMappingSet != null) {
 					CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
-					cv.setMappingSet(getSelectedMappingSet());
-					cv.showView(null);
+					cv.setMappingSet(selectedMappingSet);
+					cv.showView(getRoot().getScene().getWindow());
 				}
 			}
 		});
@@ -468,7 +469,7 @@ public class MappingController {
 			@Override
 			public void handle(ActionEvent e) {
 				CreateMappingSetView cv = AppContext.getService(CreateMappingSetView.class);
-				cv.showView(null);
+				cv.showView(getRoot().getScene().getWindow());
 			}
 		});
 		
@@ -562,7 +563,12 @@ public class MappingController {
 		editMappingItemButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				// TODO Edit item status
+				MappingItem selectedMappingItem = getSelectedMappingItem();
+				if (selectedMappingItem != null) {
+					EditMappingItemView cv = AppContext.getService(EditMappingItemView.class);
+					cv.setMappingItem(selectedMappingItem);
+					cv.showView(getRoot().getScene().getWindow());
+				}
 			}
 		});
 		
@@ -574,7 +580,7 @@ public class MappingController {
 				if (selectedMappingItem != null && selectedMappingSet != null) {
 					CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
 					commentView.setMappingSetAndItem(selectedMappingSet, selectedMappingItem);
-					commentView.showView(null);
+					commentView.showView(getRoot().getScene().getWindow());
 				}
 			}
 		});

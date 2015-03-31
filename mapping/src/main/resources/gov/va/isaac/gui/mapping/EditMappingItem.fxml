@@ -6,8 +6,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-
-<AnchorPane fx:id="mainPane" prefHeight="148.0" prefWidth="380.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/8" fx:controller="EditMappingItemController">
+<AnchorPane fx:id="mainPane" prefHeight="148.0" prefWidth="380.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.EditMappingItemController">
    <children>
       <GridPane fx:id="infoGridPane" layoutX="-44.0" prefHeight="128.0" prefWidth="244.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
         <columnConstraints>
@@ -44,6 +43,11 @@
             <Label fx:id="sourceLabel" text="---" GridPane.columnIndex="1" />
             <Label fx:id="targetLabel" text="---" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label fx:id="qualifierLabel" text="---" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <ComboBox fx:id="statusCombo" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+            </ComboBox>
          </children>
       </GridPane>
       <GridPane prefHeight="40.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">

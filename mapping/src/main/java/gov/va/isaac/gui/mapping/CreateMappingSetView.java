@@ -39,7 +39,7 @@ public class CreateMappingSetView implements PopupViewI{
     public void showView(Window parent) {
 		Stage s = new Stage();
 		s.initOwner(parent);
-		s.initModality(Modality.NONE);
+		s.initModality(Modality.APPLICATION_MODAL);
 		s.initStyle(StageStyle.DECORATED);
 
 		s.setScene(new Scene(controller.getRootNode()));
