@@ -21,16 +21,14 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
-
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
+import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 
 /**
@@ -56,13 +54,32 @@ public abstract class StampedItem
 	
 	protected void readStampDetails(ComponentVersionBI componentVersion) throws IOException
 	{
-		authorNid = componentVersion.getAuthorNid();
-		moduleNid = componentVersion.getModuleNid();
-		pathNid   = componentVersion.getPathNid();
 		
+		try
+		{
+			if (componentVersion instanceof ConceptVersionBI)
+			{
+				ConceptAttributeVersionBI<?> ca = ((ConceptVersionBI)componentVersion).getConceptAttributes().getVersion(OTFUtility.getViewCoordinateAllowInactive());
+				authorNid = ca.getAuthorNid();
+				moduleNid = ca.getModuleNid();
+				pathNid = ca.getPathNid();
+				creationTime = ca.getTime();
+				isActive = ca.getStatus() == Status.ACTIVE;
+			}
+			else
+			{
+				authorNid = componentVersion.getAuthorNid();
+				moduleNid = componentVersion.getModuleNid();
+				pathNid = componentVersion.getPathNid();
+				creationTime = componentVersion.getTime();
+				isActive = componentVersion.getStatus() == Status.ACTIVE;
+			}
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("Unexpected", e);
+		}
 		authorUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(authorNid);
-		creationTime = componentVersion.getTime();
-		isActive = componentVersion.getStatus() == Status.ACTIVE;
 		moduleUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(moduleNid);
 		pathUUID = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(pathNid);
 		
