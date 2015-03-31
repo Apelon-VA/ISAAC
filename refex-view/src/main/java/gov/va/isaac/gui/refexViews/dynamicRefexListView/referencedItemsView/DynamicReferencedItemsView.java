@@ -18,10 +18,12 @@
  */
 package gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView;
 
+import java.util.concurrent.TimeUnit;
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.refexEdit.DynamicRefexView;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import gov.va.isaac.util.Utility;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -57,7 +59,7 @@ public class DynamicReferencedItemsView implements PopupViewI
 		title.setPadding(new Insets(5, 5, 5, 5));
 		root_.setTop(title);
 		
-		drv_ = AppContext.getService(DynamicRefexView.class, "DynamicSememeView");
+		drv_ = AppContext.getService(DynamicRefexView.class);
 		root_.setCenter(drv_.getView());
 	}
 	
@@ -77,7 +79,13 @@ public class DynamicReferencedItemsView implements PopupViewI
 		stage.getScene().getStylesheets().add(DynamicReferencedItemsView.class.getResource("/isaac-shared-styles.css").toString());
 		stage.setWidth(800);
 		stage.setHeight(600);
+		stage.onHiddenProperty().set((eventHandler) ->
+		{
+			stage.setScene(null);
+			//No other way to force a timely release of all of the bindings that would still fire / still recalculate data..
+			Utility.schedule(() -> System.gc(), 250, TimeUnit.MILLISECONDS);
+		});
 		stage.show();
-		drv_.setAssemblage(assemblageConcept_.getNid(), null, null, null);
+		drv_.setAssemblage(assemblageConcept_.getNid(), null, null, null, true);
 	}
 }

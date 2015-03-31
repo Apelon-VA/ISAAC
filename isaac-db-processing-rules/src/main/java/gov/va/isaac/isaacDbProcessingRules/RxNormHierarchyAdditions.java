@@ -37,11 +37,11 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
-import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
-import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
-import org.ihtsdo.otf.tcc.api.refex.type_nid.RefexNidVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
+import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.jvnet.hk2.annotations.Service;
 
 /**
@@ -70,6 +70,7 @@ public class RxNormHierarchyAdditions implements TransformArbitraryI
 	private final UUID penicillinProduct = UUID.fromString("fdca98cf-8720-3dbe-bb72-3377d658a85c");//Penicillin -class of antibiotic- (product)
 	private final UUID termTypeIN = UUID.fromString("17114d54-ed48-5f0a-a865-4ecec3e31cdc"); //Name for an Ingredient     // IN
 	private final UUID rxNormHPath = UUID.fromString("763c21ad-55e3-5bb3-af1e-3e4fb475de44"); //RxNormH Path
+	private final UUID rxNormDescType = UUID.fromString("3599879d-78c6-5b1e-b442-9ef08eaedd3c");// "RxNorm Description Type" - refex that carries ingredient linkage
 
 	/**
 	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getName()
@@ -96,8 +97,8 @@ public class RxNormHierarchyAdditions implements TransformArbitraryI
 	@Override
 	public void transform(TerminologyStoreDI ts) throws Exception
 	{
-		int ttyNid = ts.getNidForUuids(termTypeIN);
 		int rxNormPathNid = ts.getNidForUuids(rxNormHPath);
+		int rxNormDescTypeAssemblageNid = ts.getNidForUuids(rxNormDescType);
 		ts.iterateConceptDataInParallel(new ProcessUnfetchedConceptDataBI()
 		{
 			@Override
@@ -142,12 +143,12 @@ public class RxNormHierarchyAdditions implements TransformArbitraryI
 						continue;
 					}
 					
-					for (RefexChronicleBI<?> refex : currentDescription.getRefexes())
+					for (RefexDynamicChronicleBI<?> refex : currentDescription.getRefexesDynamic())
 					{
-						RefexVersionBI<?> currentRefex = OTFUtility.getLatestRefexVersion(refex.getVersions());
-						if (currentRefex instanceof RefexNidVersionBI)
+						RefexDynamicVersionBI<?> currentRefex = OTFUtility.getLatestDynamicRefexVersion(refex.getVersions());
+						if (currentRefex.getAssemblageNid() == rxNormDescTypeAssemblageNid)
 						{
-							if (((RefexNidVersionBI<?>)currentRefex).getNid1() == ttyNid)
+							if (((RefexDynamicUUID)currentRefex.getData()[0]).getDataUUID().equals(termTypeIN))
 							{
 								isRxNormIN = true;
 								break;
@@ -215,5 +216,14 @@ public class RxNormHierarchyAdditions implements TransformArbitraryI
 	public String getWorkResultSummary()
 	{
 		return "Examined " + examinedConcepts.get() + " concepts and generated " + addedRels.get() + " new relationships";
+	}
+	
+	/**
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()
+	 */
+	@Override
+	public String getWorkResultDocBookTable()
+	{
+		return "Not yet created";
 	}
 }

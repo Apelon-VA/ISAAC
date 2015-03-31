@@ -26,14 +26,12 @@ package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.search.SearchResultsFilter;
 import gov.va.isaac.search.SearchResultsFilterException;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
+import java.util.function.Function;
 import org.ihtsdo.otf.query.implementation.Clause;
 import org.ihtsdo.otf.query.implementation.Query;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -41,15 +39,19 @@ import org.ihtsdo.otf.tcc.api.nid.IntSet;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
 
-class QueryBasedIsDescendantOfSearchResultsFilter implements SearchResultsFilter {
+class QueryBasedIsDescendantOfSearchResultsFilter implements Function<List<CompositeSearchResult>, List<CompositeSearchResult>>  {
 	private final IsDescendantOfFilter filter;
 	
 	public QueryBasedIsDescendantOfSearchResultsFilter(IsDescendantOfFilter filter) {
 		this.filter = filter;
 	}
 	
+	/**
+	 * @see java.util.function.Function#apply(java.lang.Object)
+	 */
 	@Override
-	public List<CompositeSearchResult> filter(List<CompositeSearchResult> results) throws SearchResultsFilterException {
+	public List<CompositeSearchResult> apply(List<CompositeSearchResult> results)
+	{
 		NativeIdSetBI inputNids = new IntSet();
 
 		for (CompositeSearchResult result : results) {

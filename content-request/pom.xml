@@ -4,16 +4,14 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>Sprint_19.2</version>
+		<version>Sprint_20</version>
 	</parent>
 	<groupId>gov.va.isaac.modules</groupId>
 	<artifactId>content-request</artifactId>
 	<packaging>jar</packaging>
 
 	<name>ISAAC Content Request Submission Module</name>
-	<description>
-        ISAAC handling for USCRS and LOINC content submission integration.
-    </description>
+	<description>ISAAC handling for USCRS and LOINC content submission integration.</description>
 
 	<dependencies>
 

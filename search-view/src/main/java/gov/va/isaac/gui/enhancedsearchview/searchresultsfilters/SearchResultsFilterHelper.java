@@ -24,15 +24,15 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.searchresultsfilters;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 import gov.va.isaac.gui.enhancedsearchview.filters.IsAFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.IsDescendantOfFilter;
 import gov.va.isaac.gui.enhancedsearchview.filters.NonSearchTypeFilter;
-import gov.va.isaac.search.SearchResultsFilter;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchResultsFilterException;
-
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,26 +56,12 @@ public class SearchResultsFilterHelper {
 	 * @return SearchResultsFilter in form of SearchResultsIntersectionFilter
 	 * @throws SearchResultsFilterException
 	 */
-	public static SearchResultsFilter createSearchResultsFilter(NonSearchTypeFilter<?>...filters) throws SearchResultsFilterException {
+	public static Function<List<CompositeSearchResult>, List<CompositeSearchResult>> createSearchResultsFilter(NonSearchTypeFilter<?>...filters) 
+			throws SearchResultsFilterException {
 		validateFilters(filters);
 
 		return new QueryBasedSearchResultsIntersectionFilter(filters);
-
-//		SearchResultsIntersectionFilter intersectionFilter = new SearchResultsIntersectionFilter();
-//		for (NonSearchTypeFilter<?> filter : filters) {
-//			if (filter instanceof IsDescendantOfFilter) {
-//				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
-//
-//				intersectionFilter.getFilters().add(new IsDescendantOfSearchResultsFilter((IsDescendantOfFilter)filter));
-//			} else if (filter instanceof IsAFilter) {
-//				//intersectionFilter.getFilters().add(new QueryBasedIsDescendantOfSearchResultsIntersectionFilter((IsDescendantOfFilter)filter));
-//
-//				intersectionFilter.getFilters().add(new IsASearchResultsFilter((IsAFilter)filter));
-//			}
-//		}
-//		
-//        return intersectionFilter;
-		}
+	}
 		
 	static void validateFilters(NonSearchTypeFilter<?>...passedFilters) throws SearchResultsFilterException {
 		if (passedFilters != null) {

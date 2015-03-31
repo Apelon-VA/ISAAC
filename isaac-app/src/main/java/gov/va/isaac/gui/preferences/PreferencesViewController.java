@@ -25,14 +25,10 @@
 package gov.va.isaac.gui.preferences;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.config.profiles.UserProfileManager;
+import gov.va.isaac.config.profiles.UserProfileBindings;
 import gov.va.isaac.gui.util.TextErrorColorHelper;
-import gov.va.isaac.interfaces.config.UserProfileProperty;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.PreferencesPluginViewI;
 import gov.va.isaac.util.ValidBooleanBinding;
-
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -40,23 +36,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-
+import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.layout.VBox;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TabPane.TabClosingPolicy;
 import javafx.scene.layout.Region;
-
+import javafx.scene.layout.VBox;
 import javax.inject.Inject;
-
 import org.apache.commons.lang3.StringUtils;
 import org.glassfish.hk2.api.IterableProvider;
 import org.slf4j.Logger;
@@ -111,12 +105,15 @@ public class PreferencesViewController {
 		// Using allValid_ to prevent rerunning content of aboutToShow()
 		if (allValid_ == null) {
 			// These listeners are for debug and testing only. They may be removed at any time.
-			UserProfileManager  userProfileManager = AppContext.getService(UserProfileManager.class);
-			for (UserProfileProperty property : UserProfileProperty.values()) {
-				userProfileManager.addUserProfilePropertyChangeListener(property, new PropertyChangeListener() {
+			UserProfileBindings  userProfileBindings = AppContext.getService(UserProfileBindings.class);
+			for (Property<?> property : userProfileBindings.getAll()) 
+			{
+				property.addListener(new ChangeListener<Object>()
+				{
 					@Override
-					public void propertyChange(PropertyChangeEvent evt) {
-						logger.debug("{} property changed from {} to {}", evt.getPropertyName(), evt.getOldValue(), evt.getNewValue());
+					public void changed(ObservableValue<? extends Object> observable, Object oldValue, Object newValue)
+					{
+						logger.debug("{} property changed from {} to {}", property.getName(), oldValue, newValue);
 					}
 				});
 			}

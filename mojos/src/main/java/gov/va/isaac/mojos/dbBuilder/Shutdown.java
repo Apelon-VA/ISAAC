@@ -60,15 +60,11 @@ public class Shutdown extends AbstractMojo
 			TerminologyStoreDI store = AppContext.getService(TerminologyStoreDI.class);
 
 			getLog().info("  Shutting Down");
-			getLog().info("wait so we don't trigger an OTF bug....");
-			//TODO get these silly OTF bugs fixed, so we don't have to arbitrarily wait...
-			Thread.sleep(10000);
+
 			store.shutdown();
 
 			if (moveToReadOnly)
 			{
-				getLog().info("wait so we don't trigger an OTF bug....");
-				Thread.sleep(10000);
 				getLog().info("moving mutable to read-only");
 
 				String bdbFolderLocation = System.getProperty(BdbTerminologyStore.BDB_LOCATION_PROPERTY);

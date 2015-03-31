@@ -46,9 +46,10 @@ public interface RefexViewI extends EmbeddableViewI
 	 * @param showStampColumns - (optional) if provided, don't show toggle buttons for show/hiding the stamp, instead bind to this.
 	 * @param showActiveOnly - (optional) if provided, don't show toggle buttons for activeOnly / all, instead bind to this.
 	 * @param showFullHistory - (optional) if provided, don't show toggle buttons for show current / show all, instead bind to this.
+	 * @param displayFSNButton - if true, shows a button for toggling FSN / preferred, otherwise, doesn't show the button.
 	 */
 	public void setComponent(int componentNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory);
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton);
 	
 	/**
 	 * Tell this view to display the refexes for a particular assemblage concept.
@@ -60,7 +61,8 @@ public interface RefexViewI extends EmbeddableViewI
 	 * @param showStampColumns - (optional) if provided, don't show toggle buttons for show/hiding the stamp, instead bind to this.
 	 * @param showActiveOnly - (optional) if provided, don't show toggle buttons for activeOnly / all, instead bind to this.
 	 * @param showFullHistory - (optional) if provided, don't show toggle buttons for show current / show all, instead bind to this.
+	 * @param displayFSNButton - if true, shows a button for toggling FSN / preferred, otherwise, doesn't show the button.
 	 */
 	public void setAssemblage(int assemblageConceptNid, ReadOnlyBooleanProperty showStampColumns, ReadOnlyBooleanProperty showActiveOnly, 
-			ReadOnlyBooleanProperty showFullHistory);
+			ReadOnlyBooleanProperty showFullHistory, boolean displayFSNButton);
 }

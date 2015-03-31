@@ -18,12 +18,9 @@
  */
 package gov.va.isaac.gui.treeview;
 
-import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
-import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,7 +30,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-
 import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -41,7 +37,6 @@ import javafx.concurrent.Task;
 import javafx.scene.Node;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeItem;
-
 import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.thread.NamedThreadFactory;
@@ -58,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * @author kec
  * @author ocarlsen
  */
-class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctTreeItemI, Comparable<SctTreeItem>, ShutdownBroadcastListenerI {
+class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctTreeItemI, Comparable<SctTreeItem> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeItem.class);
 
@@ -82,13 +77,13 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     private SctTreeItemDisplayPolicies displayPolicies;
 
     private static TreeItem<TaxonomyReferenceWithConcept> getTreeRoot(TreeItem<TaxonomyReferenceWithConcept> item) {
-    	TreeItem<TaxonomyReferenceWithConcept> parent = item.getParent();
-    	
-    	if (parent == null) {
-    		return item;
-    	} else {
-    		return getTreeRoot(parent);
-    	}
+        TreeItem<TaxonomyReferenceWithConcept> parent = item.getParent();
+        
+        if (parent == null) {
+            return item;
+        } else {
+            return getTreeRoot(parent);
+        }
     }
     
     SctTreeItem(TaxonomyReferenceWithConcept taxRef, SctTreeItemDisplayPolicies displayPolicies) {
@@ -98,7 +93,6 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     SctTreeItem(TaxonomyReferenceWithConcept t, SctTreeItemDisplayPolicies displayPolicies, Node node) {
         super(t, node);
         this.displayPolicies = displayPolicies;
-        AppContext.getRuntimeGlobals().registerShutdownListener(this);
     }
 
     SctTreeItemDisplayPolicies getDisplayPolicies() {
@@ -112,7 +106,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
             // Don't add children to something that shouldn't be displayed
             LOG.debug("this.shouldDisplay() == false: not adding children to " + this.getConceptUuid());
         } else if (taxRef == null || taxRef.getConcept() == null) {
-        	LOG.debug("addChildren(): taxRef={}, taxRef.getConcept()={}", taxRef, taxRef.getConcept());
+            LOG.debug("addChildren(): taxRef={}, taxRef.getConcept()={}", taxRef, taxRef.getConcept());
         } else if (taxRef.getConcept() != null) {
             // Configure a new progress indicator.
             ProgressIndicator pi = new ProgressIndicator();
@@ -148,14 +142,14 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
 
             //pi.progressProperty().bind(fetchChildrenTask.progressProperty());
             fetchChildrenTask.progressProperty().addListener(new ChangeListener<Number>() {
-				@Override
-				public void changed(
-						ObservableValue<? extends Number> observable,
-						Number oldValue, Number newValue) {
-//					LOG.debug("addChildren(): ProgressIndicator progress for taxRef={} changing from {} to {}", taxRef, oldValue, newValue);
+                @Override
+                public void changed(
+                        ObservableValue<? extends Number> observable,
+                        Number oldValue, Number newValue) {
+//                    LOG.debug("addChildren(): ProgressIndicator progress for taxRef={} changing from {} to {}", taxRef, oldValue, newValue);
 
-					pi.progressProperty().set(newValue.doubleValue());
-				}
+                    pi.progressProperty().set(newValue.doubleValue());
+                }
             });
             FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
         }
@@ -173,9 +167,9 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
                 if (tempChild.shouldDisplay()) {
                     if (child.getChildren().isEmpty() && (child.getValue().getConcept() != null)) {
                         if (child.getValue().getConcept().getDestinationRelationships().isEmpty()) {
-                        	// TODO Why are we removing TaxonomyReferenceWithConcept from childless child,
-                        	// computing its graphic,
-                        	// then setting it back again?
+                            // TODO Why are we removing TaxonomyReferenceWithConcept from childless child,
+                            // computing its graphic,
+                            // then setting it back again?
                             TaxonomyReferenceWithConcept value = child.getValue();
                             child.setValue(null);
                             SctTreeItem noChildItem = (SctTreeItem) child;
@@ -218,14 +212,14 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
 
             //p1.progressProperty().bind(fetchChildrenTask.progressProperty());
             fetchChildrenTask.progressProperty().addListener(new ChangeListener<Number>() {
-				@Override
-				public void changed(
-						ObservableValue<? extends Number> observable,
-						Number oldValue, Number newValue) {
-//					LOG.debug("addChildrenConceptsAndGrandchildrenItems(): ProgressIndicator progress for taxRef={} changing from {} to {}", getValue(), oldValue, newValue);
+                @Override
+                public void changed(
+                        ObservableValue<? extends Number> observable,
+                        Number oldValue, Number newValue) {
+//                    LOG.debug("addChildrenConceptsAndGrandchildrenItems(): ProgressIndicator progress for taxRef={} changing from {} to {}", getValue(), oldValue, newValue);
 
-					p1.progressProperty().set(newValue.doubleValue());
-				}
+                    p1.progressProperty().set(newValue.doubleValue());
+                }
             });
             FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
         }
@@ -245,49 +239,51 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
             return null;
         }
     }
-    public Integer getConceptNid() {
+    @Override
+	public Integer getConceptNid() {
         return getConceptNid(getValue());
     }
     private static Integer getConceptNid(TreeItem<TaxonomyReferenceWithConcept> item) {
-    	return getConceptNid(item.getValue());
+        return getConceptNid(item.getValue());
     }
     private static Integer getConceptNid(TaxonomyReferenceWithConcept ref) {
-    	if (ref != null && ref.getConceptFromRelationshipOrConceptProperties() != null) {
+        if (ref != null && ref.getConceptFromRelationshipOrConceptProperties() != null) {
             return ref.getConceptFromRelationshipOrConceptProperties().getNid();
         } else {
             return null;
         }
     }
     
-    public boolean isRoot() {
+    @Override
+	public boolean isRoot() {
         TaxonomyReferenceWithConcept ref = getValue();
 
         if (ref != null && ref.getRelationshipVersion() == null) {
-        	return true;
+            return true;
         } else if (this.getParent() == null) {
-        	return true;
+            return true;
         } else {
-        	TreeItem<TaxonomyReferenceWithConcept> root = getTreeRoot(this);
+            TreeItem<TaxonomyReferenceWithConcept> root = getTreeRoot(this);
 
-        	if (this == root) {
-        		return true;
-        	} else if (getConceptNid(root) == getConceptNid()) {
-        		return true;
-        	}
-//        	else if ((root instanceof SctTreeItem) && this.compareTo((SctTreeItem)root) == 0) {
-//        		return true;
-//        	}
-        	else {
-//        		if (ref == null) {
-//        			// Happens often
-//        			LOG.debug("TaxonomyReferenceWithConcept is null");
-//        		}
-        		return false;
-        	}
+            if (this == root) {
+                return true;
+            } else if (getConceptNid(root) == getConceptNid()) {
+                return true;
+            }
+//            else if ((root instanceof SctTreeItem) && this.compareTo((SctTreeItem)root) == 0) {
+//                return true;
+//            }
+            else {
+//                if (ref == null) {
+//                    // Happens often
+//                    LOG.debug("TaxonomyReferenceWithConcept is null");
+//                }
+                return false;
+            }
         }
 
         //        if (ref != null && ref.getRelationshipVersion() == null) {
-        //        	return true;
+        //            return true;
         //        } else if (ref != null && ref.getConcept() != null && ref.getConcept().getOriginRelationships().isEmpty()) {
         //            return true;
         //        } else {
@@ -324,8 +320,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     /**
      * Stop the {@link #childFetcherService} and {@link #conceptFetcherService}.
      */
-    @Override
-    public void shutdown() {
+    public static void shutdown() {
         childFetcherService.shutdown();
         conceptFetcherService.shutdown();
     }
@@ -338,49 +333,50 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
      */
     @Override
     public String toString() {
-    	return toString(this);
+        return toString(this);
     }
     public static String toString(SctTreeItem item) {
-    	try {
-    		if (item.getValue().getRelationshipVersion() != null) {
-    			if (item.getMultiParentDepth() > 0) {
-    				ComponentReference destRef = item.getValue().getRelationshipVersion().getDestinationReference();
-    				String temp = OTFUtility.getDescription(destRef.getUuid());
-    				if (temp == null) {
-    					return destRef.getText();
-    				} else {
-    					return temp;
-    				}
-    			} else {
-    				ComponentReference originRef = item.getValue().getRelationshipVersion().getOriginReference();
-    				String temp = OTFUtility.getDescription(originRef.getUuid());
-    				if (temp == null) {
-    					return originRef.getText();
-    				} else {
-    					return temp;
-    				}
-    			}
-    		}
+        try {
+            if (item.getValue().getRelationshipVersion() != null) {
+                if (item.getMultiParentDepth() > 0) {
+                    ComponentReference destRef = item.getValue().getRelationshipVersion().getDestinationReference();
+                    String temp = OTFUtility.getDescription(destRef.getUuid());
+                    if (temp == null) {
+                        return destRef.getText();
+                    } else {
+                        return temp;
+                    }
+                } else {
+                    ComponentReference originRef = item.getValue().getRelationshipVersion().getOriginReference();
+                    String temp = OTFUtility.getDescription(originRef.getUuid());
+                    if (temp == null) {
+                        return originRef.getText();
+                    } else {
+                        return temp;
+                    }
+                }
+            }
 
-    		if (item.getValue().conceptProperty().get() != null) {
-    			return OTFUtility.getDescription(item.getValue().conceptProperty().get());
-    		}
+            if (item.getValue().conceptProperty().get() != null) {
+                return OTFUtility.getDescription(item.getValue().conceptProperty().get());
+            }
 
-    		return "root";
-    	} catch (RuntimeException re) {
-    		LOG.error("Caught {} \"{}\"", re.getClass().getName(), re.getLocalizedMessage());
-    		throw re;
-    	} catch (Error e) {
-    		LOG.error("Caught {} \"{}\"", e.getClass().getName(), e.getLocalizedMessage());
-    		throw e;
-    	}
+            return "root";
+        } catch (RuntimeException re) {
+            LOG.error("Caught {} \"{}\"", re.getClass().getName(), re.getLocalizedMessage());
+            throw re;
+        } catch (Error e) {
+            LOG.error("Caught {} \"{}\"", e.getClass().getName(), e.getLocalizedMessage());
+            throw e;
+        }
     }
 
     public List<SctTreeItem> getExtraParents() {
         return extraParents;
     }
 
-    public int getMultiParentDepth() {
+    @Override
+	public int getMultiParentDepth() {
         return multiParentDepth;
     }
 
@@ -388,7 +384,8 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
         return progressIndicator;
     }
 
-    public boolean isDefined() {
+    @Override
+	public boolean isDefined() {
         return defined;
     }
 
@@ -401,20 +398,22 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
         return super.isLeaf();
     }
 
-    public boolean isMultiParent() {
-    	if (multiParent) {
-    		return true;
-    	} else {
-    		return false;
-    	}
+    @Override
+	public boolean isMultiParent() {
+        if (multiParent) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
-    public boolean isSecondaryParentOpened() {
-    	if (secondaryParentOpened) {
-    		return true;
-    	} else {
-    		return false;
-    	}
+    @Override
+	public boolean isSecondaryParentOpened() {
+        if (secondaryParentOpened) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void setDefined(boolean defined) {

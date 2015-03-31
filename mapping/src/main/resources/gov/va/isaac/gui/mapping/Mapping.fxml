@@ -7,47 +7,75 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<AnchorPane fx:id="mainPane" prefHeight="600.0" prefWidth="900.0" styleClass="defaultBackgroundColor" stylesheets="@Mapping.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.MappingController">
+<AnchorPane fx:id="mainPane" prefHeight="600.0" prefWidth="1462.0" styleClass="defaultBackgroundColor" stylesheets="@Mapping.css" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.MappingController">
    <children>
       <SplitPane dividerPositions="0.478494623655914" orientation="VERTICAL" prefHeight="200.0" prefWidth="160.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <items>
             <AnchorPane fx:id="mappingsPane" prefHeight="200.0" prefWidth="200.0">
                <children>
                   <Label layoutX="10.0" layoutY="11.0" text="Mapping Sets" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="11.0" />
-                  <TableView fx:id="mappingTableView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
+                  <TableView fx:id="mappingSetTableView" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
                     <columns>
-                      <TableColumn minWidth="50.0" prefWidth="218.0" text="Name" />
-                      <TableColumn prefWidth="313.0" text="Purpose" />
-                        <TableColumn prefWidth="298.0" text="Description" />
+                        <TableColumn fx:id="mappingSetSTableColumn" editable="false" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" />
+                      <TableColumn fx:id="mappingSetNameTableColumn" editable="false" minWidth="50.0" prefWidth="187.0" text="Name" />
+                      <TableColumn fx:id="mappingSetPurposeTableColumn" editable="false" prefWidth="287.0" text="Purpose" />
+                      <TableColumn fx:id="mappingSetDescriptionTableColumn" editable="false" prefWidth="324.0" text="Description" />
+                      <TableColumn fx:id="mappingSetEditorStatusTableColumn" editable="false" prefWidth="131.0" text="Status" />
+                        <TableColumn fx:id="mappingSetSTAMPTableColumn" prefWidth="241.0" text="STAMP Fields">
+                           <columns>
+                              <TableColumn fx:id="mappingSetStatusTableColumn" prefWidth="75.0" text="Status" />
+                              <TableColumn fx:id="mappingSetTimeTableColumn" prefWidth="75.0" text="Time" />
+                              <TableColumn fx:id="mappingSetAuthorTableColumn" prefWidth="75.0" text="Author" />
+                              <TableColumn fx:id="mappingSetModuleTableColumn" prefWidth="75.0" text="Module" />
+                              <TableColumn fx:id="mappingSetPathTableColumn" prefWidth="75.0" text="Path" />
+                           </columns>
+                        </TableColumn>
                     </columns>
                   </TableView>
-                  <Button fx:id="editMappingButton" layoutX="104.0" layoutY="161.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="E" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
-                  <Label fx:id="mappingSummaryLabel" layoutX="395.0" layoutY="249.0" text="[Mapping Set Summary]" textAlignment="RIGHT" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="118.0" AnchorPane.rightAnchor="10.0" />
+                  <Button fx:id="editMappingSetButton" disable="true" layoutX="104.0" layoutY="161.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="E" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
+                  <Label fx:id="mappingSetSummaryLabel" layoutX="395.0" layoutY="249.0" text="[Mapping Set Summary]" textAlignment="RIGHT" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="118.0" AnchorPane.rightAnchor="10.0" />
                   <ToggleButton fx:id="activeOnlyToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="T" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="6.0" />
-                  <Button fx:id="plusMappingButton" layoutX="14.0" layoutY="251.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="+" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" />
-                  <Button fx:id="minusMappingButton" layoutX="345.0" layoutY="239.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="-" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="46.0" />
+                  <Button fx:id="plusMappingSetButton" layoutX="14.0" layoutY="251.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="+" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" />
+                  <Button fx:id="minusMappingSetButton" disable="true" layoutX="345.0" layoutY="239.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="-" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="46.0" />
+                  <ToggleButton fx:id="stampToggle" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="S" AnchorPane.rightAnchor="46.0" AnchorPane.topAnchor="6.0" />
                </children>
             </AnchorPane>
           <AnchorPane fx:id="listPane" minHeight="0.0" minWidth="0.0" prefHeight="100.0" prefWidth="160.0">
                <children>
-                  <Label fx:id="listTitleLabel" text="Members of [selected Mapping]" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
+                  <Label fx:id="mappingItemListTitleLabel" text="[selected Mapping]" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
+                     <padding>
+                        <Insets left="68.0" top="6.0" />
+                     </padding>
+                  </Label>
+                  <TableView fx:id="mappingItemTableView" layoutX="41.0" layoutY="23.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
+                    <columns>
+                        <TableColumn fx:id="mappingItemSTableColumn" editable="false" maxWidth="30.0" minWidth="30.0" prefWidth="30.0" resizable="false" />
+                      <TableColumn fx:id="mappingItemSourceTableColumn" editable="false" prefWidth="200.0" text="Source Concept" />
+                        <TableColumn fx:id="mappingItemTargetTableColumn" editable="false" prefWidth="200.0" text="Target Concept" />
+                        <TableColumn fx:id="mappingItemQualifierTableColumn" editable="false" minWidth="0.0" prefWidth="182.0" text="Qualifier" />
+                        <TableColumn fx:id="mappingItemCommentsTableColumn" editable="false" prefWidth="179.0" text="Comments" />
+                        <TableColumn fx:id="mappingItemEditorStatusTableColumn" editable="false" prefWidth="136.0" text="Status" />
+                        <TableColumn fx:id="mappingItemSTAMPTableColumn" prefWidth="241.0" text="STAMP Fields">
+                           <columns>
+                              <TableColumn fx:id="mappingItemStatusTableColumn" prefWidth="75.0" text="Status" />
+                              <TableColumn fx:id="mappingItemTimeTableColumn" prefWidth="75.0" text="Time" />
+                              <TableColumn fx:id="mappingItemAuthorTableColumn" prefWidth="75.0" text="Author" />
+                              <TableColumn fx:id="mappingItemModuleTableColumn" prefWidth="75.0" text="Module" />
+                              <TableColumn fx:id="mappingItemPathTableColumn" prefWidth="75.0" text="Path" />
+                           </columns>
+                        </TableColumn>
+                    </columns>
+                  </TableView>
+                  <Button fx:id="commentButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="C" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="118.0" />
+                  <Label fx:id="mappingItemSummaryLabel" text="[Mapping Summary]" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="154.0" AnchorPane.rightAnchor="10.0" />
+                  <Button fx:id="plusMappingItemButton" disable="true" layoutX="286.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="+" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" />
+                  <Button fx:id="minusMappingItemButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="-" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="46.0" />
+                  <Label layoutX="22.0" layoutY="6.0" text="Members of" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                      <padding>
                         <Insets top="6.0" />
                      </padding>
                   </Label>
-                  <TableView fx:id="listTableView" layoutX="41.0" layoutY="23.0" prefHeight="200.0" prefWidth="200.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="30.0">
-                    <columns>
-                      <TableColumn prefWidth="200.0" text="Source Concept Name" />
-                        <TableColumn prefWidth="200.0" text="Target Concept Name" />
-                        <TableColumn minWidth="0.0" prefWidth="182.0" text="Qualifier" />
-                        <TableColumn prefWidth="136.0" text="Status" />
-                        <TableColumn prefWidth="179.0" text="Comments" />
-                    </columns>
-                  </TableView>
-                  <Button fx:id="commentButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="C" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
-                  <Label fx:id="listSummaryLabel" text="[Mapping Summary]" AnchorPane.bottomAnchor="10.0" AnchorPane.leftAnchor="118.0" AnchorPane.rightAnchor="10.0" />
-                  <Button fx:id="plusListButton" layoutX="286.0" layoutY="264.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="+" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="10.0" />
-                  <Button fx:id="minusListButton" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="-" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="46.0" />
+                  <Button fx:id="editMappingItemButton" disable="true" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefHeight="26.0" prefWidth="26.0" text="E" textAlignment="CENTER" AnchorPane.bottomAnchor="6.0" AnchorPane.leftAnchor="82.0" />
                </children>
             </AnchorPane>
         </items>

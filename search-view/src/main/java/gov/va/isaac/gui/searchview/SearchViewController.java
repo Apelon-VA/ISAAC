@@ -36,14 +36,15 @@ import gov.va.isaac.util.CommonMenusDataProvider;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.Interval;
 import gov.va.isaac.util.NumberUtilities;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
-import gov.va.isaac.util.OTFUtility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -88,11 +89,13 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
+import org.ihtsdo.otf.tcc.api.metadata.binding.SnomedMetadataRf2;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
@@ -133,6 +136,9 @@ public class SearchViewController implements TaskCompleteCallback
 	@FXML private TitledPane optionsPane;
 	@FXML private HBox searchInRefexHBox;
 	@FXML private VBox optionsContentVBox;
+	@FXML private HBox searchInDescriptionHBox;
+	@FXML private ChoiceBox<SimpleDisplayConcept> descriptionTypeSelection;
+	
 	@FXML private ToolBar toolBar;
 	@FXML private Label statusLabel;
 
@@ -190,6 +196,7 @@ public class SearchViewController implements TaskCompleteCallback
 						+ "or NIDs for concepts.");
 				optionsContentVBox.getChildren().remove(searchInRefexHBox);
 				optionsContentVBox.getChildren().remove(searchInColumnsHolder);
+				optionsContentVBox.getChildren().add(searchInDescriptionHBox);
 				searchInRefex.clear();  //make sure an invalid state here doesn't prevent the search, when the field is hidden.
 			}
 			else
@@ -197,6 +204,7 @@ public class SearchViewController implements TaskCompleteCallback
 				tooltip.setText("Enter the sememe value to search for.  Advanced query syntax such as 'AND', 'NOT', 'OR' is supported for sememe data fields that "
 						+ "are indexed as string values.  For numeric values, mathematical interval syntax is supported - such as [4,6] or (-5,10]."
 						+ "  You may also search for 1 or more UUIDs and/or NIDs.");
+				optionsContentVBox.getChildren().remove(searchInDescriptionHBox);
 				optionsContentVBox.getChildren().add(searchInRefexHBox);
 				if (searchInColumnsHolder.getChildren().size() > 0)
 				{
@@ -325,6 +333,22 @@ public class SearchViewController implements TaskCompleteCallback
 		
 		searchInRefexHBox.getChildren().add(searchInRefex.getNode());
 		HBox.setHgrow(searchInRefex.getNode(), Priority.ALWAYS);
+		
+		descriptionTypeSelection.getItems().add(new SimpleDisplayConcept("All", Integer.MIN_VALUE));
+		descriptionTypeSelection.getItems().add(new SimpleDisplayConcept("Fully Specified Name", LuceneDescriptionType.FSN.ordinal()));
+		descriptionTypeSelection.getItems().add(new SimpleDisplayConcept("Synonym", LuceneDescriptionType.SYNONYM.ordinal()));
+		descriptionTypeSelection.getItems().add(new SimpleDisplayConcept("Definition", LuceneDescriptionType.DEFINITION.ordinal()));
+		descriptionTypeSelection.getItems().add(new SimpleDisplayConcept("--- Terminology Types ---", Integer.MAX_VALUE));
+		
+		descriptionTypeSelection.valueProperty().addListener((change) ->
+		{
+			if (descriptionTypeSelection.getValue().getNid() == Integer.MAX_VALUE)
+			{
+				descriptionTypeSelection.getSelectionModel().clearAndSelect(0);
+			}
+		});
+		
+		descriptionTypeSelection.getSelectionModel().clearAndSelect(0);
 		
 		searchInColumnsHolder.setHgap(10);
 		searchInColumnsHolder.setVgap(5.0);
@@ -515,7 +539,7 @@ public class SearchViewController implements TaskCompleteCallback
 				{
 					if (dragItem.getContainingConcept() != null)
 					{
-						return dragItem.getContainingConcept() + "";
+						return dragItem.getContainingConcept().getNid() + "";
 					}
 				}
 				return null;
@@ -620,6 +644,10 @@ public class SearchViewController implements TaskCompleteCallback
 		{
 			populateDynamicRefexList();
 		}
+		if (descriptionTypeSelection.getItems().size() == 5)
+		{
+			populateExtendedDescriptionList();
+		}
 		return borderPane;
 	}
 
@@ -700,7 +728,36 @@ public class SearchViewController implements TaskCompleteCallback
 			
 			if (searchIn.getValue() == SearchInOptions.Descriptions)
 			{
-				ssh = SearchHandler.descriptionSearch(searchText.getText(), searchLimit.getValue(), this, true);
+				if (descriptionTypeSelection.getValue().getNid() == Integer.MIN_VALUE)
+				{
+					LOG.debug("Doing a description search across all description types");
+					ssh = SearchHandler.descriptionSearch(searchText.getText(), searchLimit.getValue(), this, true);
+				}
+				else if (descriptionTypeSelection.getValue().getNid() == LuceneDescriptionType.FSN.ordinal())
+				{
+					LOG.debug("Doing a description search on FSN");
+					ssh = SearchHandler.descriptionSearch(searchText.getText(), searchLimit.getValue(), false, LuceneDescriptionType.FSN, 
+							this, null, null, null, true);
+				}
+				else if (descriptionTypeSelection.getValue().getNid() == LuceneDescriptionType.DEFINITION.ordinal())
+				{
+					LOG.debug("Doing a description search on Definition");
+					ssh = SearchHandler.descriptionSearch(searchText.getText(), searchLimit.getValue(), false, LuceneDescriptionType.DEFINITION, 
+							this, null, null, null, true);
+				}
+				else if (descriptionTypeSelection.getValue().getNid() == LuceneDescriptionType.SYNONYM.ordinal())
+				{
+					LOG.debug("Doing a description search on Synonym");
+					ssh = SearchHandler.descriptionSearch(searchText.getText(), searchLimit.getValue(), false, LuceneDescriptionType.SYNONYM, 
+							this, null, null, null, true);
+				}
+				else
+				{
+					LOG.debug("Doing a description search on the extended type {}", descriptionTypeSelection.getValue().getDescription());
+					ssh = SearchHandler.descriptionSearch(searchText.getText(), searchLimit.getValue(), false, 
+							ExtendedAppContext.getDataStore().getUuidPrimordialForNid(descriptionTypeSelection.getValue().getNid()), 
+							this, null, null, null, true);
+				}
 			}
 			else
 			{
@@ -816,5 +873,30 @@ public class SearchViewController implements TaskCompleteCallback
 		};
 		
 		Utility.execute(t);
+	}
+	
+	private void populateExtendedDescriptionList()
+	{
+		Utility.execute(() ->
+		{
+			try
+			{
+				Set<ConceptVersionBI> extendedDescriptionTypes = OTFUtility.getAllLeafChildrenOfConcept(SnomedMetadataRf2.DESCRIPTION_NAME_IN_SOURCE_TERM_RF2.getNid());
+				ArrayList<SimpleDisplayConcept> temp = new ArrayList<>();
+				for (ConceptVersionBI c : extendedDescriptionTypes)
+				{
+					temp.add(new SimpleDisplayConcept(c));
+				}
+				Collections.sort(temp);
+				Platform.runLater(() ->
+				{
+					descriptionTypeSelection.getItems().addAll(temp);
+				});
+			}
+			catch (Exception e1)
+			{
+				LOG.error("Error reading extended description types", e1);
+			}
+		});
 	}
 }

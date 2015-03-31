@@ -2,9 +2,7 @@ package gov.va.isaac.ie.exporter;
 
 import gov.va.isaac.util.ProgressReporter;
 import gov.va.isaac.util.OTFUtility;
-
 import java.io.IOException;
-
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -13,6 +11,8 @@ import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexChronicleBI;
 import org.ihtsdo.otf.tcc.api.refex.RefexVersionBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
+import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 
@@ -50,8 +50,10 @@ public interface Exporter extends ProgressReporter {
     if (cv.getPathNid() == pathNid)
       return true;
 
+    //TODO who says that getViewCoordinate will return us something that aligns with pathNid?
     ViewCoordinate vc = OTFUtility.getViewCoordinate();
 
+    //TODO dan notes this doesn't check the path of any nested annotations
     // atts
     ConceptAttributeVersionBI<?> att =
         cv.getConceptAttributes().getVersion(vc);
@@ -80,6 +82,12 @@ public interface Exporter extends ProgressReporter {
       if (rv.getPathNid() == pathNid) 
         return true;
     }
+    
+    for (RefexDynamicChronicleBI<?> rc : cv.getRefexDynamicAnnotations()) {
+        RefexDynamicVersionBI<?> rv = rc.getVersion(vc);
+        if (rv.getPathNid() == pathNid) 
+          return true;
+      }
     
     return false;
 

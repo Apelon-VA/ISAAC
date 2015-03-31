@@ -8,7 +8,7 @@
 
 <BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200.0" minWidth="200.0" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.CreateMappingItemController">
 <right>
-<VBox maxHeight="1.7976931348623157E308" minWidth="300.0" style="-fx-border-width: 3; -fx-border-color: darkgray;">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="300.0" minWidth="0.0" prefWidth="0.0" style="-fx-border-width: 3; -fx-border-color: darkgray;">
 <children><Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Candidate Restrictions">
 <VBox.margin>
 <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
@@ -90,11 +90,11 @@
 <BorderPane.margin>
 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
 </BorderPane.margin>
-<children><Button fx:id="saveButton" mnemonicParsing="false" prefWidth="60.0" text="Save" GridPane.halignment="RIGHT">
+<children><Button fx:id="saveButton" mnemonicParsing="false" text="Save" GridPane.halignment="RIGHT">
 <GridPane.margin>
 <Insets right="10.0" />
 </GridPane.margin></Button>
-<Button fx:id="cancelButton" layoutX="395.0" layoutY="13.0" mnemonicParsing="false" prefWidth="60.0" text="Cancel" GridPane.columnIndex="1">
+<Button fx:id="cancelButton" layoutX="395.0" layoutY="13.0" mnemonicParsing="false" text="Cancel" GridPane.columnIndex="1">
 <GridPane.margin>
 <Insets left="10.0" />
 </GridPane.margin>
@@ -103,40 +103,46 @@
 </children>
 </GridPane>
 </bottom>
-<center><GridPane hgap="5.0" maxWidth="1.7976931348623157E308" minWidth="150.0" prefHeight="544.0" prefWidth="727.0" style="-fx-border-color: darkgray; -fx-border-width: 3 0 3 3;" vgap="5.0" BorderPane.alignment="CENTER">
+<center><GridPane fx:id="mainGridPane" hgap="5.0" maxWidth="1.7976931348623157E308" minWidth="150.0" prefHeight="544.0" prefWidth="727.0" style="-fx-border-color: darkgray; -fx-border-width: 3 0 3 3;" vgap="5.0" BorderPane.alignment="CENTER">
   <columnConstraints>
-    <ColumnConstraints halignment="LEFT" hgrow="NEVER" minWidth="20.0" />
+    <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="20.0" />
 <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="20.0" prefWidth="100.0" />
 <ColumnConstraints hgrow="NEVER" minWidth="20.0" />
-            <ColumnConstraints hgrow="NEVER" minWidth="20.0" />
   </columnConstraints>
   <rowConstraints>
-    <RowConstraints vgrow="NEVER" />
+    <RowConstraints prefHeight="30.0" vgrow="NEVER" />
 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
-    <RowConstraints vgrow="NEVER" />
+    <RowConstraints prefHeight="30.0" vgrow="NEVER" />
     <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-<RowConstraints fillHeight="false" vgrow="NEVER" />
+<RowConstraints fillHeight="false" prefHeight="30.0" vgrow="NEVER" />
             <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
             <RowConstraints fillHeight="false" minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
   </rowConstraints>
 <children><Label text="Source Concept">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></Label><ComboBox fx:id="sourceConceptCombo" editable="true" maxWidth="1.7976931348623157E308" minWidth="50.0" promptText="select, type or drop concept" GridPane.columnIndex="1" GridPane.columnSpan="2" /><Button fx:id="searchButton" mnemonicParsing="false" text="Search" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="1" /><Label alignment="CENTER" contentDisplay="CENTER" text="Mapping Candidates" textAlignment="CENTER" GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.rowIndex="2">
+</GridPane.margin></Label><Button fx:id="searchButton" mnemonicParsing="false" text="Search" GridPane.columnIndex="2" GridPane.hgrow="NEVER" GridPane.rowIndex="1">
+               <GridPane.margin>
+                  <Insets left="5.0" right="10.0" />
+               </GridPane.margin></Button><Label alignment="CENTER" contentDisplay="CENTER" text="Mapping Candidates" textAlignment="CENTER" GridPane.columnSpan="3" GridPane.halignment="CENTER" GridPane.rowIndex="2">
                <font>
                   <Font size="18.0" />
                </font></Label><Label text="Target Concept" GridPane.rowIndex="4">
 <GridPane.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-</GridPane.margin></Label><Label fx:id="targetConceptLabel" text="&lt;Selected Target Concept&gt; (drag and drop target)" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="4" /><TableView fx:id="candidatesTableView" prefHeight="414.0" prefWidth="689.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
+</GridPane.margin></Label><TableView fx:id="candidatesTableView" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="414.0" prefWidth="689.0" GridPane.columnSpan="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="3">
   <columns>
-    <TableColumn fx:id="candidatesConceptColumn" prefWidth="75.0" text="Concept" />
-    <TableColumn fx:id="candidatesCodeSystemColumn" prefWidth="131.0" text="Code System" /><TableColumn fx:id="candidatesStatusColumn" prefWidth="75.0" text="Status" />
+    <TableColumn fx:id="candidatesConceptColumn" prefWidth="455.0" text="Concept" />
+    <TableColumn fx:id="candidatesCodeSystemColumn" prefWidth="304.0" text="Code System" />
+                  <TableColumn fx:id="candidatesStatusColumn" prefWidth="153.0" text="Status" />
   </columns>
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin>
 </TableView><Label text="Candidate Criteria" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </GridPane.margin></Label><TextField fx:id="criteriaText" promptText="&lt;Automatic&gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+               </GridPane.margin></Label><TextField fx:id="criteriaText" maxWidth="1.7976931348623157E308" promptText="&lt;Automatic&gt;" GridPane.columnIndex="1" GridPane.rowIndex="1" />
             <Label text="Status" GridPane.rowIndex="6">
                <GridPane.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -147,8 +153,7 @@
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </GridPane.margin>
             </Label>
-            <ComboBox fx:id="qualifierCombo" editable="true" maxWidth="1.7976931348623157E308" minWidth="50.0" prefHeight="25.0" prefWidth="576.0" promptText="select, type or drop concept" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="5" />
-            <ComboBox fx:id="statusCombo" editable="true" prefHeight="25.0" prefWidth="556.0" promptText="Select Status" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="6" />
+            <ComboBox fx:id="statusCombo" editable="true" maxWidth="1.7976931348623157E308" promptText="Select Status" GridPane.columnIndex="1" GridPane.rowIndex="6" /><ComboBox fx:id="qualifierCombo" editable="true" maxWidth="1.7976931348623157E308" promptText="Select Qualifier" GridPane.columnIndex="1" GridPane.rowIndex="5" />
 </children>
 <padding>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

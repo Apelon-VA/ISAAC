@@ -187,6 +187,10 @@ public class ConceptViewerLabelHelper {
 					po.setContentNode(bp);
 					po.setAutoHide(true);
 					po.detachedTitleProperty().set("Attached Sememes");
+					po.detachedProperty().addListener((change) ->
+					{
+						po.setAutoHide(false);
+					});
 					
 					Point2D point = l.localToScreen(l.getWidth(), -25);
 					po.show(l.getScene().getWindow(), point.getX(), point.getY());

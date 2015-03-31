@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.URL;
 
 import gov.va.isaac.gui.mapping.data.MappingItem;
-
+import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import javafx.application.Platform;
@@ -55,11 +55,8 @@ public class CommentDialogView implements PopupViewI{
 	    
     }
 	
-	
-	public void setMappingItem(MappingItem mappingItem) {
-		// Function TBD
-		
-		//Catch exceptions and throw up a dialog box
+	public void setMappingSetAndItem(MappingSet mappingSet, MappingItem mappingItem) {
+		controller.setMappingSetAndItem(mappingSet, mappingItem);
 	}
 
 }

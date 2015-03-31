@@ -92,7 +92,7 @@ public class GenerateMissingPreferredTerms implements TransformConceptIterateI
 	@Override
 	public boolean transform(TerminologyStoreDI ts, ConceptChronicleBI cc) throws Exception
 	{
-		
+		examinedConcepts.getAndIncrement();
 		boolean foundPreferred = false;;
 		String fsnText = null;
 		LanguageCode fsnLC = null;
@@ -188,5 +188,14 @@ public class GenerateMissingPreferredTerms implements TransformConceptIterateI
 	{
 		return "Examined " + examinedConcepts.get() + " concepts and generated " + generatedDescriptions.get() + " new descriptions"
 				+ (missingFSNs.get() > 0 ? ".  ERROR: [" + missingFSNs.get() + " concepts were missing FSNs]" : "");
+	}
+
+	/**
+	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()
+	 */
+	@Override
+	public String getWorkResultDocBookTable()
+	{
+		return "Not yet created";
 	}
 }

@@ -62,14 +62,15 @@ public interface RuntimeGlobalsI
 	 */
 	public void enableCommitListener(String commitListenerName) throws InvalidNameException;
 	
-	/**
-	 * Disable all commit listeners - overriding any user-specific setting for enable/disable.
-	 */
-	public void enableAllCommitListeners();
 	
 	/**
 	 * Notify all commit listeners that they may enable themselves, if they desire (the 
 	 * disable override is no longer in force)
+	 */
+	public void enableAllCommitListeners();
+	
+	/**
+	 * Disable all commit listeners - overriding any user-specific setting for enable/disable.
 	 */
 	public void disableAllCommitListeners();
 }

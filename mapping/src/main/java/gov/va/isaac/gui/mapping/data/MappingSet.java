@@ -1,14 +1,14 @@
 /**
  * Copyright Notice
  *
- * This is a work of the U.S. Government and is not subject to copyright 
+ * This is a work of the U.S. Government and is not subject to copyright
  * protection in the United States. Foreign copyrights may apply.
  * 
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,200 +18,185 @@
  */
 package gov.va.isaac.gui.mapping.data;
 
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.ISAAC;
-import gov.va.isaac.constants.MappingConstants;
 import gov.va.isaac.util.OTFUtility;
-import java.beans.PropertyVetoException;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
-import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
-import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.IdDirective;
-import org.ihtsdo.otf.tcc.api.blueprint.InvalidCAB;
-import org.ihtsdo.otf.tcc.api.blueprint.RefexDynamicCAB;
+
+import javafx.beans.property.SimpleStringProperty;
+
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
-import org.ihtsdo.otf.tcc.api.lang.LanguageCode;
-import org.ihtsdo.otf.tcc.api.metadata.ComponentType;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataType;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
-import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicValidatorType;
-import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
+import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link MappingSet}
  *
  * A Convenience class to hide unnecessary OTF bits from the Mapping APIs.
  *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a>
  */
-public class MappingSet
+public class MappingSet extends MappingObject
 {
-	private ConceptVersionBI mappingConcept_;
-	private RefexDynamicVersionBI<?> mappingRefexData_;
-	
-	//cached values
-	private String name, inverseName, description;
-	
-	protected MappingSet(RefexDynamicChronicleBI<?> refex)
+	private static final Logger LOG = LoggerFactory.getLogger(MappingSet.class);
+
+	private String name, inverseName, description, purpose;
+	private UUID primordialUUID;
+
+	/**
+	 * 
+	 * Read an existing mapping set from the database
+	 * 
+	 * @param refex RefexDynamicChronicleBI<?>
+	 * @throws IOException
+	 */
+	protected MappingSet(RefexDynamicVersionBI<?> refex) throws IOException
 	{
+		this.readFromRefex(refex); //Sets Name, inverseName and Description, etc
+	}
+
+	public List<MappingItem> getMappingItems(boolean activeOnly)
+	{
+		List<MappingItem> mappingItems = null;
 		try
 		{
-			mappingConcept_ = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
-			mappingRefexData_ = refex.getVersion(OTFUtility.getViewCoordinate());
+			mappingItems = MappingItemDAO.getMappingItems(this.getPrimordialUUID(), activeOnly);
 		}
-		catch (ContradictionException e)
+		catch (Exception e)
 		{
-			throw new RuntimeException(e);
+			LOG.error("Error retrieving Mapping Items for " + this.getName(), e);
+			mappingItems = new ArrayList<MappingItem>();
 		}
+		return mappingItems;
 	}
 	
-	protected MappingSet (String mappingName, String inverseName, String purpose, String description, UUID editorStatus) throws IOException
-	{
-		try
-		{
-			//We need to create a new concept - which itself is defining a dynamic refex - so set that up here.
-			RefexDynamicUsageDescription rdud = RefexDynamicUsageDescriptionBuilder.createNewRefexDynamicUsageDescriptionConcept(mappingName, mappingName, description, 
-					new RefexDynamicColumnInfo[] {
-						new RefexDynamicColumnInfo(0, ISAAC.REFEX_COLUMN_TARGET_COMPONENT.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, null, null),
-						new RefexDynamicColumnInfo(1, MappingConstants.MAPPING_QUALIFIERS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
-								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_QUALIFIERS.getPrimodialUuid())),
-						new RefexDynamicColumnInfo(2, MappingConstants.MAPPING_STATUS.getPrimodialUuid(), RefexDynamicDataType.UUID, null, false, 
-								RefexDynamicValidatorType.IS_KIND_OF, new RefexDynamicUUID(MappingConstants.MAPPING_STATUS.getPrimodialUuid()))}, 
-					null, true, ComponentType.CONCEPT);
-			
-			//TODO background thread this
-			LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2}, true);
-			
-			//Then, annotate the concept created above as a member of the MappingSet dynamic refex, and add the inverse name, if present.
-			ConceptVersionBI createdConcept = OTFUtility.getConceptVersion(rdud.getRefexUsageDescriptorNid());
-			if (!StringUtils.isBlank(inverseName))
-			{
-				DescriptionCAB dCab = new DescriptionCAB(createdConcept.getNid(), Snomed.SYNONYM_DESCRIPTION_TYPE.getNid(), LanguageCode.EN, inverseName,
-						false, IdDirective.GENERATE_HASH);
-				dCab.addAnnotationBlueprint(new RefexDynamicCAB(dCab.getComponentUuid(), ISAAC.ASSOCIATION_INVERSE_NAME.getPrimodialUuid()));
-				OTFUtility.getBuilder().construct(dCab);
-			}
-			
-			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), MappingConstants.MAPPING_SEMEME_TYPE.getNid());
-			mappingAnnotation.setData(new RefexDynamicDataBI[] {
-					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus)),
-					(StringUtils.isBlank(purpose) ? null : new RefexDynamicString(purpose))}, OTFUtility.getViewCoordinate());
-			OTFUtility.getBuilder().construct(mappingAnnotation);
-			
-			RefexDynamicCAB associationAnnotation = new RefexDynamicCAB(rdud.getRefexUsageDescriptorNid(), ISAAC.ASSOCIATION_REFEX.getNid());
-			associationAnnotation.setData(new RefexDynamicDataBI[] {}, null);
-			OTFUtility.getBuilder().construct(associationAnnotation);
-			
-			ExtendedAppContext.getDataStore().addUncommitted(createdConcept);
-			ExtendedAppContext.getDataStore().commit(createdConcept);
-			
-			//reread
-			mappingConcept_ = OTFUtility.getConceptVersion(rdud.getRefexUsageDescriptorNid());
-			
-			//Find the constructed dynamic refset
-			mappingRefexData_ = (RefexDynamicVersionBI<?>)ExtendedAppContext.getDataStore().getComponent(mappingAnnotation.getMemberUUID()).getVersion(OTFUtility.getViewCoordinate());
-		}
-		catch (ContradictionException | InvalidCAB | PropertyVetoException e)
-		{
-			throw new RuntimeException("Unexpected error creating mapping", e);
-		}
-	}
+	public SimpleStringProperty getNameProperty() 		 { return new SimpleStringProperty(name); }
+	public SimpleStringProperty getPurposeProperty() 	 { return new SimpleStringProperty(purpose); }
+	public SimpleStringProperty getDescriptionProperty() { return new SimpleStringProperty(description); }
+	public SimpleStringProperty getInverseNameProperty() { return new SimpleStringProperty(inverseName); }
 	
 	/**
-	 * Access to the underlying concept
+	 * @param purpose - The 'purpose' of the mapping set. May specify null.
 	 */
-	public ConceptVersionBI getMappingConcept()
+	public void setPurpose(String purpose)
 	{
-		return mappingConcept_;
+		this.purpose = purpose;
 	}
-	
+
 	/**
-	 * Is this mapping active or retired?
-	 */
-	public boolean isActive()
-	{
-		try
-		{
-			return mappingConcept_.isActive();
-		}
-		catch (IOException e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-	
-	/**
-	 * @return The UUID of the concept that represents the editor selected status of the mapping set.  May return null.
-	 */
-	public UUID getStatus()
-	{
-		RefexDynamicDataBI[] data = mappingRefexData_.getData();
-		if (data.length > 0)
-		{
-			return ((RefexDynamicUUID)data[0]).getDataUUID();
-		}
-		return null;
-	}
-	
-	/**
-	 * @return The 'purpose' of the mapping set.  May return null.
+	 * @return - the 'purpose' of the mapping set - may be null
 	 */
 	public String getPurpose()
 	{
-		RefexDynamicDataBI[] data = mappingRefexData_.getData();
-		if (data.length > 1)
-		{
-			return data[1] == null ? null : ((RefexDynamicString)data[1]).getDataString();
-		}
-		return null;
+		return purpose;
 	}
-	
+
+	/**
+	 * @return the name of the mapping set
+	 */
 	public String getName()
 	{
-		readDescriptions();
 		return name;
 	}
-	
+
+	/**
+	 * @return - The inverse name of the mapping set - may return null
+	 */
 	public String getInverseName()
 	{
-		readDescriptions();
 		return inverseName;
 	}
-	
+
+	/**
+	 * @return - The user specified description of the mapping set.
+	 */
 	public String getDescription()
 	{
-		readDescriptions();
 		return description;
 	}
-	
+
+	/**
+	 * @param name - Change the name of the mapping set
+	 */
+	public void setName(String name)
+	{
+		this.name = name;
+	}
+
+	/**
+	 * @param inverseName - Change the inverse name of the mapping set
+	 */
+	public void setInverseName(String inverseName)
+	{
+		this.inverseName = inverseName;
+	}
+
+	/**
+	 * @param description - specify the description of the mapping set
+	 */
+	public void setDescription(String description)
+	{
+		this.description = description;
+	}
+
+	/**
+	 * @return The summary of the mapping set
+	 */
+	public String getSummary(boolean activeOnly)
+	{
+		List<MappingItem> mappingItems;
+		mappingItems = this.getMappingItems(activeOnly);
+		return Integer.toString(mappingItems.size()) + " Mapping Items";
+	}
+
 	/**
 	 * @return the identifier of this mapping set
 	 */
-	public UUID getID()
+	public UUID getPrimordialUUID()
 	{
-		return mappingConcept_.getPrimordialUuid();
+		return primordialUUID;
 	}
-	
-	private void readDescriptions()
+
+	/**
+	 * @return Any comments attached to this mapping set.
+	 * @throws IOException
+	 */
+	public List<MappingItemComment> getComments() throws IOException
+	{
+		return MappingItemCommentDAO.getComments(getPrimordialUUID(), false);
+	}
+
+	private void readFromRefex(RefexDynamicVersionBI<?> refex) throws IOException
 	{
 		try
 		{
-			if (name == null)
+			//ConceptVersionBI mappingConcept = OTFUtility.getConceptVersion(refex.getReferencedComponentNid());
+			ConceptVersionBI mappingConcept = MappingSetDAO.getMappingConcept(refex); 
+			if (mappingConcept != null)
 			{
-				for (DescriptionVersionBI<?> desc : mappingConcept_.getDescriptionsActive())
+				primordialUUID = mappingConcept.getPrimordialUuid();
+				readStampDetails(mappingConcept);
+				if (refex.getData().length > 0 && refex.getData()[0] != null)
+				{
+					editorStatusConcept = ((RefexDynamicUUID) refex.getData()[0]).getDataUUID();
+				}
+				if (refex.getData().length > 1 && refex.getData()[1] != null)
+				{
+					purpose = ((RefexDynamicString) refex.getData()[1]).getDataString();
+				}
+
+				for (DescriptionVersionBI<?> desc : mappingConcept.getDescriptionsActive())
 				{
 					if (desc.getTypeNid() == Snomed.SYNONYM_DESCRIPTION_TYPE.getNid())
 					{
@@ -219,7 +204,8 @@ public class MappingSet
 						{
 							name = desc.getText();
 						}
-						else //see if it is the inverse name
+						else
+						//see if it is the inverse name
 						{
 							for (RefexDynamicChronicleBI<?> annotation : desc.getRefexDynamicAnnotations())
 							{
@@ -238,29 +224,25 @@ public class MappingSet
 							description = desc.getText();
 						}
 					}
-					
-					if (name != null && inverseName != null && description != null)
+
+					if (name != null && description != null && inverseName != null)
 					{
-						//Found everything we are looking for.
+						//found everything we are looking for
 						break;
 					}
 				}
 			}
+			else
+			{
+				String error = "cannot read mapping concept!";
+				LOG.error(error);
+				throw new IOException(error);
+			}
 		}
-		catch (Exception e)
+		catch (ContradictionException | ValidationException e)
 		{
-			throw new RuntimeException("Unexpected error reading descriptions", e);
+			LOG.error("Unexpected error", e);
+			throw new IOException("internal error");
 		}
 	}
-	
-	/**
-	 * @return Any comments attached to this mapping set.
-	 */
-	public List<Object> getComments()
-	{
-		//TODO implement
-		return new ArrayList<>();
-	}
-	
-	//TODO implement retire and edit?  methods
 }

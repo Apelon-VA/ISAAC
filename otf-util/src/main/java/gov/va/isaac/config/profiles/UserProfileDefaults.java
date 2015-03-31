@@ -26,10 +26,7 @@ package gov.va.isaac.config.profiles;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.config.generated.StatedInferredOptions;
-
-import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.TreeSet;
+import gov.va.isaac.config.profiles.UserProfileBindings.RelationshipDirection;
 import java.util.UUID;
 
 /**
@@ -47,6 +44,11 @@ public final class UserProfileDefaults {
 
 	public static boolean getDefaultDisplayFSN() { 
 		return true;
+	}
+	
+	public static RelationshipDirection getDefaultDisplayRelDirection()
+	{
+		return RelationshipDirection.SOURCE;
 	}
 
 	public static boolean getDefaultLaunchWorkflowForEachCommit() {
@@ -86,10 +88,10 @@ public final class UserProfileDefaults {
 	}
 	
 	public static String getDefaultReleaseVersion() {
-		return AppContext.getAppConfiguration().getDefaultReleaseVersion();
+		return "";
 	}
 	
 	public static String getDefaultExtensionNamespace() {
-		return AppContext.getAppConfiguration().getDefaultExtensionNamespace();
+		return "";
 	}
 }
