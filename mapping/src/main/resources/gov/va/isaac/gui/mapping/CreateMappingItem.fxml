@@ -15,53 +15,89 @@
 </VBox.margin>
 <font>
 <Font size="18.0" />
-</font></Label><Accordion BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
-  <panes><TitledPane animated="false" layoutX="54.0" layoutY="125.0" text="Description Type">
-  <content>
+</font></Label>
+            <TitledPane animated="false" collapsible="false" text="Description Type">
+<content>
 <VBox spacing="5.0">
-<children><RadioButton fx:id="noRestrictionRadio" mnemonicParsing="false" selected="true" text="No Restriction">
+<children>
+                        <RadioButton fx:id="noRestrictionRadio" mnemonicParsing="false" selected="true" text="No Restriction">
 <toggleGroup>
 <ToggleGroup fx:id="desc" />
-</toggleGroup></RadioButton><RadioButton fx:id="fsnRestrictionRadio" mnemonicParsing="false" text="Fully Specified Name" toggleGroup="$desc" /><RadioButton fx:id="synonymRestrictionRadio" mnemonicParsing="false" text="Synonym" toggleGroup="$desc" /><RadioButton fx:id="descriptionRestrictionRadio" mnemonicParsing="false" text="Description" toggleGroup="$desc" />
+</toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="fsnRestrictionRadio" mnemonicParsing="false" text="Fully Specified Name" toggleGroup="$desc" />
+                        <RadioButton fx:id="synonymRestrictionRadio" mnemonicParsing="false" text="Synonym" toggleGroup="$desc" />
+                        <RadioButton fx:id="descriptionRestrictionRadio" mnemonicParsing="false" text="Description" toggleGroup="$desc" />
 </children>
 <padding>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </padding>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-  </content>
-</TitledPane><TitledPane animated="false" text="Advanced Description Type">
-  <content>
-<VBox>
-<children><ComboBox fx:id="descriptionRestrictionCombo" maxWidth="1.7976931348623157E308" />
-</children>
-</VBox>
-  </content>
+</content>
 </TitledPane>
-    <TitledPane animated="false" text="Target Code System">
-      <content>
+            <TitledPane animated="false" collapsible="false" text="Advanced Description Type">
+<content>
 <VBox>
 <children>
-<ComboBox fx:id="codeSystemRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" />
+                        <ComboBox fx:id="descriptionRestrictionCombo" maxWidth="1.7976931348623157E308">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ComboBox>
 </children>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-      </content>
-    </TitledPane>
-    <TitledPane animated="false" text="Target is member of refset">
-      <content>
+</content>
+</TitledPane>
+<TitledPane animated="false" collapsible="false" text="Target Code System">
+<content>
 <VBox>
 <children>
-<ComboBox fx:id="refsetRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" />
+<ComboBox fx:id="codeSystemRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ComboBox>
 </children>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-      </content>
-    </TitledPane>
-    <TitledPane animated="false" text="Target is child of">
-      <content>
-<VBox fx:id="childRestrictionVBox" />
-      </content>
-    </TitledPane>
-  </panes>
-</Accordion>
+</content>
+</TitledPane>
+<TitledPane animated="false" collapsible="false" text="Target is member of refset">
+<content>
+<VBox>
+<children>
+<ComboBox fx:id="refsetRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ComboBox>
+</children>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
+</VBox>
+</content>
+</TitledPane>
+<TitledPane animated="false" collapsible="false" prefHeight="77.0" text="Target is child of">
+<content>
+<VBox fx:id="childRestrictionVBox">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
+</VBox>
+</content>
+</TitledPane><Accordion visible="false" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS" />
 <HBox alignment="CENTER">
 <children>
                   <Button fx:id="applyRestrictionButton" maxWidth="-Infinity" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="Apply">
