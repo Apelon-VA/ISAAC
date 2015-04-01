@@ -20,6 +20,7 @@ package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.constants.MappingConstants;
+import gov.va.isaac.gui.RenameableDisplayConcept;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -32,6 +33,7 @@ import gov.va.isaac.util.TaskCompleteCallback;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,6 +65,17 @@ import org.slf4j.LoggerFactory;
 public class MappingUtils
 {
 	protected static final Logger LOG = LoggerFactory.getLogger(MappingUtils.class);
+	
+	public static final UUID SNOMED_UUID = UUID.fromString("8c230474-9f11-30ce-9cad-185a96fd03a2");
+	public static final UUID LOINC_UUID  = UUID.fromString("b2b1cc96-9ca6-5513-aad9-aa21e61ddc29");
+	public static final UUID RXNORM_UUID = UUID.fromString("763c21ad-55e3-5bb3-af1e-3e4fb475de44"); 
+	
+	public static final HashMap<String, ConceptVersionBI> CODE_SYSTEM_CONCEPTS = new HashMap<String, ConceptVersionBI>(); 
+	static {
+		CODE_SYSTEM_CONCEPTS.put("SNOMED CT", OTFUtility.getConceptVersion(SNOMED_UUID));
+		CODE_SYSTEM_CONCEPTS.put("LOINC",     OTFUtility.getConceptVersion(LOINC_UUID));
+		CODE_SYSTEM_CONCEPTS.put("RnNorm",    OTFUtility.getConceptVersion(RXNORM_UUID));
+	}
 	
 	public static List<SimpleDisplayConcept> getStatusConcepts() throws IOException
 	{
@@ -267,13 +280,15 @@ public class MappingUtils
 	public static List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
 	{
 		Set<ConceptVersionBI> extendedDescriptionTypes;
+		ArrayList<SimpleDisplayConcept> temp = new ArrayList<>();
 		try
 		{
-			extendedDescriptionTypes = OTFUtility.getAllLeafChildrenOfConcept(SnomedMetadataRf2.DESCRIPTION_NAME_IN_SOURCE_TERM_RF2.getNid());
-			ArrayList<SimpleDisplayConcept> temp = new ArrayList<>();
-			for (ConceptVersionBI c : extendedDescriptionTypes)
-			{
-				temp.add(new SimpleDisplayConcept(c));
+			if (ExtendedAppContext.getDataStore().hasConcept(SnomedMetadataRf2.DESCRIPTION_NAME_IN_SOURCE_TERM_RF2.getPrimodialUuid())) {
+				extendedDescriptionTypes = OTFUtility.getAllLeafChildrenOfConcept(SnomedMetadataRf2.DESCRIPTION_NAME_IN_SOURCE_TERM_RF2.getNid());
+				for (ConceptVersionBI c : extendedDescriptionTypes)
+				{
+					temp.add(new SimpleDisplayConcept(c));
+				}
 			}
 			Collections.sort(temp);
 			return temp;
@@ -282,6 +297,19 @@ public class MappingUtils
 		{
 			throw new IOException(e);
 		}
+	}
+
+	public static List<SimpleDisplayConcept> getCodeSystems() {
+		List<SimpleDisplayConcept> codeSystems = new ArrayList<SimpleDisplayConcept>();
+		for (String codeSystemName : CODE_SYSTEM_CONCEPTS.keySet()) {
+			ConceptVersionBI concept = CODE_SYSTEM_CONCEPTS.get(codeSystemName);
+			if (concept != null) {
+				RenameableDisplayConcept rdc = new RenameableDisplayConcept(concept);
+				rdc.setDescription(codeSystemName);
+				codeSystems.add(rdc);
+			}
+		}
+		return codeSystems;
 	}
 	
 }

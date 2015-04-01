@@ -13,6 +13,7 @@ import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingUtils;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.util.CommonMenus;
@@ -23,11 +24,23 @@ import gov.va.isaac.util.Utility;
 
 
 
+
+
+
+
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+
+
+
+
+
 
 
 
@@ -63,12 +76,19 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
 
 
 
 
+
+
+
+
+
+import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,8 +102,28 @@ import org.slf4j.LoggerFactory;
 
 public class CreateMappingItemController {
 	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingItemController.class);
-	
-	private final Label LABEL_NO_RESULTS = new Label("Search returned no results");
+    
+    private class SearchRestriction {
+    	private LuceneDescriptionType descriptionType = null;
+		private UUID advancedDescriptionType = null; 
+		private Integer targetCodeSystemPathNid;
+		private Integer memberOfRefsetNid;
+		private Integer childOfNid;
+		
+		public LuceneDescriptionType getDescriptionType()         { return descriptionType;	}
+		public UUID                  getAdvancedDescriptionType() { return advancedDescriptionType; }
+		public Integer               getTargetCodeSystemPathNid() { return targetCodeSystemPathNid; }
+		public Integer               getMemberOfRefsetNid()       { return memberOfRefsetNid; }
+		public Integer               getChildOfNid()              { return childOfNid; }
+		
+		public void setDescriptionType(LuceneDescriptionType descriptionType)   { this.descriptionType = descriptionType; }
+		public void setAdvancedDescriptionType(UUID advancedDescriptionType)    { this.advancedDescriptionType = advancedDescriptionType; }
+		public void setTargetCodeSystemPathNid(Integer targetCodeSystemPathNid) { this.targetCodeSystemPathNid = targetCodeSystemPathNid; }
+		public void setMemberOfRefsetNid(Integer memberOfRefsetNid)             { this.memberOfRefsetNid = memberOfRefsetNid; }
+		public void setChildOfNid(Integer childOfNid)                           { this.childOfNid = childOfNid; }
+    }
+
+    private final Label LABEL_NO_RESULTS = new Label("Search returned no results");
 	private final Label LABEL_SEARCHING  = new Label("Searching...");
 
 	@FXML private BorderPane 		mainPane;
@@ -98,32 +138,33 @@ public class CreateMappingItemController {
 	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesCodeSystemColumn;
 	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesStatusColumn;
 
-	@FXML private ComboBox<?> 		codeSystemRestrictionCombo;
-	@FXML private ComboBox<?> 		refsetRestrictionCombo;
 	
+	@FXML private VBox              childRestrictionVBox;
 	@FXML private RadioButton 		noRestrictionRadio;
 	@FXML private RadioButton 		descriptionRestrictionRadio;
 	@FXML private RadioButton 		synonymRestrictionRadio;
 	@FXML private RadioButton 		fsnRestrictionRadio;
+	@FXML private ToggleGroup 		desc;	
 	
-	@FXML private ComboBox<?> 		childRestrictionCombo;
-	@FXML private ComboBox<?> 		descriptionRestrictionCombo;
+	@FXML private ComboBox<SimpleDisplayConcept> 	refsetRestrictionCombo;
+	@FXML private ComboBox<SimpleDisplayConcept> 	codeSystemRestrictionCombo;
+	@FXML private ComboBox<SimpleDisplayConcept> 	descriptionRestrictionCombo;
 	@FXML private ComboBox<SimpleDisplayConcept>	statusCombo;
 	@FXML private ComboBox<SimpleDisplayConcept>	qualifierCombo;
-	@FXML private ToggleGroup 		desc;	
 
+    @FXML private Button 			applyRestrictionButton;
 	@FXML private Button 			clearRestrictionButton;
 	@FXML private Button 			saveButton;
 	@FXML private Button 			cancelButton;
-
+	
 	private ConceptNode 			sourceConceptNode = new ConceptNode(null, true);
 	private ConceptNode				targetConceptNode = new ConceptNode(null, true);
+	private ConceptNode				childRestrictionConceptNode;
 
 	private MappingSet mappingSet_;
 	private Object searchObject_;
 
 	public Region getRootNode() {
-		//return region;
 		return mainPane;
 	}
 	
@@ -148,21 +189,27 @@ public class CreateMappingItemController {
 		assert descriptionRestrictionRadio	!= null: "fx:id=\"descriptionRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert synonymRestrictionRadio		!= null: "fx:id=\"synonymRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert fsnRestrictionRadio			!= null: "fx:id=\"fsnRestrictionRadio\" was not injected. Check 'CreateMapping.fxml' file.";
-		assert childRestrictionCombo		!= null: "fx:id=\"childRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert descriptionRestrictionCombo	!= null: "fx:id=\"descriptionRestrictionCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert statusCombo					!= null: "fx:id=\"statusCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert qualifierCombo				!= null: "fx:id=\"qualifierCombo\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert clearRestrictionButton		!= null: "fx:id=\"clearRestrictionButton\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert saveButton					!= null: "fx:id=\"saveButton\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert cancelButton					!= null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";
+        assert childRestrictionVBox 		!= null : "fx:id=\"childRestricionVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert applyRestrictionButton 		!= null : "fx:id=\"applyRestrictionButton\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
 
 		setupColumnTypes();
 		
 		mainGridPane.add(sourceConceptNode.getNode(), 1, 0);
 		mainGridPane.add(targetConceptNode.getNode(), 1, 4);
 		
+		resetChildOfRestriction();
+		
 		statusCombo.setEditable(false);
 		qualifierCombo.setEditable(false);
+		descriptionRestrictionCombo.setEditable(false);
+		codeSystemRestrictionCombo.setEditable(false);
+		refsetRestrictionCombo.setEditable(false);
 		
 		Utility.execute(() ->
 		{
@@ -174,18 +221,38 @@ public class CreateMappingItemController {
 				List<SimpleDisplayConcept> status = MappingUtils.getStatusConcepts();
 				status.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
 				
+				List<SimpleDisplayConcept> advancedDescriptionTypes = MappingUtils.getExtendedDescriptionTypes();
+				advancedDescriptionTypes.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
+				
+				List<SimpleDisplayConcept> codeSystems = MappingUtils.getCodeSystems();
+				codeSystems.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
+
+				// TODO populate refset restrictions
+				List<SimpleDisplayConcept> refsetRestrictions = RefexDynamicUtil.getAllRefexDefinitions(); 
+				refsetRestrictions.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
+				
 				Platform.runLater(() ->
 				{
 					statusCombo.getItems().addAll(status);
 					statusCombo.getSelectionModel().select(0);
+					
 					qualifierCombo.getItems().addAll(qualifiers);
 					qualifierCombo.getSelectionModel().select(0);
+					
+					descriptionRestrictionCombo.getItems().addAll(advancedDescriptionTypes);
+					descriptionRestrictionCombo.getSelectionModel().select(0);
+					
+					codeSystemRestrictionCombo.getItems().addAll(codeSystems);
+					codeSystemRestrictionCombo.getSelectionModel().select(0);
+					
+					refsetRestrictionCombo.getItems().addAll(refsetRestrictions);
+					refsetRestrictionCombo.getSelectionModel().select(0);
 				});
 			}
 			catch (Exception e1)
 			{
-				LOG.error("Unexpected error populating qualifier and/or status combo fields", e1);
-				AppContext.getCommonDialogs().showErrorDialog("Unexpected error configuring status and qualifier options.  See logs.", e1);
+				LOG.error("Unexpected error populating combo fields", e1);
+				AppContext.getCommonDialogs().showErrorDialog("Unexpected error populating combo fields.  See logs.", e1);
 			}
 		});
 
@@ -258,11 +325,17 @@ public class CreateMappingItemController {
 			}
 		});
 
+		clearRestrictionButton.setOnAction((event) -> {
+			clearSearchRestriction();
+			doSearch();
+		});
+		
+		applyRestrictionButton.setOnAction((event) -> {
+			doSearch();
+		});
 	}
 	
 	// intended to re-run last search when restrictions are applied
-	// TODO remove warning suppression when implemented
-	@SuppressWarnings("unused")
 	private void doSearch() {
 		if (searchObject_ != null) {
 			doSearch(searchObject_);
@@ -271,13 +344,31 @@ public class CreateMappingItemController {
 	
 	private void doSearch(Object searchObject) {
 		try {
-			// TODO implement restrictions
 			searchObject_ = searchObject;
 			SearchHandle searchHandle = null;
+			SearchRestriction searchRestriction = getSearchRestriction();
+			
 			if (searchObject instanceof ConceptVersionBI) {
-				searchHandle = MappingUtils.search(((ConceptVersionBI)searchObject).getNid(), null, null, null, null, null, null);
+				searchHandle = MappingUtils.search(
+						((ConceptVersionBI)searchObject).getNid(), 
+						null, 
+						searchRestriction.getDescriptionType(), 
+						searchRestriction.getAdvancedDescriptionType(), 
+						searchRestriction.getTargetCodeSystemPathNid(), 
+						searchRestriction.getMemberOfRefsetNid(), 
+						searchRestriction.getChildOfNid()
+				);
+				
 			} else if (searchObject instanceof String) {
-				searchHandle = MappingUtils.search((String)searchObject, null, null, null, null, null, null);
+				searchHandle = MappingUtils.search(
+						(String)searchObject, 
+						null, 
+						searchRestriction.getDescriptionType(), 
+						searchRestriction.getAdvancedDescriptionType(), 
+						searchRestriction.getTargetCodeSystemPathNid(), 
+						searchRestriction.getMemberOfRefsetNid(), 
+						searchRestriction.getChildOfNid()
+				);
 			}
 			if (searchHandle != null) {
 				populateSearchResult(searchHandle);	
@@ -453,4 +544,84 @@ public class CreateMappingItemController {
 		}
 	}
 
+	private SearchRestriction getSearchRestriction() {
+		SearchRestriction searchRestriction = new SearchRestriction();
+		
+		// Description Type
+		if (descriptionRestrictionRadio.selectedProperty().get()) {
+			searchRestriction.setDescriptionType(LuceneDescriptionType.DEFINITION);
+		
+		} else if (synonymRestrictionRadio.selectedProperty().get()) {
+			searchRestriction.setDescriptionType(LuceneDescriptionType.SYNONYM);
+		
+		} else if (fsnRestrictionRadio.selectedProperty().get()) {
+			searchRestriction.setDescriptionType(LuceneDescriptionType.FSN);
+		
+		} else {
+			searchRestriction.setDescriptionType(null);
+		}
+		
+		// Advanced Description Type
+		SimpleDisplayConcept selectedAdvancedDescription = descriptionRestrictionCombo.getSelectionModel().getSelectedItem();
+		UUID uuid = null;
+		if (selectedAdvancedDescription != null && selectedAdvancedDescription.getNid() != Integer.MIN_VALUE) {
+			try {
+				uuid = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(selectedAdvancedDescription.getNid());
+			} catch (IOException e) {
+				LOG.error("Error retrieving advanced description restriction", e);
+			}
+		}
+		searchRestriction.setAdvancedDescriptionType(uuid);
+
+		// Code System
+		SimpleDisplayConcept selectedCodeSystem = codeSystemRestrictionCombo.getSelectionModel().getSelectedItem();
+		Integer codeSystemNid = null;
+		if (selectedCodeSystem != null && selectedCodeSystem.getNid() != Integer.MIN_VALUE) {
+			codeSystemNid = new Integer(selectedCodeSystem.getNid());
+		}
+		searchRestriction.setTargetCodeSystemPathNid(codeSystemNid);
+
+		// Refset Member
+		SimpleDisplayConcept selectedRefset = refsetRestrictionCombo.getSelectionModel().getSelectedItem();
+		Integer refsetNid = null;
+		if (selectedRefset != null && selectedRefset.getNid() != Integer.MIN_VALUE) {
+			refsetNid = new Integer(selectedRefset.getNid());
+		}
+		searchRestriction.setMemberOfRefsetNid(refsetNid);
+		
+		// Child of concept
+		ConceptVersionBI childOfConcept = childRestrictionConceptNode.getConcept();
+		if (childOfConcept == null) {
+			searchRestriction.setChildOfNid(null);
+		} else {
+			searchRestriction.setChildOfNid(childOfConcept.getNid());
+		}
+		
+		return searchRestriction;
+	}
+	
+	private void clearSearchRestriction() {
+		// Description Type
+		noRestrictionRadio.setSelected(true);
+		
+		// Advanced Description Type
+		descriptionRestrictionCombo.getSelectionModel().select(0);
+
+		// Code System
+		codeSystemRestrictionCombo.getSelectionModel().select(0);
+
+		// Refset Member
+		refsetRestrictionCombo.getSelectionModel().select(0);		
+		
+		// Child of concept
+		resetChildOfRestriction();
+		
+	}
+
+	private void resetChildOfRestriction() {
+		childRestrictionConceptNode = new ConceptNode(null, false);
+		childRestrictionVBox.getChildren().clear();
+		childRestrictionVBox.getChildren().add(childRestrictionConceptNode.getNode());
+	}
+	
 }
