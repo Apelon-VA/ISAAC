@@ -22,11 +22,13 @@ import gov.va.isaac.util.Utility;
 
 
 
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
 
 
 
@@ -63,6 +65,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+
 
 
 
@@ -117,6 +120,7 @@ public class CreateMappingItemController {
 	private ConceptNode				targetConceptNode = new ConceptNode(null, true);
 
 	private MappingSet mappingSet_;
+	private Object searchObject_;
 
 	public Region getRootNode() {
 		//return region;
@@ -241,19 +245,46 @@ public class CreateMappingItemController {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue) {
 				if (newValue != null) {
-					SimpleDisplayConcept sdc = new SimpleDisplayConcept(newValue);
-					criteriaText.setText(sdc.getDescription());
-					// TODO implement restrictions
-					try {
-						SearchHandle searchHandle = MappingUtils.search(newValue.getNid(), null, null, null, null, null, null);
-						populateSearchResult(searchHandle);
-					} catch (IOException e) {
-						LOG.error("Error performing search", e);
-					}
-					
+					criteriaText.setText(OTFUtility.getDescription(newValue));
+					doSearch(newValue);
 				}
 			}
 		});
+		
+		searchButton.setOnAction((event) -> {
+			String searchString = criteriaText.getText().trim();
+			if (searchString != null && !searchString.equals("")) {
+				doSearch(searchString);
+			}
+		});
+
+	}
+	
+	// intended to re-run last search when restrictions are applied
+	// TODO remove warning suppression when implemented
+	@SuppressWarnings("unused")
+	private void doSearch() {
+		if (searchObject_ != null) {
+			doSearch(searchObject_);
+		}
+	}
+	
+	private void doSearch(Object searchObject) {
+		try {
+			// TODO implement restrictions
+			searchObject_ = searchObject;
+			SearchHandle searchHandle = null;
+			if (searchObject instanceof ConceptVersionBI) {
+				searchHandle = MappingUtils.search(((ConceptVersionBI)searchObject).getNid(), null, null, null, null, null, null);
+			} else if (searchObject instanceof String) {
+				searchHandle = MappingUtils.search((String)searchObject, null, null, null, null, null, null);
+			}
+			if (searchHandle != null) {
+				populateSearchResult(searchHandle);	
+			}
+		} catch (IOException e) {
+			LOG.error("Error performing search", e);
+		}
 	}
 	
 	public void setMappingSet(MappingSet mappingSet) {
