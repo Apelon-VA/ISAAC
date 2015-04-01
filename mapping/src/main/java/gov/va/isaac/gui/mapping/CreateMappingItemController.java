@@ -4,6 +4,8 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.SimpleDisplayConcept;
+import gov.va.isaac.gui.dragAndDrop.DragRegistry;
+import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemDAO;
 import gov.va.isaac.gui.mapping.data.MappingObject;
@@ -19,11 +21,13 @@ import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
 
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
+
 
 
 import javafx.application.Platform;
@@ -59,6 +63,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+
 
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -403,7 +408,14 @@ public class CreateMappingItemController {
 						}
 					});
 				}
-			}
+
+				AppContext.getService(DragRegistry.class).setupDragOnly(text, new SingleConceptIdProvider() {
+					@Override
+					public String getConceptId() {
+						return Integer.toString(concept.getNid());
+					}
+				});
+}
 		} else {
 			cell.setText(null);
 			cell.setGraphic(null);
