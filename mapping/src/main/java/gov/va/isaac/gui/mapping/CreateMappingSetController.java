@@ -83,7 +83,7 @@ public class CreateMappingSetController {
 			try
 			{
 				List<SimpleDisplayConcept> status = MappingUtils.getStatusConcepts();
-				status.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
+				status.add(0, new SimpleDisplayConcept("No Status", Integer.MIN_VALUE));
 				
 				Platform.runLater(() ->
 				{

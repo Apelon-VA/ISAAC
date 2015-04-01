@@ -216,10 +216,10 @@ public class CreateMappingItemController {
 			try
 			{
 				List<SimpleDisplayConcept> qualifiers = MappingUtils.getQualifierConcepts();
-				qualifiers.add(0, new SimpleDisplayConcept("NO QUALIFIER", Integer.MIN_VALUE));
+				qualifiers.add(0, new SimpleDisplayConcept("No Qualifier", Integer.MIN_VALUE));
 				
 				List<SimpleDisplayConcept> status = MappingUtils.getStatusConcepts();
-				status.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
+				status.add(0, new SimpleDisplayConcept("No Status", Integer.MIN_VALUE));
 				
 				List<SimpleDisplayConcept> advancedDescriptionTypes = MappingUtils.getExtendedDescriptionTypes();
 				advancedDescriptionTypes.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));

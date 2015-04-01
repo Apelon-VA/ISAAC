@@ -74,7 +74,7 @@ public class EditMappingItemController {
 			try
 			{
 				List<SimpleDisplayConcept> statusList = MappingUtils.getStatusConcepts();
-				statusList.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
+				statusList.add(0, new SimpleDisplayConcept("No Status", Integer.MIN_VALUE));
 				
 				Platform.runLater(() ->
 				{
