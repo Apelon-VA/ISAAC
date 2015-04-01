@@ -38,6 +38,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
@@ -721,4 +722,20 @@ public class MappingController {
 		}
 	};
 
+	public static void setComboSelection(ComboBox<SimpleDisplayConcept> combo, String selectValue, int defaultIndex) {
+		boolean found = false;
+		if (selectValue != null && !selectValue.trim().equals("")) {
+			for (SimpleDisplayConcept sdc : combo.getItems()) {
+				if (sdc.getDescription().equals(selectValue)) {
+					combo.getSelectionModel().select(sdc);
+					found = true;
+					break;
+				}
+			}
+		}
+		if (!found && defaultIndex >= 0 && defaultIndex < combo.getItems().size()) {
+			combo.getSelectionModel().select(0);
+		}
+	}
+	
 }

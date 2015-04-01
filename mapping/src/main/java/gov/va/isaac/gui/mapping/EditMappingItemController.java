@@ -6,6 +6,7 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemDAO;
 import gov.va.isaac.gui.mapping.data.MappingUtils;
+import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
@@ -68,7 +69,6 @@ public class EditMappingItemController {
         assert saveButton != null : "fx:id=\"saveButton\" was not injected: check your FXML file 'EditMappingItem.fxml'.";
 
 		statusCombo.setEditable(false);
-		
 		Utility.execute(() ->
 		{
 			try
@@ -79,7 +79,12 @@ public class EditMappingItemController {
 				Platform.runLater(() ->
 				{
 					statusCombo.getItems().addAll(statusList);
-					statusCombo.getSelectionModel().select(0);
+					if (mappingItem_ != null) {
+						MappingController.setComboSelection(statusCombo, mappingItem_.getEditorStatusConceptProperty().getValue(), 0); 	
+					} else {
+						statusCombo.getSelectionModel().select(0);
+					}
+					
 				});
 			}
 			catch (Exception e1)
@@ -138,6 +143,5 @@ public class EditMappingItemController {
 		targetLabel.setText(mappingItem.getTargetConceptProperty().getValueSafe());
 		qualifierLabel.setText(mappingItem.getQualifierConceptProperty().getValueSafe());
 	}
-	
 
 }

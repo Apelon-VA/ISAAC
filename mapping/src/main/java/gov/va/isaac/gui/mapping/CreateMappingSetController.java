@@ -88,7 +88,12 @@ public class CreateMappingSetController {
 				Platform.runLater(() ->
 				{
 					statusCombo.getItems().addAll(status);
-					statusCombo.getSelectionModel().select(0);
+					if (mappingSet_ != null) {
+						MappingController.setComboSelection(statusCombo, mappingSet_.getEditorStatusConceptProperty().getValue(), 0); 	
+					} else {
+						statusCombo.getSelectionModel().select(0);
+					}
+					
 				});
 			}
 			catch (Exception e1)
@@ -187,9 +192,8 @@ public class CreateMappingSetController {
 		nameInput.setText(mappingSet.getName());
 		purposeInput.setText(mappingSet.getPurpose());
 		descInput.setText(mappingSet.getDescription());
-		//TODO status
-		
 	}
+
 }
 
 
