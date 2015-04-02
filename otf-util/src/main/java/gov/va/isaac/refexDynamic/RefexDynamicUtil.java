@@ -20,15 +20,22 @@ package gov.va.isaac.refexDynamic;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.util.OTFUtility;
+
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+
 import javafx.application.Platform;
 import javafx.scene.control.ProgressIndicator;
+
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
@@ -103,4 +110,28 @@ public class RefexDynamicUtil
 		}
 		return refexMembers;
 	}
+
+	public static List<SimpleDisplayConcept> getAllRefexDefinitions() throws IOException {
+		List<SimpleDisplayConcept> allRefexDefinitions = new ArrayList<>();
+
+		try {
+			LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
+		    List<SearchResult> refexes = indexer.queryAssemblageUsage(RefexDynamic.REFEX_DYNAMIC_DEFINITION_DESCRIPTION.getNid(), 1000, Long.MAX_VALUE);
+		    for (SearchResult sr : refexes) {
+		    	RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
+		    	if (rc == null) {
+		    		logger_.info("Out of date index?  Search result for refexes contained a NID that can't be resolved: {}" + sr.getNid());
+		    		continue;
+		    	}
+		    	//These are nested refex references - it returns a description component - concept we want is the parent of that.
+		    	allRefexDefinitions.add(new SimpleDisplayConcept(
+		    			ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(), null));
+		    }
+		} catch (Exception e) {
+			throw new IOException(e);
+		}
+	    
+	    return allRefexDefinitions;
+	}
+
 }

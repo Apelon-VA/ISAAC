@@ -83,12 +83,17 @@ public class CreateMappingSetController {
 			try
 			{
 				List<SimpleDisplayConcept> status = MappingUtils.getStatusConcepts();
-				status.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
+				status.add(0, new SimpleDisplayConcept("No Status", Integer.MIN_VALUE));
 				
 				Platform.runLater(() ->
 				{
 					statusCombo.getItems().addAll(status);
-					statusCombo.getSelectionModel().select(0);
+					if (mappingSet_ != null) {
+						MappingController.setComboSelection(statusCombo, mappingSet_.getEditorStatusConceptProperty().getValue(), 0); 	
+					} else {
+						statusCombo.getSelectionModel().select(0);
+					}
+					
 				});
 			}
 			catch (Exception e1)
@@ -151,7 +156,6 @@ public class CreateMappingSetController {
 					MappingSetDAO.updateMappingSet(mappingSet_);
 				}
 				
-				AppContext.getService(Mapping.class).refreshMappingSets();
 				createButton.getScene().getWindow().hide();
 			}
 			catch (Exception e)
@@ -188,9 +192,8 @@ public class CreateMappingSetController {
 		nameInput.setText(mappingSet.getName());
 		purposeInput.setText(mappingSet.getPurpose());
 		descInput.setText(mappingSet.getDescription());
-		//TODO status
-		
 	}
+
 }
 
 

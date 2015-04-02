@@ -47,6 +47,10 @@ public class MappingItem extends MappingObject
 
 	private UUID primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
 	private int	sourceConceptNid, targetConceptNid, qualifierConceptNid;
+	protected final SimpleStringProperty sourceConceptProperty    = new SimpleStringProperty();
+	protected final SimpleStringProperty targetConceptProperty    = new SimpleStringProperty();
+	protected final SimpleStringProperty qualifierConceptProperty = new SimpleStringProperty();
+	protected final SimpleStringProperty commentsProperty		  = new SimpleStringProperty();
 	
 	private static UUID commentsHack = UUID.randomUUID();
 
@@ -62,17 +66,19 @@ public class MappingItem extends MappingObject
 		sourceConceptNid = refex.getReferencedComponentNid();
 		
 		primordialUUID = refex.getPrimordialUuid();
-		sourceConcept = dataStore.getUuidPrimordialForNid(sourceConceptNid);
+		setSourceConcept(dataStore.getUuidPrimordialForNid(sourceConceptNid));
 		mappingSetIDConcept = dataStore.getUuidPrimordialForNid(refex.getAssemblageNid());
 		readStampDetails(refex);
 		
 		RefexDynamicDataBI[] data = refex.getData();
-		targetConcept = ((data != null && data.length > 0) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null);
-		qualifierConcept = ((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null); 
-		editorStatusConcept = ((data != null && data.length > 2 && data[2] != null) ? ((RefexDynamicUUID) data[2]).getDataUUID() : null);
+		setTargetConcept(((data != null && data.length > 0) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null));
+		setQualifierConcept(((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null)); 
+		setEditorStatusConcept(((data != null && data.length > 2 && data[2] != null) ? ((RefexDynamicUUID) data[2]).getDataUUID() : null));
 		
 		targetConceptNid    = (targetConcept == null)?    0 : dataStore.getNidForUuids(new UUID[] {targetConcept});
 		qualifierConceptNid = (qualifierConcept == null)? 0 : dataStore.getNidForUuids(new UUID[] {qualifierConcept});
+		
+		refreshCommentsProperty();
 	}
 
 	public int getSourceConceptNid() 	{ return sourceConceptNid; }
@@ -92,45 +98,6 @@ public class MappingItem extends MappingObject
 	public List<MappingItemComment> getComments() throws IOException
 	{
 		return MappingItemCommentDAO.getComments(getPrimordialUUID(), false);
-	}
-	
-	public SimpleStringProperty getCommentsProperty()
-	{
-		SimpleStringProperty ssp = cachedValues.get(commentsHack);
-		if (ssp == null)
-		{
-			ssp = new SimpleStringProperty("-");
-			cachedValues.put(commentsHack, ssp);
-		}
-		
-		SimpleStringProperty ssp2 = cachedValues.get(commentsHack);
-		
-		if (ssp2.get().equals("-"))
-		{
-			Utility.execute(() ->
-			{
-				StringBuilder commentValue = new StringBuilder();
-				try
-				{
-					List<MappingItemComment> comments = getComments();
-					if (comments.size() > 0) {
-						commentValue.append(comments.get(0).getCommentText());
-					}
-					if (comments.size() > 1) {
-						commentValue.append(" (+" + Integer.toString(comments.size() - 1) + " more)");
-					}
-				}
-				catch (IOException e)
-				{
-					LOG.error("Error reading comments!", e);
-				}
-				Platform.runLater(() ->
-				{
-					ssp2.set(commentValue.toString());
-				});
-			});
-		}
-		return ssp2;
 	}
 	
 	/**
@@ -154,53 +121,54 @@ public class MappingItem extends MappingObject
 		return primordialUUID;
 	}
 
-	/**
-	 * @return the mappingSetIDConcept
-	 */
-	public UUID getMappingSetIDConcept()
-	{
-		return mappingSetIDConcept;
-	}
-
-	//TODO not sure if we should allow changes to the qualifier concept.  I would say yes... but the qualifier concept ID 
-	//is part of the value that is hashed to create the UUID of the map item... it may be best to retire and create a new one in this case.
-	/**
-	 * @return the qualifierConcept
-	 */
-	public UUID getQualifierConcept()
-	{
-		return qualifierConcept;
-	}
-
-	/**
-	 * @return the sourceConcept
-	 */
-	public UUID getSourceConcept()
-	{
-		return sourceConcept;
-	}
-
-	/**
-	 * @return the targetConcept
-	 */
-	public UUID getTargetConcept()
-	{
-		return targetConcept;
+	public UUID getMappingSetIDConcept() { return mappingSetIDConcept;	}
+	public UUID getSourceConcept()		 { return sourceConcept;	}
+	public UUID getTargetConcept()		 { return targetConcept;	}
+	public UUID getQualifierConcept()	 { return qualifierConcept;	}
+	
+	public SimpleStringProperty getSourceConceptProperty()	{ return sourceConceptProperty; }
+	public SimpleStringProperty getTargetConceptProperty()	{ return targetConceptProperty;	}
+	public SimpleStringProperty getQualifierConceptProperty() { return qualifierConceptProperty; }
+	public SimpleStringProperty getCommentsProperty()			{ return commentsProperty; }
+	
+	private void setSourceConcept(UUID sourceConcept) {
+		this.sourceConcept = sourceConcept;
+		propertyLookup(sourceConcept, sourceConceptProperty);
 	}
 	
-	public SimpleStringProperty getTargetConceptProperty()
-	{
-		return propertyLookup(getTargetConcept());
+	private void setTargetConcept(UUID targetConcept) {
+		this.targetConcept = targetConcept;
+		propertyLookup(targetConcept, targetConceptProperty);
 	}
 	
-	public SimpleStringProperty getSourceConceptProperty()
-	{
-		return propertyLookup(getSourceConcept());
+	private void setQualifierConcept(UUID qualifierConcept) {
+		this.qualifierConcept = qualifierConcept;
+		propertyLookup(qualifierConcept, qualifierConceptProperty);
 	}
 	
-	public SimpleStringProperty getQualifierConceptProperty()
-	{
-		return propertyLookup(getQualifierConcept());
+	public void refreshCommentsProperty() {
+		Utility.execute(() ->
+		{
+			StringBuilder commentValue = new StringBuilder();
+			try
+			{
+				List<MappingItemComment> comments = getComments();
+				if (comments.size() > 0) {
+					commentValue.append(comments.get(0).getCommentText());
+				}
+				if (comments.size() > 1) {
+					commentValue.append(" (+" + Integer.toString(comments.size() - 1) + " more)");
+				}
+			}
+			catch (IOException e)
+			{
+				LOG.error("Error reading comments!", e);
+			}
+			Platform.runLater(() ->
+			{
+				commentsProperty.set(commentValue.toString());
+			});
+		});
 	}
 	
 }
