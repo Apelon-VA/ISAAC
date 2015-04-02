@@ -8,66 +8,103 @@
 
 <BorderPane fx:id="mainPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200.0" minWidth="200.0" prefHeight="700.0" prefWidth="1000.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.CreateMappingItemController">
 <right>
-<VBox maxHeight="1.7976931348623157E308" maxWidth="300.0" minWidth="0.0" prefWidth="0.0" style="-fx-border-width: 3; -fx-border-color: darkgray;">
+<VBox maxHeight="1.7976931348623157E308" maxWidth="300.0" minWidth="0.0" prefWidth="250.0" style="-fx-border-width: 3; -fx-border-color: darkgray;">
 <children><Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Candidate Restrictions">
 <VBox.margin>
 <Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
 </VBox.margin>
 <font>
 <Font size="18.0" />
-</font></Label><Accordion BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
-  <panes><TitledPane animated="false" layoutX="54.0" layoutY="125.0" text="Description Type">
-  <content>
+</font></Label>
+            <TitledPane animated="false" collapsible="false" text="Description Type">
+<content>
 <VBox spacing="5.0">
-<children><RadioButton fx:id="noRestrictionRadio" mnemonicParsing="false" selected="true" text="No Restriction">
+<children>
+                        <RadioButton fx:id="noRestrictionRadio" mnemonicParsing="false" selected="true" text="No Restriction">
 <toggleGroup>
 <ToggleGroup fx:id="desc" />
-</toggleGroup></RadioButton><RadioButton fx:id="fsnRestrictionRadio" mnemonicParsing="false" text="FSN" toggleGroup="$desc" /><RadioButton fx:id="synonymRestrictionRadio" mnemonicParsing="false" text="Synonym" toggleGroup="$desc" /><RadioButton fx:id="descriptionRestrictionRadio" mnemonicParsing="false" text="Description" toggleGroup="$desc" />
+</toggleGroup>
+                        </RadioButton>
+                        <RadioButton fx:id="fsnRestrictionRadio" mnemonicParsing="false" text="Fully Specified Name" toggleGroup="$desc" />
+                        <RadioButton fx:id="synonymRestrictionRadio" mnemonicParsing="false" text="Synonym" toggleGroup="$desc" />
+                        <RadioButton fx:id="descriptionRestrictionRadio" mnemonicParsing="false" text="Description" toggleGroup="$desc" />
 </children>
 <padding>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </padding>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-  </content>
-</TitledPane><TitledPane animated="false" text="Advanced Description Type">
-  <content>
-<VBox>
-<children><ComboBox fx:id="descriptionRestrictionCombo" maxWidth="1.7976931348623157E308" promptText="No Resctriction" />
-</children>
-</VBox>
-  </content>
+</content>
 </TitledPane>
-    <TitledPane animated="false" text="Target Code System">
-      <content>
+            <TitledPane animated="false" collapsible="false" text="Advanced Description Type">
+<content>
 <VBox>
 <children>
-<ComboBox fx:id="codeSystemRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" promptText="No Resctriction" />
+                        <ComboBox fx:id="descriptionRestrictionCombo" maxWidth="1.7976931348623157E308">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ComboBox>
 </children>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-      </content>
-    </TitledPane>
-    <TitledPane animated="false" text="Target is member of refset">
-      <content>
+</content>
+</TitledPane>
+<TitledPane animated="false" collapsible="false" text="Target Code System">
+<content>
 <VBox>
 <children>
-<ComboBox fx:id="refsetRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308" promptText="No Resctriction" />
+<ComboBox fx:id="codeSystemRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ComboBox>
 </children>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-      </content>
-    </TitledPane>
-    <TitledPane animated="false" text="Target is child of">
-      <content>
+</content>
+</TitledPane>
+<TitledPane animated="false" collapsible="false" text="Target is member of refset">
+<content>
 <VBox>
 <children>
-<ComboBox fx:id="childRestrictionCombo" editable="true" layoutX="134.0" layoutY="18.0" maxWidth="1.7976931348623157E308" minWidth="50.0" promptText="select, type or drop concept" />
+<ComboBox fx:id="refsetRestrictionCombo" layoutX="20.0" layoutY="20.0" maxWidth="1.7976931348623157E308">
+                           <VBox.margin>
+                              <Insets />
+                           </VBox.margin>
+                        </ComboBox>
 </children>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
 </VBox>
-      </content>
-    </TitledPane>
-  </panes>
-</Accordion>
+</content>
+</TitledPane>
+<TitledPane animated="false" collapsible="false" prefHeight="77.0" text="Target is child of">
+<content>
+<VBox fx:id="childRestrictionVBox">
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </opaqueInsets>
+</VBox>
+</content>
+</TitledPane><Accordion visible="false" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS" />
 <HBox alignment="CENTER">
-<children><Button fx:id="clearRestrictionButton" alignment="CENTER" mnemonicParsing="false" text="Clear All">
+<children>
+                  <Button fx:id="applyRestrictionButton" maxWidth="-Infinity" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="Apply">
+                     <HBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </HBox.margin>
+                  </Button><Button fx:id="clearRestrictionButton" alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="50.0" text="Clear">
 <HBox.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </HBox.margin>

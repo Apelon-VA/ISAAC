@@ -97,6 +97,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 					try {
 						//TODO use context?
 						newComment = MappingItemCommentDAO.createMappingItemComment(mappingItem_.getPrimordialUUID(), commentText, null);
+						mappingItem_.refreshCommentsProperty();
 					} catch (Exception ex) {
 						LOG.error(ex.toString());
 						ex.printStackTrace();
@@ -114,7 +115,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 		closeButton.setCancelButton(true);
 		closeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
-			public void handle(ActionEvent e) { 
+			public void handle(ActionEvent e) {
 				mappingItem_ = null;
 				closeButton.getScene().getWindow().hide();
 			}
