@@ -29,13 +29,6 @@ import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 
 /**
  * Exports a jBin file type (an eConcept) .
- * To Execute 
- * mvn -DprofileSyncDisable=true -Dexport=true clean package
- * -Dexporter=true
- * -Pexporter to just hit the exporter profile
- * 
- * @goal touch
- * @phase process-sources
  */
 @Mojo( name = "Export")
 public class Export extends AbstractMojo
@@ -66,9 +59,8 @@ public class Export extends AbstractMojo
 	
 	public void execute() throws MojoExecutionException 
 	{
-//		if(!System.getProperty("skipExportAssembly").equalsIgnoreCase("true")) {
-		if(1==1) {
-			getLog().info("** skipExportAssembly ** paramater = TRUE" );
+		if(System.getProperty("skipExportAssembly").equalsIgnoreCase("false")) {
+			getLog().info("** skipExportAssembly ** paramater = FALSE" );
 			String fileName = "SOLOR_Snapshot_" + path.getFsn() + "";
 					
 			//Check if requireed Parameters are Empty
@@ -164,7 +156,7 @@ public class Export extends AbstractMojo
 				getLog().info("Done exporting the DB - exported " + eConExporter.getCount() + " concepts");
 			}
 		} else {
-			getLog().info("** skipExportAssembly ** flag = FALSE - Export Mojo is NOT running. -DskipExportAssembly=true to run" );
+			getLog().info("** skipExportAssembly ** flag = TRUE - Export Mojo is NOT running. -DskipExportAssembly=true to run" );
 		}
 	}
 	
@@ -201,10 +193,7 @@ public class Export extends AbstractMojo
 		
 		//SHUTDOWN
 		TerminologyStoreDI store = AppContext.getService(TerminologyStoreDI.class);
-//			getLog().info("  Shutting Down");
-
-		
-		
+//		getLog().info("  Shutting Down");
 		
 	}
 	
