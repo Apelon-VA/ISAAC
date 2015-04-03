@@ -295,16 +295,27 @@ public class MappingController {
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MappingItem> c) {
 				MappingItem selectedMappingItem = getSelectedMappingItem();
-				if (c.getList().size() >= 1) {
+				int selectedItemCount = c.getList().size(); 
+				if (selectedItemCount >= 1) {
 					selectedMappingItem = (MappingItem) c.getList().get(0);
 				} else {
 					selectedMappingItem = null;
 				}
-				minusMappingItemButton.setDisable(selectedMappingItem == null);
-				editMappingItemButton.setDisable(selectedMappingItem == null);
-				commentButton.setDisable(selectedMappingItem == null);
+				minusMappingItemButton.setDisable(selectedItemCount == 0);
+				editMappingItemButton.setDisable(selectedItemCount != 1);
+				commentButton.setDisable(selectedItemCount == 0);
 				
-				mappingItemSummaryLabel.setText((selectedMappingItem == null)? "" : selectedMappingItem.getSummary());
+				String summary = "";
+				switch (selectedItemCount) {
+				case 0:
+					break;
+				case 1:
+					summary = selectedMappingItem.getSummary();
+					break;
+				default:
+					summary = "Multiple items selected";
+				}
+				mappingItemSummaryLabel.setText(summary);
 			}
 		});
 		
