@@ -37,6 +37,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -334,6 +335,19 @@ public class CreateMappingItemController {
 		applyRestrictionButton.setOnAction((event) -> {
 			doSearch();
 		});
+
+		candidatesTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<ConceptVersionBI>()
+		{
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends ConceptVersionBI> c)
+			{
+				ConceptVersionBI concept = candidatesTableView.getSelectionModel().getSelectedItem();
+				if (concept != null) {
+					targetConceptNode.set(concept);
+				}
+			}
+		});
+
 	}
 	
 	// intended to re-run last search when restrictions are applied
