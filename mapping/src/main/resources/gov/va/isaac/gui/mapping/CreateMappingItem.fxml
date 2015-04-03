@@ -11,10 +11,10 @@
 <VBox fx:id="filterVBox" minWidth="0.0" prefWidth="275.0" style="-fx-border-width: 3; -fx-border-color: darkgray;">
 <children><Label alignment="CENTER" contentDisplay="CENTER" maxWidth="1.7976931348623157E308" text="Candidate Restrictions">
 <VBox.margin>
-<Insets bottom="10.0" left="30.0" right="30.0" top="10.0" />
+<Insets bottom="10.0" top="10.0" />
 </VBox.margin>
 <font>
-<Font size="18.0" />
+<Font size="14.0" />
 </font></Label><Accordion prefHeight="446.0" prefWidth="269.0" BorderPane.alignment="CENTER" VBox.vgrow="ALWAYS">
                <panes>
                   <TitledPane animated="false" text="Description Type">
