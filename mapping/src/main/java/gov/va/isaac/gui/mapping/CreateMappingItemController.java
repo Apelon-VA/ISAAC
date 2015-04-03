@@ -33,6 +33,7 @@ import gov.va.isaac.util.Utility;
 
 
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,6 +41,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+
 
 
 
@@ -88,6 +90,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+
 
 
 
@@ -262,7 +265,6 @@ public class CreateMappingItemController {
 				List<SimpleDisplayConcept> codeSystems = MappingUtils.getCodeSystems();
 				codeSystems.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
 
-				// TODO populate refset restrictions
 				List<SimpleDisplayConcept> refsetRestrictions = RefexDynamicUtil.getAllRefexDefinitions(); 
 				refsetRestrictions.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
 				
@@ -347,7 +349,7 @@ public class CreateMappingItemController {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue) {
 				if (newValue != null) {
-					criteriaText.setText(OTFUtility.getDescription(newValue));
+					//criteriaText.setText(OTFUtility.getDescription(newValue));
 					doSearch(newValue);
 				}
 			}
@@ -663,6 +665,7 @@ public class CreateMappingItemController {
 		childRestrictionVBox.getChildren().add(childRestrictionConceptNode.getNode());
 	}
 
+	@SuppressWarnings("unused")
 	private void showFilterPane(boolean show) {
 		filterVBox.setPrefWidth((show) ? Region.USE_COMPUTED_SIZE : 0);
 	}
