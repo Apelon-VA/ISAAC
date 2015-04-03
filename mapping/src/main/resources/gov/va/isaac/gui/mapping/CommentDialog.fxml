@@ -11,7 +11,7 @@
    <children>
       <GridPane fx:id="titleGridPane" prefHeight="100.0" prefWidth="500.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <columnConstraints>
-          <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="-Infinity" minWidth="-Infinity" prefWidth="90.0" />
+          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="-Infinity" />
           <ColumnConstraints hgrow="SOMETIMES" maxWidth="413.0" minWidth="10.0" prefWidth="406.0" />
         </columnConstraints>
         <rowConstraints>
@@ -23,7 +23,7 @@
          <children>
             <Label text="Mapping Set" textAlignment="RIGHT" GridPane.halignment="RIGHT">
                <padding>
-                  <Insets right="10.0" />
+                  <Insets left="20.0" right="10.0" />
                </padding>
                <font>
                   <Font name="System Bold" size="12.0" />
