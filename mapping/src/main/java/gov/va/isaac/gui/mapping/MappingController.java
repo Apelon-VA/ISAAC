@@ -213,7 +213,7 @@ public class MappingController {
 					mappingItemTableView.setItems(mappingItems);
 					mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
 					
-					mappingItemListTitleLabel.setText("Members of " + mappingSet.getName());
+					mappingItemListTitleLabel.setText(mappingSet.getName());
 					plusMappingItemButton.setDisable(false);
 					minusMappingSetButton.setDisable(false);
 					editMappingSetButton.setDisable(false);
@@ -257,9 +257,6 @@ public class MappingController {
 		// TODO maybe come up with a way to preserve the selection, if possible.
 		mappingSetTableView.getSelectionModel().clearSelection();
 		
-		mappingSetSTableColumn.setVisible(!activeOnly);
-		mappingItemSTableColumn.setVisible(!activeOnly);
-		
 		refreshMappingItems();
 	}
 
@@ -286,7 +283,6 @@ public class MappingController {
 			}
 		});
 		
-		mappingSetSTableColumn.setVisible(false);
 		mappingSetSTAMPTableColumn.setVisible(false);
 		
 	}
@@ -314,7 +310,6 @@ public class MappingController {
 		
 		mappingItemTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		mappingItemSTableColumn.setVisible(false);
 		mappingItemSTAMPTableColumn.setVisible(false);
 
 	}
