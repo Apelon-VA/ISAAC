@@ -7,12 +7,12 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane fx:id="mainPane" prefHeight="148.0" prefWidth="380.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.EditMappingItemController">
+<AnchorPane fx:id="mainPane" prefHeight="148.0" prefWidth="485.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.mapping.EditMappingItemController">
    <children>
-      <GridPane fx:id="infoGridPane" layoutX="-44.0" prefHeight="128.0" prefWidth="244.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
+      <GridPane fx:id="infoGridPane" layoutX="-44.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
         <columnConstraints>
           <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" maxWidth="120.0" minWidth="-Infinity" prefWidth="111.0" />
-          <ColumnConstraints minWidth="10.0" />
+          <ColumnConstraints halignment="LEFT" hgrow="ALWAYS" minWidth="10.0" />
         </columnConstraints>
         <rowConstraints>
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -37,10 +37,19 @@
                   <Font name="System Bold" size="12.0" />
                </font>
             </Label>
-            <Label fx:id="sourceLabel" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
-            <Label fx:id="targetLabel" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label fx:id="qualifierLabel" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <ComboBox fx:id="statusCombo" maxWidth="1.7976931348623157E308" minWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+            <Label fx:id="sourceLabel" maxWidth="1.7976931348623157E308" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Label>
+            <Label fx:id="targetLabel" maxWidth="1.7976931348623157E308" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" GridPane.vgrow="ALWAYS">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Label>
+            <Label fx:id="qualifierLabel" maxWidth="1.7976931348623157E308" style="-fx-border-color: ;" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+               <GridPane.margin>
+                  <Insets right="10.0" />
+               </GridPane.margin></Label>
+            <ComboBox fx:id="statusCombo" minWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <GridPane.margin>
                   <Insets />
                </GridPane.margin>
@@ -75,12 +84,12 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <Button fx:id="saveButton" mnemonicParsing="false" prefWidth="55.0" text="Save">
+            <Button fx:id="saveButton" minWidth="55.0" mnemonicParsing="false" text="Save">
                <GridPane.margin>
                   <Insets right="10.0" />
                </GridPane.margin>
             </Button>
-            <Button fx:id="cancelButton" mnemonicParsing="false" prefWidth="55.0" text="Cancel" GridPane.columnIndex="1">
+            <Button fx:id="cancelButton" minWidth="55.0" mnemonicParsing="false" text="Cancel" GridPane.columnIndex="1">
                <GridPane.margin>
                   <Insets left="10.0" />
                </GridPane.margin>
