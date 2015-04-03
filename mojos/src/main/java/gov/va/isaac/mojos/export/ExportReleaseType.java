@@ -1,8 +1,10 @@
 package gov.va.isaac.mojos.export;
 
-public enum ExportType {
+public enum ExportReleaseType {
 	SNAPSHOT,
 	DELTA,
 	FULL
 
 }
+
+

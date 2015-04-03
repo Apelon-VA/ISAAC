@@ -45,51 +45,59 @@ public interface Exporter extends ProgressReporter {
    * @throws ContradictionException
    */
   public static boolean isQualifying(int conceptNid, int pathNid)
-    throws ContradictionException, IOException {
-    ConceptVersionBI cv = OTFUtility.getConceptVersion(conceptNid);
-    if (cv.getPathNid() == pathNid)
-      return true;
+	throws ContradictionException, IOException {
+	ConceptVersionBI cv = OTFUtility.getConceptVersion(conceptNid);
+	if (cv.getPathNid() == pathNid)
+	  return true;
 
-    //TODO who says that getViewCoordinate will return us something that aligns with pathNid?
-    ViewCoordinate vc = OTFUtility.getViewCoordinate();
+	//TODO who says that getViewCoordinate will return us something that aligns with pathNid?
+	ViewCoordinate vc = OTFUtility.getViewCoordinate();
 
-    //TODO dan notes this doesn't check the path of any nested annotations
-    // atts
-    ConceptAttributeVersionBI<?> att =
-        cv.getConceptAttributes().getVersion(vc);
-    if (att == null)
-      return false;
-    if (att.getPathNid() == pathNid)
-      return true;
-    
-    // descs
-    for (DescriptionChronicleBI dc : cv.getDescriptions()) {
-      DescriptionVersionBI<?> dv = dc.getVersion(vc);
-      if (dv.getPathNid() == pathNid) 
-        return true;
-    }
+	//TODO dan notes this doesn't check the path of any nested annotations
+	// atts
+	ConceptAttributeVersionBI<?> att =
+		cv.getConceptAttributes().getVersion(vc);
+	if (att == null)
+	  return false;
+	if (att.getPathNid() == pathNid)
+	  return true;
+	
+	// descs
+	for (DescriptionChronicleBI dc : cv.getDescriptions()) {
+	  DescriptionVersionBI<?> dv = dc.getVersion(vc);
+	  if (dv.getPathNid() == pathNid) 
+		return true;
+	}
 
-    // rels
-    for (RelationshipChronicleBI rc : cv.getRelationshipsOutgoing()) {
-      RelationshipVersionBI<?> rv = rc.getVersion(vc);
-      if (rv.getPathNid() == pathNid) 
-        return true;
-    }
-    
-    // refex
-    for (RefexChronicleBI<?> rc : cv.getAnnotations()) {
-      RefexVersionBI<?> rv = rc.getVersion(vc);
-      if (rv.getPathNid() == pathNid) 
-        return true;
-    }
-    
-    for (RefexDynamicChronicleBI<?> rc : cv.getRefexDynamicAnnotations()) {
-        RefexDynamicVersionBI<?> rv = rc.getVersion(vc);
-        if (rv.getPathNid() == pathNid) 
-          return true;
-      }
-    
-    return false;
-
-  }
+	// rels
+	for (RelationshipChronicleBI rc : cv.getRelationshipsOutgoing()) {
+	  RelationshipVersionBI<?> rv = rc.getVersion(vc);
+	  if (rv.getPathNid() == pathNid) 
+		return true;
+	}
+	
+	// refex
+	for (RefexChronicleBI<?> rc : cv.getAnnotations()) {
+	  RefexVersionBI<?> rv = rc.getVersion(vc);
+	  if (rv.getPathNid() == pathNid) 
+		return true;
+	}
+	
+	try {
+		for (RefexDynamicChronicleBI<?> rc : cv.getRefexDynamicAnnotations()) {
+			if(rc != null) {
+				RefexDynamicVersionBI<?> rv = rc.getVersion(vc);
+				if(rv != null) {
+					System.out.println(rc.getVersion(vc));
+					if (rv.getPathNid() == pathNid)  {
+					  return true;
+					}
+				}
+			}
+		}
+	} catch (Exception e) {
+		e.printStackTrace();
+	}
+	return false;
+	}
 }
