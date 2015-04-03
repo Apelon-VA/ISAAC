@@ -102,11 +102,11 @@
                </panes></Accordion>
 <HBox alignment="CENTER">
 <children>
-                  <Button fx:id="applyRestrictionButton" maxWidth="-Infinity" minWidth="50.0" mnemonicParsing="false" prefWidth="50.0" text="Apply">
+                  <Button fx:id="applyRestrictionButton" minWidth="50.0" mnemonicParsing="false" text="Apply">
                      <HBox.margin>
                         <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                      </HBox.margin>
-                  </Button><Button fx:id="clearRestrictionButton" alignment="CENTER" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="50.0" text="Clear">
+                  </Button><Button fx:id="clearRestrictionButton" alignment="CENTER" minWidth="50.0" mnemonicParsing="false" text="Clear">
 <HBox.margin>
 <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
 </HBox.margin>
