@@ -398,6 +398,7 @@ public class CreateMappingItemController {
 		try {
 			searchObject_ = searchObject;
 			SearchHandle searchHandle = null;
+			scrapeSearchRestriction();
 			
 			if (searchObject instanceof ConceptVersionBI) {
 				searchHandle = MappingUtils.search(
