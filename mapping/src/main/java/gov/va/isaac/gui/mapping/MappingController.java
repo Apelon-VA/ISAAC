@@ -736,6 +736,15 @@ public class MappingController {
 		}
 	};
 
+	
+	public static void setComboSelection(ComboBox<SimpleDisplayConcept> combo, SimpleDisplayConcept selectConcept, int defaultIndex) {
+		if (selectConcept == null) {
+			combo.getSelectionModel().select(defaultIndex);
+		} else {
+			setComboSelection(combo, selectConcept.getDescription(), defaultIndex);
+		}
+	}
+	
 	public static void setComboSelection(ComboBox<SimpleDisplayConcept> combo, String selectValue, int defaultIndex) {
 		boolean found = false;
 		if (selectValue != null && !selectValue.trim().equals("")) {
@@ -748,7 +757,7 @@ public class MappingController {
 			}
 		}
 		if (!found && defaultIndex >= 0 && defaultIndex < combo.getItems().size()) {
-			combo.getSelectionModel().select(0);
+			combo.getSelectionModel().select(defaultIndex);
 		}
 	}
 	
