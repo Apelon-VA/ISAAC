@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import java.lang.*?>
@@ -10,8 +11,8 @@
    <children>
       <GridPane fx:id="infoGridPane" layoutX="-44.0" prefHeight="128.0" prefWidth="244.0" AnchorPane.bottomAnchor="40.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="10.0">
         <columnConstraints>
-          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" maxWidth="1.7976931348623157E308" minWidth="92.0" prefWidth="111.0" />
-          <ColumnConstraints hgrow="SOMETIMES" maxWidth="304.0" minWidth="10.0" prefWidth="269.0" />
+          <ColumnConstraints halignment="RIGHT" hgrow="ALWAYS" maxWidth="120.0" minWidth="-Infinity" prefWidth="111.0" />
+          <ColumnConstraints minWidth="10.0" />
         </columnConstraints>
         <rowConstraints>
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -24,30 +25,42 @@
                <GridPane.margin>
                   <Insets left="15.0" right="10.0" />
                </GridPane.margin>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
             </Label>
             <Label text="Target" textAlignment="RIGHT" GridPane.rowIndex="1">
                <GridPane.margin>
                   <Insets left="15.0" right="10.0" />
                </GridPane.margin>
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
             </Label>
+            <Label fx:id="sourceLabel" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.hgrow="ALWAYS" />
+            <Label fx:id="targetLabel" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <Label fx:id="qualifierLabel" text="---" wrapText="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <ComboBox fx:id="statusCombo" maxWidth="1.7976931348623157E308" minWidth="50.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+               <GridPane.margin>
+                  <Insets />
+               </GridPane.margin>
+            </ComboBox>
             <Label text="Qualifier" textAlignment="RIGHT" GridPane.rowIndex="2">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
                <GridPane.margin>
                   <Insets left="15.0" right="10.0" />
                </GridPane.margin>
             </Label>
             <Label text="Review State" textAlignment="RIGHT" GridPane.rowIndex="3">
+               <font>
+                  <Font name="System Bold" size="12.0" />
+               </font>
                <GridPane.margin>
                   <Insets left="15.0" right="10.0" />
                </GridPane.margin>
             </Label>
-            <Label fx:id="sourceLabel" text="---" GridPane.columnIndex="1" />
-            <Label fx:id="targetLabel" text="---" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <Label fx:id="qualifierLabel" text="---" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-            <ComboBox fx:id="statusCombo" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
-               <GridPane.margin>
-                  <Insets />
-               </GridPane.margin>
-            </ComboBox>
          </children>
          <opaqueInsets>
             <Insets />
