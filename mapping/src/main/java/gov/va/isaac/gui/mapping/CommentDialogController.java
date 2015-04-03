@@ -144,18 +144,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 		sourceLabel.setText(mappingItem.getSourceConceptProperty().getValueSafe());
 		targetLabel.setText(mappingItem.getTargetConceptProperty().getValueSafe());
 		qualifierLabel.setText(mappingItem.getQualifierConceptProperty().getValueSafe());
-		try
-		{
-			List<MappingItemComment> comments = mappingItem.getComments();
-			for (MappingItemComment comment : comments) {
-				addCommentToList(comment);
-			}
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		refresh();
 	}
 	
 	private void addCommentToList(MappingItemComment comment) {
@@ -164,5 +153,22 @@ public class CommentDialogController implements TaskCompleteCallback {
 		cc.setComment(comment);
 		commentListVBox.setPrefHeight(commentListVBox.getPrefHeight() + cc.getPrefHeight());
 		commentListVBox.getChildren().add(cc);
+	}
+	
+	public void refresh() {
+		try
+		{
+			List<MappingItemComment> comments = mappingItem_.getComments();
+			for (MappingItemComment comment : comments) {
+				if (comment.isActive()) {
+					addCommentToList(comment);
+				}
+			}
+		}
+		catch (IOException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

@@ -22,18 +22,6 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
-
-
-
-
-
-
-
-
-
-
-
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -41,18 +29,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
-
-
-
-
-
-
-
-
-
-
-
-
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -90,18 +66,6 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-
-
-
-
-
-
-
-
-
-
-
-
 
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
