@@ -147,6 +147,8 @@ public class CreateMappingSetController {
 				
 				if (mappingSet_ == null) {
 					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), statusUUID);
+					AppContext.getService(Mapping.class).refreshMappingSets();
+
 				} else {
 					// Edit mapping set
 					mappingSet_.setName(nameInput.getText());

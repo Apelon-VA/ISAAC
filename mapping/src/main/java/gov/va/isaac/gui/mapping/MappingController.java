@@ -77,6 +77,7 @@ public class MappingController {
 	@FXML private AnchorPane	listPane;
 	@FXML private ToggleButton 	activeOnlyToggle;
 	@FXML private ToggleButton	stampToggle;
+	@FXML private Button		refreshButton;
 	@FXML private Button 		plusMappingSetButton;
 	@FXML private Button 		minusMappingSetButton;
 	@FXML private Button 		editMappingSetButton;
@@ -168,11 +169,13 @@ public class MappingController {
         assert mappingSetPurposeTableColumn != null : "fx:id=\"mappingSetPurposeTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemCommentsTableColumn != null : "fx:id=\"mappingItemCommentsTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemSummaryLabel != null : "fx:id=\"mappingItemSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
-                
+        assert refreshButton != null : "fx:id=\"refreshButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
 		FxUtils.assignImageToButton(activeOnlyToggle, 		Images.FILTER_16.createImageView(), "Show Active Only / Show All");
 		FxUtils.assignImageToButton(stampToggle, 			Images.STAMP.createImageView(), 	"Show/Hide STAMP Columns");
+		FxUtils.assignImageToButton(refreshButton, 			Images.SYNC_GREEN.createImageView(), "Refresh");
 		FxUtils.assignImageToButton(plusMappingSetButton, 	Images.PLUS.createImageView(), 		"Create Mapping Set");
 		FxUtils.assignImageToButton(minusMappingSetButton, 	Images.MINUS.createImageView(), 	"Retire/Unretire Mapping Set");
 		FxUtils.assignImageToButton(editMappingSetButton, 	Images.EDIT.createImageView(), 		"Edit Mapping Set");
@@ -210,7 +213,7 @@ public class MappingController {
 					mappingItemTableView.setItems(mappingItems);
 					mappingItemTableView.setPlaceholder(new Label("The selected Mapping Set contains no Mapping Items."));
 					
-					mappingItemListTitleLabel.setText(mappingSet.getName());
+					mappingItemListTitleLabel.setText("Members of " + mappingSet.getName());
 					plusMappingItemButton.setDisable(false);
 					minusMappingSetButton.setDisable(false);
 					editMappingSetButton.setDisable(false);
@@ -397,6 +400,7 @@ public class MappingController {
 				break;
 			case EDITOR_STATUS:
 				property = mappingObject.getEditorStatusConceptProperty();
+				conceptNid = mappingObject.getEditorStatusConceptNid();
 				break;
 			case STATUS_STRING:
 				property = mappingObject.getStatusProperty();
@@ -611,6 +615,10 @@ public class MappingController {
 				mappingItemSTAMPTableColumn.setVisible(showStampFields);
 			}
 		});		
+		
+		refreshButton.setOnAction((event) -> {
+			refreshMappingSets();
+		});
 		
 	}
 	

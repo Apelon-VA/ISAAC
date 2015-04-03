@@ -61,8 +61,6 @@ public class MappingItem extends MappingObject
 	
 	private void read(RefexDynamicVersionBI<?> refex) throws IOException
 	{
-		BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-		
 		sourceConceptNid = refex.getReferencedComponentNid();
 		
 		primordialUUID = refex.getPrimordialUuid();
@@ -75,8 +73,8 @@ public class MappingItem extends MappingObject
 		setQualifierConcept(((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null)); 
 		setEditorStatusConcept(((data != null && data.length > 2 && data[2] != null) ? ((RefexDynamicUUID) data[2]).getDataUUID() : null));
 		
-		targetConceptNid    = (targetConcept == null)?    0 : dataStore.getNidForUuids(new UUID[] {targetConcept});
-		qualifierConceptNid = (qualifierConcept == null)? 0 : dataStore.getNidForUuids(new UUID[] {qualifierConcept});
+		targetConceptNid    = getNidForUuidSafe(targetConcept);
+		qualifierConceptNid = getNidForUuidSafe(qualifierConcept);
 		
 		refreshCommentsProperty();
 	}

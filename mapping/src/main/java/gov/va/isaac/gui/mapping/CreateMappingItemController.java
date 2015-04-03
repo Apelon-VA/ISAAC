@@ -12,6 +12,7 @@ import gov.va.isaac.gui.mapping.data.MappingObject;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingUtils;
 import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -29,6 +30,9 @@ import gov.va.isaac.util.Utility;
 
 
 
+
+
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,6 +40,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
+
+
+
 
 
 
@@ -66,6 +73,8 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.Tooltip;
 import javafx.scene.control.TableColumn.CellDataFeatures;
@@ -79,6 +88,9 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
+
+
+
 
 
 
@@ -138,6 +150,9 @@ public class CreateMappingItemController {
 	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesCodeSystemColumn;
 	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesStatusColumn;
 
+	@FXML private VBox				filterVBox;
+    @FXML private ToggleGroup 		showFilterToggleGroup;
+    @FXML private ToggleButton 		showFilterToggle;
 	
 	@FXML private VBox              childRestrictionVBox;
 	@FXML private RadioButton 		noRestrictionRadio;
@@ -197,6 +212,11 @@ public class CreateMappingItemController {
 		assert cancelButton					!= null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";
         assert childRestrictionVBox 		!= null : "fx:id=\"childRestricionVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
         assert applyRestrictionButton 		!= null : "fx:id=\"applyRestrictionButton\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert showFilterToggle 			!= null : "fx:id=\"showFilterToggle\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert showFilterToggleGroup 		!= null : "fx:id=\"showFilterToggleGroup\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert filterVBox 					!= null : "fx:id=\"filterVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+
+		FxUtils.assignImageToButton(showFilterToggle, Images.FILTER_16.createImageView(), "Show/Hide Candidate Restrictions");
 
 		setupColumnTypes();
 		
@@ -211,6 +231,21 @@ public class CreateMappingItemController {
 		codeSystemRestrictionCombo.setEditable(false);
 		refsetRestrictionCombo.setEditable(false);
 		
+		showFilterToggle.setVisible(false);
+		showFilterToggle.setDisable(true);
+		/*
+		 * Keep this around in case we want it later
+		 *  
+		showFilterToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+			@Override
+			public void changed(ObservableValue<? extends Toggle> ov, Toggle toggle, Toggle new_toggle) {
+				showFilterPane(showFilterToggle.isSelected());
+			}
+		});
+		showFilterToggle.setSelected(false);
+		showFilterPane(false);
+		 */
+
 		Utility.execute(() ->
 		{
 			try
@@ -453,6 +488,10 @@ public class CreateMappingItemController {
 		candidatesConceptColumn.setCellValueFactory(conceptCellValueFactory);
 		candidatesCodeSystemColumn.setCellValueFactory(conceptCellValueFactory);
 		candidatesStatusColumn.setCellValueFactory(conceptCellValueFactory);
+		
+		candidatesConceptColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.6)); 
+		candidatesCodeSystemColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.2)); 
+		candidatesStatusColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.2)); 		
 	}
 	
 	private void updateCell(TableCell<?, ?> cell, ConceptVersionBI concept) {
@@ -622,6 +661,10 @@ public class CreateMappingItemController {
 		childRestrictionConceptNode = new ConceptNode(null, false);
 		childRestrictionVBox.getChildren().clear();
 		childRestrictionVBox.getChildren().add(childRestrictionConceptNode.getNode());
+	}
+
+	private void showFilterPane(boolean show) {
+		filterVBox.setPrefWidth((show) ? Region.USE_COMPUTED_SIZE : 0);
 	}
 	
 }

@@ -5,7 +5,7 @@ public enum MappingColumnType {
 	NAME("Name"),
 	DESCRIPTION("Description"),
 	PURPOSE("Purpose"),
-	EDITOR_STATUS("Status", true),
+	EDITOR_STATUS("Editor Status", true),
 	INVERSE_NAME("Inverse Name"),
 	
 	SOURCE("Source Concept", true),
@@ -14,10 +14,10 @@ public enum MappingColumnType {
 	COMMENTS("Comments"),
 	
 	CONCEPT("Concept", true),
-	CODE_SYSTEM("Code System"),
+	CODE_SYSTEM("Code System", true),
 
 	STAMP("STAMP"),
-	STATUS_STRING("Active"),
+	STATUS_STRING("Status"),
 	TIME("Time"),
 	AUTHOR("Author",true),
 	MODULE("Module",true),
