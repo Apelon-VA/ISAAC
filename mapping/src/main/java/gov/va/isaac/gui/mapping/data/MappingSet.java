@@ -192,10 +192,7 @@ public class MappingSet extends MappingObject
 			{
 				primordialUUID = mappingConcept.getPrimordialUuid();
 				readStampDetails(mappingConcept);
-				if (refex.getData().length > 0 && refex.getData()[0] != null)
-				{
-					editorStatusConcept = ((RefexDynamicUUID) refex.getData()[0]).getDataUUID();
-				}
+				setEditorStatusConcept((refex.getData().length > 0 && refex.getData()[0] != null ? ((RefexDynamicUUID) refex.getData()[0]).getDataUUID() : null));
 				if (refex.getData().length > 1 && refex.getData()[1] != null)
 				{
 					setPurpose(((RefexDynamicString) refex.getData()[1]).getDataString());
