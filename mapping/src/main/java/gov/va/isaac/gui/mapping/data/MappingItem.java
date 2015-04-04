@@ -18,20 +18,15 @@
  */
 package gov.va.isaac.gui.mapping.data;
 
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
-
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
-
 import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicVersionBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicDataBI;
-import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicUUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +47,6 @@ public class MappingItem extends MappingObject
 	protected final SimpleStringProperty qualifierConceptProperty = new SimpleStringProperty();
 	protected final SimpleStringProperty commentsProperty		  = new SimpleStringProperty();
 	
-	private static UUID commentsHack = UUID.randomUUID();
-
 	protected MappingItem(RefexDynamicVersionBI<?> refex) throws IOException
 	{
 		read(refex);
