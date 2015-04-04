@@ -181,6 +181,7 @@ public class CreateMappingItemController {
 
 	private MappingSet mappingSet_;
 	private Object searchObject_;
+	private boolean restrictionsInitialized = false;
 	
 	public Region getRootNode() {
 		return mainPane;
@@ -603,55 +604,55 @@ public class CreateMappingItemController {
 	}
 
 	private void scrapeSearchRestriction() {
-		//SearchRestriction searchRestriction = new SearchRestriction();
-		
-		// Description Type
-		if (descriptionRestrictionRadio.selectedProperty().get()) {
-			searchRestriction.setDescriptionType(LuceneDescriptionType.DEFINITION);
-		
-		} else if (synonymRestrictionRadio.selectedProperty().get()) {
-			searchRestriction.setDescriptionType(LuceneDescriptionType.SYNONYM);
-		
-		} else if (fsnRestrictionRadio.selectedProperty().get()) {
-			searchRestriction.setDescriptionType(LuceneDescriptionType.FSN);
-		
-		} else {
-			searchRestriction.setDescriptionType(null);
-		}
-		
-		// Advanced Description Type
-		SimpleDisplayConcept selectedAdvancedDescription = descriptionRestrictionCombo.getSelectionModel().getSelectedItem();
-		if (selectedAdvancedDescription != null && selectedAdvancedDescription.getNid() != Integer.MIN_VALUE) {
-			searchRestriction.setAdvancedDescriptionType(selectedAdvancedDescription);
-		} else {
-			searchRestriction.setAdvancedDescriptionType(null);
-		}
-		
+		if (restrictionsInitialized) {
+			// Description Type
+			if (descriptionRestrictionRadio.selectedProperty().get()) {
+				searchRestriction.setDescriptionType(LuceneDescriptionType.DEFINITION);
+			
+			} else if (synonymRestrictionRadio.selectedProperty().get()) {
+				searchRestriction.setDescriptionType(LuceneDescriptionType.SYNONYM);
+			
+			} else if (fsnRestrictionRadio.selectedProperty().get()) {
+				searchRestriction.setDescriptionType(LuceneDescriptionType.FSN);
+			
+			} else {
+				searchRestriction.setDescriptionType(null);
+			}
+			
+			// Advanced Description Type
+			SimpleDisplayConcept selectedAdvancedDescription = descriptionRestrictionCombo.getSelectionModel().getSelectedItem();
+			if (selectedAdvancedDescription != null && selectedAdvancedDescription.getNid() != Integer.MIN_VALUE) {
+				searchRestriction.setAdvancedDescriptionType(selectedAdvancedDescription);
+			} else {
+				searchRestriction.setAdvancedDescriptionType(null);
+			}
+			
 
-		// Code System
-		SimpleDisplayConcept selectedCodeSystem = codeSystemRestrictionCombo.getSelectionModel().getSelectedItem();
-		if (selectedCodeSystem != null && selectedCodeSystem.getNid() != Integer.MIN_VALUE) {
-			searchRestriction.setTargetCodeSystemPath(selectedCodeSystem);
-		} else {
-			searchRestriction.setTargetCodeSystemPath(null);
-		}
+			// Code System
+			SimpleDisplayConcept selectedCodeSystem = codeSystemRestrictionCombo.getSelectionModel().getSelectedItem();
+			if (selectedCodeSystem != null && selectedCodeSystem.getNid() != Integer.MIN_VALUE) {
+				searchRestriction.setTargetCodeSystemPath(selectedCodeSystem);
+			} else {
+				searchRestriction.setTargetCodeSystemPath(null);
+			}
 
-		// Refset Member
-		SimpleDisplayConcept selectedRefset = refsetRestrictionCombo.getSelectionModel().getSelectedItem();
-		if (selectedRefset != null && selectedRefset.getNid() != Integer.MIN_VALUE) {
-			searchRestriction.setMemberOfRefset(selectedRefset);
-		} else {
-			searchRestriction.setMemberOfRefset(null);
+			// Refset Member
+			SimpleDisplayConcept selectedRefset = refsetRestrictionCombo.getSelectionModel().getSelectedItem();
+			if (selectedRefset != null && selectedRefset.getNid() != Integer.MIN_VALUE) {
+				searchRestriction.setMemberOfRefset(selectedRefset);
+			} else {
+				searchRestriction.setMemberOfRefset(null);
+			}
+			
+			// Child of concept
+			ConceptVersionBI childOfConcept = childRestrictionConceptNode.getConcept();
+			if (childOfConcept == null) {
+				searchRestriction.setChildOf(null);
+			} else {
+				searchRestriction.setChildOf(childOfConcept);
+			}
+			
 		}
-		
-		// Child of concept
-		ConceptVersionBI childOfConcept = childRestrictionConceptNode.getConcept();
-		if (childOfConcept == null) {
-			searchRestriction.setChildOf(null);
-		} else {
-			searchRestriction.setChildOf(childOfConcept);
-		}
-		
 	}
 	
 	private void paintSearchRestriction() {
@@ -684,6 +685,8 @@ public class CreateMappingItemController {
 		if (searchRestriction.getChildOf() != null) {
 			childRestrictionConceptNode.set(searchRestriction.getChildOf());
 		}
+		
+		restrictionsInitialized = true;
 	}
 	
 	private void clearSearchRestriction() {

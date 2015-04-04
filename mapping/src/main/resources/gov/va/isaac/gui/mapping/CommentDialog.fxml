@@ -65,8 +65,8 @@
          <children>
             <Label layoutX="14.0" layoutY="14.0" text="Add a Comment" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="10.0" />
             <TextArea fx:id="newCommentTextArea" layoutX="10.0" layoutY="30.0" prefHeight="115.0" prefWidth="476.0" AnchorPane.bottomAnchor="45.0" AnchorPane.leftAnchor="10.0" AnchorPane.rightAnchor="10.0" AnchorPane.topAnchor="30.0" />
-            <Button fx:id="closeButton" layoutX="434.0" layoutY="174.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="55.0" text="Close" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
-            <Button fx:id="saveButton" layoutX="370.0" layoutY="174.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="109.0" text="Add Comment" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="75.0" />
+            <Button fx:id="closeButton" layoutX="434.0" layoutY="174.0" minWidth="55.0" mnemonicParsing="false" text="Close" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="10.0" />
+            <Button fx:id="saveButton" layoutX="370.0" layoutY="174.0" minWidth="110.0" mnemonicParsing="false" text="Add Comment" AnchorPane.bottomAnchor="10.0" AnchorPane.rightAnchor="75.0" />
             <Label fx:id="titleLabel" layoutX="14.0" layoutY="119.0" text="Mapping Comments" visible="false" />
          </children>
       </AnchorPane>

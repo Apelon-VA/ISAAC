@@ -53,10 +53,15 @@ public class MappingItemCommentDAO extends MappingDAO
 
 			commentAnnotation.computeMemberUuid();
 
+			/*
+			 * Not so sure duplicate comments are a problem, especially since this does not distinguish retired comments
+			 * Commenting out - DT
+			 *
 			if (ExtendedAppContext.getDataStore().hasUuid(commentAnnotation.getComponentUuid()))
 			{
 				throw new IOException("A comment of that value already exists on that item.");
 			}
+			*/
 
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(commentAnnotation);
 
