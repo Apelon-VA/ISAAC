@@ -95,7 +95,7 @@ public class MappingItem extends MappingObject
 	 */
 	public List<MappingItemComment> getComments() throws IOException
 	{
-		return MappingItemCommentDAO.getComments(getPrimordialUUID(), false);
+		return MappingItemCommentDAO.getComments(getPrimordialUUID(), true);
 	}
 	
 	/**

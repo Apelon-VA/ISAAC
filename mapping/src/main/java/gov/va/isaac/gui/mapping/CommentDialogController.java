@@ -58,7 +58,7 @@ public class CommentDialogController implements TaskCompleteCallback {
     @FXML    private Label 		targetLabel;
     @FXML    private GridPane 	titleGridPane;
 
-    private MappingItem mappingItem_;
+    private static MappingItem mappingItem_;
     
 	public Region getRootNode() {
 		return mainPane;
@@ -97,7 +97,6 @@ public class CommentDialogController implements TaskCompleteCallback {
 					try {
 						//TODO use context?
 						newComment = MappingItemCommentDAO.createMappingItemComment(mappingItem_.getPrimordialUUID(), commentText, null);
-						mappingItem_.refreshCommentsProperty();
 					} catch (Exception ex) {
 						LOG.error(ex.toString());
 						ex.printStackTrace();
@@ -106,7 +105,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 					}
 				}
 				if (newComment != null) {
-					addCommentToList(newComment);
+					refreshComments();
 					newCommentTextArea.setText("");
 				}
 			}
@@ -144,26 +143,34 @@ public class CommentDialogController implements TaskCompleteCallback {
 		sourceLabel.setText(mappingItem.getSourceConceptProperty().getValueSafe());
 		targetLabel.setText(mappingItem.getTargetConceptProperty().getValueSafe());
 		qualifierLabel.setText(mappingItem.getQualifierConceptProperty().getValueSafe());
-		refresh();
+		refreshComments();
 	}
 	
 	private void addCommentToList(MappingItemComment comment) {
 		CommentControl cc = new CommentControl();
+		cc.setDialogController(this);
 		cc.setPrefWidth(commentListVBox.getPrefWidth());
 		cc.setComment(comment);
 		commentListVBox.setPrefHeight(commentListVBox.getPrefHeight() + cc.getPrefHeight());
 		commentListVBox.getChildren().add(cc);
 	}
 	
-	public void refresh() {
+	private void clearComments() {
+		commentListVBox.getChildren().clear();
+		commentListVBox.setPrefHeight(0);
+	}
+	
+	public void refreshComments() {
 		try
 		{
+			clearComments();
 			List<MappingItemComment> comments = mappingItem_.getComments();
 			for (MappingItemComment comment : comments) {
 				if (comment.isActive()) {
 					addCommentToList(comment);
 				}
 			}
+			mappingItem_.refreshCommentsProperty();
 		}
 		catch (IOException e)
 		{

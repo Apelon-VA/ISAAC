@@ -38,9 +38,11 @@ public class CommentControl extends AnchorPane {
 				DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire this comment?");
 				if (response == DialogResponse.YES) {
 	            	MappingItemCommentDAO.retireComment(comment_.getPrimordialUUID());
-					AppContext.getService(CommentDialogView.class).refresh();
+	            	if (dialogController != null) {
+		            	dialogController.refreshComments();
+	            	}
 				}
-				this.getScene().getWindow().requestFocus();
+				//this.getScene().getWindow().requestFocus();
 
         	} catch (IOException e) {
         		throw new RuntimeException(e);
@@ -50,6 +52,7 @@ public class CommentControl extends AnchorPane {
     }
 
     private MappingItemComment comment_;
+    private CommentDialogController dialogController;
     
     private static SimpleDateFormat dateTimeFormatShort = new SimpleDateFormat("MM/dd/yy HH:mm");
     
@@ -64,6 +67,10 @@ public class CommentControl extends AnchorPane {
             throw new RuntimeException(exception);
         }
 
+    }
+    
+    public void setDialogController(CommentDialogController controller) {
+    	dialogController = controller;
     }
     
     public void setComment(MappingItemComment comment) {

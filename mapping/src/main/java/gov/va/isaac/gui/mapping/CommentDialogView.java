@@ -59,8 +59,8 @@ public class CommentDialogView implements PopupViewI{
 		controller.setMappingSetAndItem(mappingSet, mappingItem);
 	}
 
-	public void refresh() {
-		controller.refresh();
+	public void refreshComments() {
+		controller.refreshComments();
 	}
 	
 }
