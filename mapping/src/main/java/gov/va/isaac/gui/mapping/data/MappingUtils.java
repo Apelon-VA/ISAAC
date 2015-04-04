@@ -85,6 +85,7 @@ public class MappingUtils
 			throw new IOException("Unexpected error");
 		}
 		
+		Collections.sort(result);
 		return result;
 	}
 	
@@ -104,6 +105,7 @@ public class MappingUtils
 			throw new IOException("Unexpected error");
 		}
 		
+		Collections.sort(result);
 		return result;
 	}
 	
