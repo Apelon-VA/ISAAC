@@ -9,6 +9,7 @@ import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
 import javafx.application.Platform;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
@@ -18,14 +19,14 @@ import javafx.stage.Window;
 
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 @Service
 @PerLookup
 public class CommentDialogView implements PopupViewI{
 	
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	//private Logger logger = LoggerFactory.getLogger(this.getClass());
 	private CommentDialogController controller;
 
 	public CommentDialogView() throws IOException {
@@ -55,8 +56,8 @@ public class CommentDialogView implements PopupViewI{
 	    
     }
 	
-	public void setMappingSetAndItem(MappingSet mappingSet, MappingItem mappingItem) {
-		controller.setMappingSetAndItem(mappingSet, mappingItem);
+	public void setMappingSetAndItems(MappingSet mappingSet, ObservableList<MappingItem> mappingItems) {
+		controller.setMappingSetAndItems(mappingSet, mappingItems);
 	}
 
 	public void refreshComments() {

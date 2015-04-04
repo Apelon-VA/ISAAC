@@ -587,10 +587,10 @@ public class MappingController {
 			@Override
 			public void handle(ActionEvent e) {
 				MappingSet  selectedMappingSet  = getSelectedMappingSet();
-				MappingItem selectedMappingItem = getSelectedMappingItem();
-				if (selectedMappingItem != null && selectedMappingSet != null) {
+				ObservableList<MappingItem> selectedMappingItems = getSelectedMappingItems();
+				if (selectedMappingItems.size() > 0) {
 					CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
-					commentView.setMappingSetAndItem(selectedMappingSet, selectedMappingItem);
+					commentView.setMappingSetAndItems(selectedMappingSet, selectedMappingItems);
 					commentView.showView(getRoot().getScene().getWindow());
 				}
 			}

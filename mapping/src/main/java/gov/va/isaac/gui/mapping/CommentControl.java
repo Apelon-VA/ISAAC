@@ -1,6 +1,7 @@
 package gov.va.isaac.gui.mapping;
 
 import gov.va.isaac.AppContext;
+import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemComment;
 import gov.va.isaac.gui.mapping.data.MappingItemCommentDAO;
 import gov.va.isaac.gui.util.FxUtils;
@@ -38,6 +39,7 @@ public class CommentControl extends AnchorPane {
 				DialogResponse response = AppContext.getCommonDialogs().showYesNoDialog("Please Confirm", "Are you sure you want to retire this comment?");
 				if (response == DialogResponse.YES) {
 	            	MappingItemCommentDAO.retireComment(comment_.getPrimordialUUID());
+	    			mappingItem_.refreshCommentsProperty();
 	            	if (dialogController != null) {
 		            	dialogController.refreshComments();
 	            	}
@@ -52,6 +54,7 @@ public class CommentControl extends AnchorPane {
     }
 
     private MappingItemComment comment_;
+    private MappingItem mappingItem_;
     private CommentDialogController dialogController;
     
     private static SimpleDateFormat dateTimeFormatShort = new SimpleDateFormat("MM/dd/yy HH:mm");
@@ -69,11 +72,9 @@ public class CommentControl extends AnchorPane {
 
     }
     
-    public void setDialogController(CommentDialogController controller) {
+    public void set(CommentDialogController controller, MappingItem mappingItem, MappingItemComment comment) {
     	dialogController = controller;
-    }
-    
-    public void setComment(MappingItemComment comment) {
+    	mappingItem_ = mappingItem;
     	comment_ = comment;
     	commentTextArea.textProperty().set(comment.getCommentText());
     	authorLabel.textProperty().set(OTFUtility.getDescription(comment.getAuthorName()));
