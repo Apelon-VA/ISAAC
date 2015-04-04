@@ -7,7 +7,6 @@ import gov.va.isaac.mojos.dbBuilder.Setup;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
-
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -15,17 +14,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
-//import org.apache.maven.execution.MavenSession;
-//import org.apache.maven.plugin.MojoExecution;
-//import org.apache.maven.plugin.descriptor.PluginDescriptor;
-
 
 /**
  * Exports a jBin file type (an eConcept) .
@@ -55,12 +49,21 @@ public class Export extends AbstractMojo
 	
 	@Parameter (name = "pathFilter")
 	private MojoConceptSpec[] pathFilter;
+	
+	@Parameter (name="skipExportAssembly", defaultValue="false")
+	private boolean skipExportAssembly;
 
 	
+	@Override
 	public void execute() throws MojoExecutionException 
 	{
-		if(System.getProperty("skipExportAssembly").equalsIgnoreCase("false")) {
-			getLog().info("** skipExportAssembly ** paramater = FALSE" );
+		if(skipExportAssembly)
+		{
+			getLog().info("Content Export Mojo will not run due to 'skipExportAssembly' being set to true.  Set skipExportAssembly=false to enable the Content Export" );
+		}
+		else
+		{
+			getLog().info("Executing Content Export" );
 			String fileName = "SOLOR_Snapshot_" + path.getFsn() + "";
 					
 			//Check if requireed Parameters are Empty
@@ -155,8 +158,6 @@ public class Export extends AbstractMojo
 				
 				getLog().info("Done exporting the DB - exported " + eConExporter.getCount() + " concepts");
 			}
-		} else {
-			getLog().info("** skipExportAssembly ** flag = TRUE - Export Mojo is NOT running. -DskipExportAssembly=true to run" );
 		}
 	}
 	
@@ -192,8 +193,7 @@ public class Export extends AbstractMojo
 		}
 		
 		//SHUTDOWN
-		TerminologyStoreDI store = AppContext.getService(TerminologyStoreDI.class);
-//		getLog().info("  Shutting Down");
+		AppContext.getService(TerminologyStoreDI.class).shutdown();
 		
 	}
 	
