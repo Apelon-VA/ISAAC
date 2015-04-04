@@ -226,9 +226,6 @@ public class CreateMappingItemController {
 		mainGridPane.add(sourceConceptNode.getNode(), 1, 0);
 		mainGridPane.add(targetConceptNode.getNode(), 1, 4);
 		
-		//resetChildOfRestriction();
-		paintSearchRestriction();
-		
 		statusCombo.setEditable(false);
 		qualifierCombo.setEditable(false);
 		descriptionRestrictionCombo.setEditable(false);
@@ -285,6 +282,9 @@ public class CreateMappingItemController {
 					
 					refsetRestrictionCombo.getItems().addAll(refsetRestrictions);
 					refsetRestrictionCombo.getSelectionModel().select(0);
+					
+					paintSearchRestriction();
+
 				});
 			}
 			catch (Exception e1)
@@ -357,10 +357,7 @@ public class CreateMappingItemController {
 		});
 		
 		searchButton.setOnAction((event) -> {
-			String searchString = criteriaText.getText().trim();
-			if (searchString != null && !searchString.equals("")) {
-				doSearch(searchString);
-			}
+			doSearch();
 		});
 
 		clearRestrictionButton.setOnAction((event) -> {
@@ -389,7 +386,12 @@ public class CreateMappingItemController {
 	
 	// intended to re-run last search when restrictions are applied
 	private void doSearch() {
-		if (searchObject_ != null) {
+		String searchString = criteriaText.getText().trim();
+		
+		if (searchString != null && !searchString.equals("")) {
+			doSearch(searchString);
+		
+		} else if (searchObject_ != null) {
 			doSearch(searchObject_);
 		}
 	}
