@@ -13,14 +13,13 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.UUID;
+//import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;

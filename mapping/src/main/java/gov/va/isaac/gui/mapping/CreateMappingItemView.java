@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.UUID;
 
-import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.gui.views.PopupViewI;
@@ -18,14 +17,14 @@ import javafx.stage.Window;
 
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 @Service
 @PerLookup
 public class CreateMappingItemView implements PopupViewI{
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	//private Logger logger = LoggerFactory.getLogger(this.getClass());
 	private CreateMappingItemController controller;
 
 	public CreateMappingItemView() throws IOException {
