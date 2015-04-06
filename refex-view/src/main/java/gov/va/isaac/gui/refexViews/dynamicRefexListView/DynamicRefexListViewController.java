@@ -19,17 +19,17 @@
 package gov.va.isaac.gui.refexViews.dynamicRefexListView;
 
 import gov.va.isaac.AppContext;
-import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.gui.ConceptNode;
 import gov.va.isaac.gui.ConfigureDynamicRefexIndexingView;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.refexViews.dynamicRefexListView.referencedItemsView.DynamicReferencedItemsView;
 import gov.va.isaac.gui.refexViews.util.DynamicRefexDataColumnListCell;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,7 +37,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.ResourceBundle;
 import javafx.application.Platform;
 import javafx.concurrent.Task;
@@ -60,14 +59,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
-import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
-import org.ihtsdo.otf.tcc.api.metadata.binding.RefexDynamic;
-import org.ihtsdo.otf.tcc.api.refexDynamic.RefexDynamicChronicleBI;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicColumnInfo;
 import org.ihtsdo.otf.tcc.api.refexDynamic.data.RefexDynamicUsageDescription;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.RefexDynamicUsageDescriptionBuilder;
-import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -314,22 +309,7 @@ public class DynamicRefexListViewController
 				if (allRefexDefinitions == null)
 				{
 					allRefexDefinitions = new HashSet<>();
-					
-					LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
-					List<SearchResult> refexes = indexer.queryAssemblageUsage(RefexDynamic.REFEX_DYNAMIC_DEFINITION_DESCRIPTION.getNid(), 1000, Long.MAX_VALUE);
-					for (SearchResult sr : refexes)
-					{
-						RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
-						if (rc == null)
-						{
-							log.info("Out of date index?  Search result for refexes contained a NID that can't be resolved: {}" + sr.getNid());
-							continue;
-						}
-						//These are nested refex references - it returns a description component - concept we want is the parent of that.
-						allRefexDefinitions.add(new SimpleDisplayConcept(
-								ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(),
-								null));
-					}
+					allRefexDefinitions.addAll(RefexDynamicUtil.getAllRefexDefinitions());
 				}
 				
 				//This code for adding the concept from the concept filter panel can be removed, if we fix the above code to actually

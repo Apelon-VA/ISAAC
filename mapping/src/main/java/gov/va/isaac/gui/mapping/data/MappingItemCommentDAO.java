@@ -53,10 +53,15 @@ public class MappingItemCommentDAO extends MappingDAO
 
 			commentAnnotation.computeMemberUuid();
 
+			/*
+			 * Not so sure duplicate comments are a problem, especially since this does not distinguish retired comments
+			 * Commenting out - DT
+			 *
 			if (ExtendedAppContext.getDataStore().hasUuid(commentAnnotation.getComponentUuid()))
 			{
 				throw new IOException("A comment of that value already exists on that item.");
 			}
+			*/
 
 			RefexDynamicChronicleBI<?> rdc = OTFUtility.getBuilder().construct(commentAnnotation);
 
@@ -119,7 +124,7 @@ public class MappingItemCommentDAO extends MappingDAO
 	 * @param commentPrimordialUUID - The ID of the comment to be re-activated
 	 * @throws IOException
 	 */
-	public void unRetireComment(UUID commentPrimordialUUID) throws IOException 
+	public static void unRetireComment(UUID commentPrimordialUUID) throws IOException 
 	{
 		setRefexStatus(commentPrimordialUUID, Status.ACTIVE);
 	}
@@ -128,7 +133,7 @@ public class MappingItemCommentDAO extends MappingDAO
 	 * @param commentPrimordialUUID - The ID of the comment to be retired
 	 * @throws IOException
 	 */
-	public void retireComment(UUID commentPrimordialUUID) throws IOException 
+	public static void retireComment(UUID commentPrimordialUUID) throws IOException 
 	{
 		setRefexStatus(commentPrimordialUUID, Status.INACTIVE);
 	}
@@ -138,7 +143,7 @@ public class MappingItemCommentDAO extends MappingDAO
 	 * @param comment - The MappingItemComment with revisions (contains fields where the setters have been called)
 	 * @throws IOException
 	 */
-	public void updateComment(MappingItemComment comment) throws IOException 
+	public static void updateComment(MappingItemComment comment) throws IOException 
 	{
 		try
 		{

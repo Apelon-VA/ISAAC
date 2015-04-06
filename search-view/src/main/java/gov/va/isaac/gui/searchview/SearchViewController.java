@@ -27,6 +27,7 @@ import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
@@ -838,18 +839,7 @@ public class SearchViewController implements TaskCompleteCallback
 			protected Void call() throws Exception
 			{
 				dynamicRefexAssemblages = new HashSet<>();
-				
-				LuceneDynamicRefexIndexer indexer = AppContext.getService(LuceneDynamicRefexIndexer.class);
-				List<SearchResult> refexes = indexer.queryAssemblageUsage(RefexDynamic.REFEX_DYNAMIC_DEFINITION_DESCRIPTION.getNid(), 1000, null);
-				for (SearchResult sr : refexes)
-				{
-					RefexDynamicChronicleBI<?> rc = (RefexDynamicChronicleBI<?>) ExtendedAppContext.getDataStore().getComponent(sr.getNid());
-					//These are nested refex references - it returns a description component - concept we want is the parent of that.
-					dynamicRefexAssemblages.add(new SimpleDisplayConcept(
-							ExtendedAppContext.getDataStore().getComponent(rc.getReferencedComponentNid()).getEnclosingConcept(),
-							null));
-					
-				}
+				dynamicRefexAssemblages.addAll(RefexDynamicUtil.getAllRefexDefinitions());
 				return null;
 			}
 

@@ -8,10 +8,10 @@ import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
 import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemDAO;
-import gov.va.isaac.gui.mapping.data.MappingObject;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingUtils;
 import gov.va.isaac.gui.util.CustomClipboard;
+import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -21,29 +21,11 @@ import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
-
-
-
-
-
-
-
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
-
-
-
-
-
-
-
-
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -52,6 +34,7 @@ import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -66,27 +49,17 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.control.Tooltip;
 import javafx.scene.control.TableColumn.CellDataFeatures;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
-import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.util.Callback;
-
-
-
-
-
-
-
-
 
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -103,26 +76,68 @@ import org.slf4j.LoggerFactory;
 public class CreateMappingItemController {
 	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingItemController.class);
     
-    private class SearchRestriction {
+    private static class SearchRestriction {
     	private LuceneDescriptionType descriptionType = null;
-		private UUID advancedDescriptionType = null; 
-		private Integer targetCodeSystemPathNid;
-		private Integer memberOfRefsetNid;
-		private Integer childOfNid;
+		private SimpleDisplayConcept advancedDescriptionType = null; 
+		private SimpleDisplayConcept targetCodeSystemPath = null;
+		private SimpleDisplayConcept memberOfRefset = null;
+		private ConceptVersionBI     childOf = null;
 		
-		public LuceneDescriptionType getDescriptionType()         { return descriptionType;	}
-		public UUID                  getAdvancedDescriptionType() { return advancedDescriptionType; }
-		public Integer               getTargetCodeSystemPathNid() { return targetCodeSystemPathNid; }
-		public Integer               getMemberOfRefsetNid()       { return memberOfRefsetNid; }
-		public Integer               getChildOfNid()              { return childOfNid; }
+		public LuceneDescriptionType getDescriptionType()         { return descriptionType;	        }
+		public SimpleDisplayConcept  getAdvancedDescriptionType() { return advancedDescriptionType; }
+		public SimpleDisplayConcept  getTargetCodeSystemPath()	  { return targetCodeSystemPath;    }
+		public SimpleDisplayConcept  getMemberOfRefset()          { return memberOfRefset;          }
+		public ConceptVersionBI      getChildOf()                 { return childOf;                 }
 		
-		public void setDescriptionType(LuceneDescriptionType descriptionType)   { this.descriptionType = descriptionType; }
-		public void setAdvancedDescriptionType(UUID advancedDescriptionType)    { this.advancedDescriptionType = advancedDescriptionType; }
-		public void setTargetCodeSystemPathNid(Integer targetCodeSystemPathNid) { this.targetCodeSystemPathNid = targetCodeSystemPathNid; }
-		public void setMemberOfRefsetNid(Integer memberOfRefsetNid)             { this.memberOfRefsetNid = memberOfRefsetNid; }
-		public void setChildOfNid(Integer childOfNid)                           { this.childOfNid = childOfNid; }
+		public UUID getAdvancedDescriptionTypeUUID() throws IOException { 
+			UUID uuid = null;
+			if (advancedDescriptionType != null) {
+				uuid = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(advancedDescriptionType.getNid()); 
+			}
+			return uuid; 
+		}
+		
+		public Integer getTargetCodeSystemPathNid() { 
+			Integer nid = null;
+			if (targetCodeSystemPath != null) {
+				nid = new Integer(targetCodeSystemPath.getNid());
+			}
+			return nid;
+		}
+		
+		public Integer getMemberOfRefsetNid() { 
+			Integer nid = null;
+			if (memberOfRefset != null) {
+				nid = new Integer(memberOfRefset.getNid());
+			}
+			return nid;
+		}
+		
+		public Integer getChildOfNid() { 
+			Integer nid = null;
+			if (childOf != null) {
+				nid = new Integer(childOf.getNid());
+			}
+			return nid;
+		}
+		
+		public void setDescriptionType(LuceneDescriptionType descriptionType)                { this.descriptionType = descriptionType; }
+		public void setAdvancedDescriptionType(SimpleDisplayConcept advancedDescriptionType) { this.advancedDescriptionType = advancedDescriptionType; }
+		public void setTargetCodeSystemPath(SimpleDisplayConcept targetCodeSystemPath)       { this.targetCodeSystemPath = targetCodeSystemPath; }
+		public void setMemberOfRefset(SimpleDisplayConcept memberOfRefset)                   { this.memberOfRefset = memberOfRefset; }
+		public void setChildOf(ConceptVersionBI childOf)                                     { this.childOf = childOf; }
+		
+		public void clear() {
+	    	descriptionType         = null;
+			advancedDescriptionType = null; 
+			targetCodeSystemPath    = null;
+			memberOfRefset          = null;
+			childOf                 = null;
+		}
     }
 
+    private static final SearchRestriction searchRestriction = new SearchRestriction();
+    
     private final Label LABEL_NO_RESULTS = new Label("Search returned no results");
 	private final Label LABEL_SEARCHING  = new Label("Searching...");
 
@@ -138,6 +153,9 @@ public class CreateMappingItemController {
 	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesCodeSystemColumn;
 	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesStatusColumn;
 
+	@FXML private VBox				filterVBox;
+    @FXML private ToggleGroup 		showFilterToggleGroup;
+    @FXML private ToggleButton 		showFilterToggle;
 	
 	@FXML private VBox              childRestrictionVBox;
 	@FXML private RadioButton 		noRestrictionRadio;
@@ -163,7 +181,8 @@ public class CreateMappingItemController {
 
 	private MappingSet mappingSet_;
 	private Object searchObject_;
-
+	private boolean restrictionsInitialized = false;
+	
 	public Region getRootNode() {
 		return mainPane;
 	}
@@ -197,13 +216,16 @@ public class CreateMappingItemController {
 		assert cancelButton					!= null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";
         assert childRestrictionVBox 		!= null : "fx:id=\"childRestricionVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
         assert applyRestrictionButton 		!= null : "fx:id=\"applyRestrictionButton\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert showFilterToggle 			!= null : "fx:id=\"showFilterToggle\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert showFilterToggleGroup 		!= null : "fx:id=\"showFilterToggleGroup\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert filterVBox 					!= null : "fx:id=\"filterVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+
+		FxUtils.assignImageToButton(showFilterToggle, Images.FILTER_16.createImageView(), "Show/Hide Candidate Restrictions");
 
 		setupColumnTypes();
 		
 		mainGridPane.add(sourceConceptNode.getNode(), 1, 0);
 		mainGridPane.add(targetConceptNode.getNode(), 1, 4);
-		
-		resetChildOfRestriction();
 		
 		statusCombo.setEditable(false);
 		qualifierCombo.setEditable(false);
@@ -211,6 +233,21 @@ public class CreateMappingItemController {
 		codeSystemRestrictionCombo.setEditable(false);
 		refsetRestrictionCombo.setEditable(false);
 		
+		showFilterToggle.setVisible(false);
+		showFilterToggle.setDisable(true);
+		/*
+		 * Keep this around in case we want it later
+		 *  
+		showFilterToggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+			@Override
+			public void changed(ObservableValue<? extends Toggle> ov, Toggle toggle, Toggle new_toggle) {
+				showFilterPane(showFilterToggle.isSelected());
+			}
+		});
+		showFilterToggle.setSelected(false);
+		showFilterPane(false);
+		 */
+
 		Utility.execute(() ->
 		{
 			try
@@ -227,7 +264,6 @@ public class CreateMappingItemController {
 				List<SimpleDisplayConcept> codeSystems = MappingUtils.getCodeSystems();
 				codeSystems.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
 
-				// TODO populate refset restrictions
 				List<SimpleDisplayConcept> refsetRestrictions = RefexDynamicUtil.getAllRefexDefinitions(); 
 				refsetRestrictions.add(0, new SimpleDisplayConcept("No Restriction", Integer.MIN_VALUE));
 				
@@ -247,6 +283,9 @@ public class CreateMappingItemController {
 					
 					refsetRestrictionCombo.getItems().addAll(refsetRestrictions);
 					refsetRestrictionCombo.getSelectionModel().select(0);
+					
+					paintSearchRestriction();
+
 				});
 			}
 			catch (Exception e1)
@@ -312,17 +351,14 @@ public class CreateMappingItemController {
 			@Override
 			public void changed(ObservableValue<? extends ConceptVersionBI> observable, ConceptVersionBI oldValue, ConceptVersionBI newValue) {
 				if (newValue != null) {
-					criteriaText.setText(OTFUtility.getDescription(newValue));
+					//criteriaText.setText(OTFUtility.getDescription(newValue));
 					doSearch(newValue);
 				}
 			}
 		});
 		
 		searchButton.setOnAction((event) -> {
-			String searchString = criteriaText.getText().trim();
-			if (searchString != null && !searchString.equals("")) {
-				doSearch(searchString);
-			}
+			doSearch();
 		});
 
 		clearRestrictionButton.setOnAction((event) -> {
@@ -331,13 +367,32 @@ public class CreateMappingItemController {
 		});
 		
 		applyRestrictionButton.setOnAction((event) -> {
+			scrapeSearchRestriction();
 			doSearch();
 		});
+
+		candidatesTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<ConceptVersionBI>()
+		{
+			@Override
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends ConceptVersionBI> c)
+			{
+				ConceptVersionBI concept = candidatesTableView.getSelectionModel().getSelectedItem();
+				if (concept != null) {
+					targetConceptNode.set(concept);
+				}
+			}
+		});
+
 	}
 	
 	// intended to re-run last search when restrictions are applied
 	private void doSearch() {
-		if (searchObject_ != null) {
+		String searchString = criteriaText.getText().trim();
+		
+		if (searchString != null && !searchString.equals("")) {
+			doSearch(searchString);
+		
+		} else if (searchObject_ != null) {
 			doSearch(searchObject_);
 		}
 	}
@@ -346,14 +401,14 @@ public class CreateMappingItemController {
 		try {
 			searchObject_ = searchObject;
 			SearchHandle searchHandle = null;
-			SearchRestriction searchRestriction = getSearchRestriction();
+			scrapeSearchRestriction();
 			
 			if (searchObject instanceof ConceptVersionBI) {
 				searchHandle = MappingUtils.search(
 						((ConceptVersionBI)searchObject).getNid(), 
 						null, 
 						searchRestriction.getDescriptionType(), 
-						searchRestriction.getAdvancedDescriptionType(), 
+						searchRestriction.getAdvancedDescriptionTypeUUID(), 
 						searchRestriction.getTargetCodeSystemPathNid(), 
 						searchRestriction.getMemberOfRefsetNid(), 
 						searchRestriction.getChildOfNid()
@@ -364,7 +419,7 @@ public class CreateMappingItemController {
 						(String)searchObject, 
 						null, 
 						searchRestriction.getDescriptionType(), 
-						searchRestriction.getAdvancedDescriptionType(), 
+						searchRestriction.getAdvancedDescriptionTypeUUID(), 
 						searchRestriction.getTargetCodeSystemPathNid(), 
 						searchRestriction.getMemberOfRefsetNid(), 
 						searchRestriction.getChildOfNid()
@@ -453,6 +508,10 @@ public class CreateMappingItemController {
 		candidatesConceptColumn.setCellValueFactory(conceptCellValueFactory);
 		candidatesCodeSystemColumn.setCellValueFactory(conceptCellValueFactory);
 		candidatesStatusColumn.setCellValueFactory(conceptCellValueFactory);
+		
+		candidatesConceptColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.6)); 
+		candidatesCodeSystemColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.2)); 
+		candidatesStatusColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.2)); 		
 	}
 	
 	private void updateCell(TableCell<?, ?> cell, ConceptVersionBI concept) {
@@ -544,84 +603,106 @@ public class CreateMappingItemController {
 		}
 	}
 
-	private SearchRestriction getSearchRestriction() {
-		SearchRestriction searchRestriction = new SearchRestriction();
-		
-		// Description Type
-		if (descriptionRestrictionRadio.selectedProperty().get()) {
-			searchRestriction.setDescriptionType(LuceneDescriptionType.DEFINITION);
-		
-		} else if (synonymRestrictionRadio.selectedProperty().get()) {
-			searchRestriction.setDescriptionType(LuceneDescriptionType.SYNONYM);
-		
-		} else if (fsnRestrictionRadio.selectedProperty().get()) {
-			searchRestriction.setDescriptionType(LuceneDescriptionType.FSN);
-		
-		} else {
-			searchRestriction.setDescriptionType(null);
+	private void scrapeSearchRestriction() {
+		if (restrictionsInitialized) {
+			// Description Type
+			if (descriptionRestrictionRadio.selectedProperty().get()) {
+				searchRestriction.setDescriptionType(LuceneDescriptionType.DEFINITION);
+			
+			} else if (synonymRestrictionRadio.selectedProperty().get()) {
+				searchRestriction.setDescriptionType(LuceneDescriptionType.SYNONYM);
+			
+			} else if (fsnRestrictionRadio.selectedProperty().get()) {
+				searchRestriction.setDescriptionType(LuceneDescriptionType.FSN);
+			
+			} else {
+				searchRestriction.setDescriptionType(null);
+			}
+			
+			// Advanced Description Type
+			SimpleDisplayConcept selectedAdvancedDescription = descriptionRestrictionCombo.getSelectionModel().getSelectedItem();
+			if (selectedAdvancedDescription != null && selectedAdvancedDescription.getNid() != Integer.MIN_VALUE) {
+				searchRestriction.setAdvancedDescriptionType(selectedAdvancedDescription);
+			} else {
+				searchRestriction.setAdvancedDescriptionType(null);
+			}
+			
+
+			// Code System
+			SimpleDisplayConcept selectedCodeSystem = codeSystemRestrictionCombo.getSelectionModel().getSelectedItem();
+			if (selectedCodeSystem != null && selectedCodeSystem.getNid() != Integer.MIN_VALUE) {
+				searchRestriction.setTargetCodeSystemPath(selectedCodeSystem);
+			} else {
+				searchRestriction.setTargetCodeSystemPath(null);
+			}
+
+			// Refset Member
+			SimpleDisplayConcept selectedRefset = refsetRestrictionCombo.getSelectionModel().getSelectedItem();
+			if (selectedRefset != null && selectedRefset.getNid() != Integer.MIN_VALUE) {
+				searchRestriction.setMemberOfRefset(selectedRefset);
+			} else {
+				searchRestriction.setMemberOfRefset(null);
+			}
+			
+			// Child of concept
+			ConceptVersionBI childOfConcept = childRestrictionConceptNode.getConcept();
+			if (childOfConcept == null) {
+				searchRestriction.setChildOf(null);
+			} else {
+				searchRestriction.setChildOf(childOfConcept);
+			}
+			
 		}
-		
-		// Advanced Description Type
-		SimpleDisplayConcept selectedAdvancedDescription = descriptionRestrictionCombo.getSelectionModel().getSelectedItem();
-		UUID uuid = null;
-		if (selectedAdvancedDescription != null && selectedAdvancedDescription.getNid() != Integer.MIN_VALUE) {
-			try {
-				uuid = ExtendedAppContext.getDataStore().getUuidPrimordialForNid(selectedAdvancedDescription.getNid());
-			} catch (IOException e) {
-				LOG.error("Error retrieving advanced description restriction", e);
+	}
+	
+	private void paintSearchRestriction() {
+		// Description Type
+		if (searchRestriction.descriptionType == null) {
+			noRestrictionRadio.setSelected(true);
+		} else {
+			switch (searchRestriction.descriptionType) {
+			case DEFINITION:
+				descriptionRestrictionRadio.setSelected(true);
+				break;
+			case SYNONYM:
+				synonymRestrictionRadio.setSelected(true);
+				break;
+			case FSN:
+				fsnRestrictionRadio.setSelected(true);
+				break;
+			default:
+				noRestrictionRadio.setSelected(true);
 			}
 		}
-		searchRestriction.setAdvancedDescriptionType(uuid);
-
-		// Code System
-		SimpleDisplayConcept selectedCodeSystem = codeSystemRestrictionCombo.getSelectionModel().getSelectedItem();
-		Integer codeSystemNid = null;
-		if (selectedCodeSystem != null && selectedCodeSystem.getNid() != Integer.MIN_VALUE) {
-			codeSystemNid = new Integer(selectedCodeSystem.getNid());
-		}
-		searchRestriction.setTargetCodeSystemPathNid(codeSystemNid);
-
-		// Refset Member
-		SimpleDisplayConcept selectedRefset = refsetRestrictionCombo.getSelectionModel().getSelectedItem();
-		Integer refsetNid = null;
-		if (selectedRefset != null && selectedRefset.getNid() != Integer.MIN_VALUE) {
-			refsetNid = new Integer(selectedRefset.getNid());
-		}
-		searchRestriction.setMemberOfRefsetNid(refsetNid);
 		
-		// Child of concept
-		ConceptVersionBI childOfConcept = childRestrictionConceptNode.getConcept();
-		if (childOfConcept == null) {
-			searchRestriction.setChildOfNid(null);
-		} else {
-			searchRestriction.setChildOfNid(childOfConcept.getNid());
+		MappingController.setComboSelection(descriptionRestrictionCombo, searchRestriction.getAdvancedDescriptionType(), 0);
+		
+		MappingController.setComboSelection(codeSystemRestrictionCombo, searchRestriction.getTargetCodeSystemPath(), 0);
+
+		MappingController.setComboSelection(refsetRestrictionCombo, searchRestriction.getMemberOfRefset(), 0);
+
+		resetChildOfRestriction();
+		if (searchRestriction.getChildOf() != null) {
+			childRestrictionConceptNode.set(searchRestriction.getChildOf());
 		}
 		
-		return searchRestriction;
+		restrictionsInitialized = true;
 	}
 	
 	private void clearSearchRestriction() {
-		// Description Type
-		noRestrictionRadio.setSelected(true);
-		
-		// Advanced Description Type
-		descriptionRestrictionCombo.getSelectionModel().select(0);
-
-		// Code System
-		codeSystemRestrictionCombo.getSelectionModel().select(0);
-
-		// Refset Member
-		refsetRestrictionCombo.getSelectionModel().select(0);		
-		
-		// Child of concept
-		resetChildOfRestriction();
-		
+		searchRestriction.clear();
+		paintSearchRestriction();
 	}
 
 	private void resetChildOfRestriction() {
 		childRestrictionConceptNode = new ConceptNode(null, false);
 		childRestrictionVBox.getChildren().clear();
 		childRestrictionVBox.getChildren().add(childRestrictionConceptNode.getNode());
+	}
+
+	@SuppressWarnings("unused")
+	private void showFilterPane(boolean show) {
+		filterVBox.setPrefWidth((show) ? Region.USE_COMPUTED_SIZE : 0);
 	}
 	
 }

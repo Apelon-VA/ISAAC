@@ -13,14 +13,13 @@ import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.interfaces.utility.DialogResponse;
 import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenusNIdProvider;
-import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.UUID;
+//import java.util.UUID;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -77,6 +76,7 @@ public class MappingController {
 	@FXML private AnchorPane	listPane;
 	@FXML private ToggleButton 	activeOnlyToggle;
 	@FXML private ToggleButton	stampToggle;
+	@FXML private Button		refreshButton;
 	@FXML private Button 		plusMappingSetButton;
 	@FXML private Button 		minusMappingSetButton;
 	@FXML private Button 		editMappingSetButton;
@@ -168,11 +168,13 @@ public class MappingController {
         assert mappingSetPurposeTableColumn != null : "fx:id=\"mappingSetPurposeTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemCommentsTableColumn != null : "fx:id=\"mappingItemCommentsTableColumn\" was not injected: check your FXML file 'Mapping.fxml'.";
         assert mappingItemSummaryLabel != null : "fx:id=\"mappingItemSummaryLabel\" was not injected: check your FXML file 'Mapping.fxml'.";
-                
+        assert refreshButton != null : "fx:id=\"refreshButton\" was not injected: check your FXML file 'Mapping.fxml'.";
+
 		mainPane.getStylesheets().add(MappingController.class.getResource("/isaac-shared-styles.css").toString());
 		
 		FxUtils.assignImageToButton(activeOnlyToggle, 		Images.FILTER_16.createImageView(), "Show Active Only / Show All");
 		FxUtils.assignImageToButton(stampToggle, 			Images.STAMP.createImageView(), 	"Show/Hide STAMP Columns");
+		FxUtils.assignImageToButton(refreshButton, 			Images.SYNC_GREEN.createImageView(), "Refresh");
 		FxUtils.assignImageToButton(plusMappingSetButton, 	Images.PLUS.createImageView(), 		"Create Mapping Set");
 		FxUtils.assignImageToButton(minusMappingSetButton, 	Images.MINUS.createImageView(), 	"Retire/Unretire Mapping Set");
 		FxUtils.assignImageToButton(editMappingSetButton, 	Images.EDIT.createImageView(), 		"Edit Mapping Set");
@@ -254,9 +256,6 @@ public class MappingController {
 		// TODO maybe come up with a way to preserve the selection, if possible.
 		mappingSetTableView.getSelectionModel().clearSelection();
 		
-		mappingSetSTableColumn.setVisible(!activeOnly);
-		mappingItemSTableColumn.setVisible(!activeOnly);
-		
 		refreshMappingItems();
 	}
 
@@ -283,7 +282,6 @@ public class MappingController {
 			}
 		});
 		
-		mappingSetSTableColumn.setVisible(false);
 		mappingSetSTAMPTableColumn.setVisible(false);
 		
 	}
@@ -296,22 +294,32 @@ public class MappingController {
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MappingItem> c) {
 				MappingItem selectedMappingItem = getSelectedMappingItem();
-				if (c.getList().size() >= 1) {
+				int selectedItemCount = c.getList().size(); 
+				if (selectedItemCount >= 1) {
 					selectedMappingItem = (MappingItem) c.getList().get(0);
 				} else {
 					selectedMappingItem = null;
 				}
-				minusMappingItemButton.setDisable(selectedMappingItem == null);
-				editMappingItemButton.setDisable(selectedMappingItem == null);
-				commentButton.setDisable(selectedMappingItem == null);
+				minusMappingItemButton.setDisable(selectedItemCount == 0);
+				editMappingItemButton.setDisable(selectedItemCount != 1);
+				commentButton.setDisable(selectedItemCount == 0);
 				
-				mappingItemSummaryLabel.setText((selectedMappingItem == null)? "" : selectedMappingItem.getSummary());
+				String summary = "";
+				switch (selectedItemCount) {
+				case 0:
+					break;
+				case 1:
+					summary = selectedMappingItem.getSummary();
+					break;
+				default:
+					summary = "Multiple items selected";
+				}
+				mappingItemSummaryLabel.setText(summary);
 			}
 		});
 		
 		mappingItemTableView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
-		mappingItemSTableColumn.setVisible(false);
 		mappingItemSTAMPTableColumn.setVisible(false);
 
 	}
@@ -397,6 +405,7 @@ public class MappingController {
 				break;
 			case EDITOR_STATUS:
 				property = mappingObject.getEditorStatusConceptProperty();
+				conceptNid = mappingObject.getEditorStatusConceptNid();
 				break;
 			case STATUS_STRING:
 				property = mappingObject.getStatusProperty();
@@ -577,10 +586,10 @@ public class MappingController {
 			@Override
 			public void handle(ActionEvent e) {
 				MappingSet  selectedMappingSet  = getSelectedMappingSet();
-				MappingItem selectedMappingItem = getSelectedMappingItem();
-				if (selectedMappingItem != null && selectedMappingSet != null) {
+				ObservableList<MappingItem> selectedMappingItems = getSelectedMappingItems();
+				if (selectedMappingItems.size() > 0) {
 					CommentDialogView commentView = AppContext.getService(CommentDialogView.class);
-					commentView.setMappingSetAndItem(selectedMappingSet, selectedMappingItem);
+					commentView.setMappingSetAndItems(selectedMappingSet, selectedMappingItems);
 					commentView.showView(getRoot().getScene().getWindow());
 				}
 			}
@@ -611,6 +620,10 @@ public class MappingController {
 				mappingItemSTAMPTableColumn.setVisible(showStampFields);
 			}
 		});		
+		
+		refreshButton.setOnAction((event) -> {
+			refreshMappingSets();
+		});
 		
 	}
 	
@@ -722,6 +735,15 @@ public class MappingController {
 		}
 	};
 
+	
+	public static void setComboSelection(ComboBox<SimpleDisplayConcept> combo, SimpleDisplayConcept selectConcept, int defaultIndex) {
+		if (selectConcept == null) {
+			combo.getSelectionModel().select(defaultIndex);
+		} else {
+			setComboSelection(combo, selectConcept.getDescription(), defaultIndex);
+		}
+	}
+	
 	public static void setComboSelection(ComboBox<SimpleDisplayConcept> combo, String selectValue, int defaultIndex) {
 		boolean found = false;
 		if (selectValue != null && !selectValue.trim().equals("")) {
@@ -734,7 +756,7 @@ public class MappingController {
 			}
 		}
 		if (!found && defaultIndex >= 0 && defaultIndex < combo.getItems().size()) {
-			combo.getSelectionModel().select(0);
+			combo.getSelectionModel().select(defaultIndex);
 		}
 	}
 	

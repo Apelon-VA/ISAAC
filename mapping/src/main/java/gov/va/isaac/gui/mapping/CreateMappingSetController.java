@@ -10,7 +10,7 @@ import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.mapping.data.MappingUtils;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
-import gov.va.isaac.util.TaskCompleteCallback;
+//import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.application.Platform;
@@ -18,7 +18,7 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
+//import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -28,8 +28,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+//import javafx.scene.layout.HBox;
+//import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import org.slf4j.Logger;
@@ -147,6 +147,8 @@ public class CreateMappingSetController {
 				
 				if (mappingSet_ == null) {
 					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), statusUUID);
+					AppContext.getService(Mapping.class).refreshMappingSets();
+
 				} else {
 					// Edit mapping set
 					mappingSet_.setName(nameInput.getText());
@@ -160,7 +162,6 @@ public class CreateMappingSetController {
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			

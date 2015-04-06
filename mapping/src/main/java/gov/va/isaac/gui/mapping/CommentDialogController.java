@@ -5,19 +5,18 @@ import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemComment;
 import gov.va.isaac.gui.mapping.data.MappingItemCommentDAO;
 import gov.va.isaac.gui.mapping.data.MappingSet;
-import gov.va.isaac.gui.util.ErrorMarkerUtils;
 import gov.va.isaac.util.TaskCompleteCallback;
-import gov.va.isaac.util.ValidBooleanBinding;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.List;
 
+import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
+//import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -25,7 +24,6 @@ import javafx.scene.control.TextArea;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
@@ -44,6 +42,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 
     @FXML    private AnchorPane titlePane;
+    @FXML    private AnchorPane detailPane;
     @FXML    private Button 	closeButton;
     @FXML    private TextArea 	newCommentTextArea;
     @FXML    private ScrollPane commentsPane;
@@ -51,26 +50,24 @@ public class CommentDialogController implements TaskCompleteCallback {
     @FXML    private AnchorPane mainPane;
     @FXML    private AnchorPane newCommentPane;
     @FXML    private Button 	saveButton;
-    @FXML    private Label		titleLabel;
     @FXML    private VBox 		commentListVBox;
     @FXML    private Label 		sourceLabel;
     @FXML    private Label 		qualifierLabel;
     @FXML    private Label 		targetLabel;
     @FXML    private GridPane 	titleGridPane;
 
-    private MappingItem mappingItem_;
+    private List<MappingItem> mappingItems_;
     
 	public Region getRootNode() {
 		return mainPane;
 	}
 	
 	public StringProperty getTitle() {
-		return titleLabel.textProperty();
+		return new SimpleStringProperty((mappingItems_.size() > 1)? "Add Bulk Comment" : "Mapping Comments");
 	}
 	
 	@FXML
 	public void initialize() {
-		assert titleLabel 			!= null : "fx:id=\"titleLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert sourceLabel 			!= null : "fx:id=\"sourceLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert qualifierLabel 		!= null : "fx:id=\"qualifierLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert closeButton 			!= null : "fx:id=\"closeButton\" was not injected: check your FXML file 'CommentDialog.fxml'.";
@@ -79,6 +76,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 		assert commentsPane 		!= null : "fx:id=\"commentsPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert mappingSetLabel 		!= null : "fx:id=\"mappingSetLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert mainPane 			!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert detailPane 			!= null : "fx:id=\"detailPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert newCommentPane 		!= null : "fx:id=\"newCommentPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert saveButton 			!= null : "fx:id=\"saveButton\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert commentListVBox 		!= null : "fx:id=\"commentListVBox\" was not injected: check your FXML file 'CommentDialog.fxml'.";
@@ -96,8 +94,10 @@ public class CommentDialogController implements TaskCompleteCallback {
 				if (commentText != null && !commentText.equals("")) {
 					try {
 						//TODO use context?
-						newComment = MappingItemCommentDAO.createMappingItemComment(mappingItem_.getPrimordialUUID(), commentText, null);
-						mappingItem_.refreshCommentsProperty();
+						for (MappingItem mappingItem : mappingItems_) {
+							newComment = MappingItemCommentDAO.createMappingItemComment(mappingItem.getPrimordialUUID(), commentText, null);
+							mappingItem.refreshCommentsProperty();
+						}
 					} catch (Exception ex) {
 						LOG.error(ex.toString());
 						ex.printStackTrace();
@@ -106,8 +106,12 @@ public class CommentDialogController implements TaskCompleteCallback {
 					}
 				}
 				if (newComment != null) {
-					addCommentToList(newComment);
-					newCommentTextArea.setText("");
+					if (mappingItems_.size() > 1) {
+						close();
+					} else {
+						refreshComments();
+						newCommentTextArea.setText("");
+					}
 				}
 			}
 		});
@@ -116,8 +120,7 @@ public class CommentDialogController implements TaskCompleteCallback {
 		closeButton.setOnAction(new EventHandler<ActionEvent>() {
 			@Override
 			public void handle(ActionEvent e) {
-				mappingItem_ = null;
-				closeButton.getScene().getWindow().hide();
+				close();
 			}
 		});
 		closeButton.setOnKeyPressed(new EventHandler<KeyEvent>()  {
@@ -138,17 +141,51 @@ public class CommentDialogController implements TaskCompleteCallback {
 	    
     }
 	
-	public void setMappingSetAndItem(MappingSet mappingSet, MappingItem mappingItem) {
-		mappingItem_ = mappingItem;
-		mappingSetLabel.setText(mappingSet.getName());
-		sourceLabel.setText(mappingItem.getSourceConceptProperty().getValueSafe());
-		targetLabel.setText(mappingItem.getTargetConceptProperty().getValueSafe());
-		qualifierLabel.setText(mappingItem.getQualifierConceptProperty().getValueSafe());
+	private void close() {
+		mappingItems_ = null;
+		closeButton.getScene().getWindow().hide();
+	}
+	
+	public void setMappingSetAndItems(MappingSet mappingSet, ObservableList<MappingItem> mappingItems) {
+		mappingItems_ = mappingItems;
+		if (mappingItems.size() > 1) {
+			double height = newCommentPane.getHeight();
+			detailPane.setVisible(false);
+			AnchorPane.setTopAnchor(newCommentPane, 0.0);
+			mainPane.setPrefHeight(height);
+			
+		} else if (mappingItems.size() > 0) {
+			
+			mappingSetLabel.setText(mappingSet.getName());
+			sourceLabel.setText(mappingItems.get(0).getSourceConceptProperty().getValueSafe());
+			targetLabel.setText(mappingItems.get(0).getTargetConceptProperty().getValueSafe());
+			qualifierLabel.setText(mappingItems.get(0).getQualifierConceptProperty().getValueSafe());
+			refreshComments();
+		}
+	}
+	
+	private void addCommentToList(MappingItemComment comment) {
+		CommentControl cc = new CommentControl();
+		cc.set(this, mappingItems_.get(0), comment);
+		cc.setPrefWidth(commentListVBox.getPrefWidth());
+		commentListVBox.setPrefHeight(commentListVBox.getPrefHeight() + cc.getPrefHeight());
+		commentListVBox.getChildren().add(cc);
+	}
+	
+	private void clearComments() {
+		commentListVBox.getChildren().clear();
+		commentListVBox.setPrefHeight(0);
+	}
+	
+	public void refreshComments() {
 		try
 		{
-			List<MappingItemComment> comments = mappingItem.getComments();
+			clearComments();
+			List<MappingItemComment> comments = mappingItems_.get(0).getComments();
 			for (MappingItemComment comment : comments) {
-				addCommentToList(comment);
+				if (comment.isActive()) {
+					addCommentToList(comment);
+				}
 			}
 		}
 		catch (IOException e)
@@ -156,13 +193,5 @@ public class CommentDialogController implements TaskCompleteCallback {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
-	
-	private void addCommentToList(MappingItemComment comment) {
-		CommentControl cc = new CommentControl();
-		cc.setPrefWidth(commentListVBox.getPrefWidth());
-		cc.setComment(comment);
-		commentListVBox.setPrefHeight(commentListVBox.getPrefHeight() + cc.getPrefHeight());
-		commentListVBox.getChildren().add(cc);
 	}
 }
