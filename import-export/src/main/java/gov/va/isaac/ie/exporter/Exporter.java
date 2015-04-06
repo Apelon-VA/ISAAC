@@ -33,6 +33,12 @@ public interface Exporter extends ProgressReporter {
    * Cancel.
    */
   public void cancel();
+  
+  public static boolean isQualifying(int conceptNid, int pathNid) throws ContradictionException, IOException {
+	ViewCoordinate vc = OTFUtility.getViewCoordinate();
+	
+	return Exporter.isQualifying(conceptNid, pathNid, vc);
+  }
 
   /**
    * Indicates whether or not the concept qualifies as having a component
@@ -44,14 +50,11 @@ public interface Exporter extends ProgressReporter {
    * @throws IOException
    * @throws ContradictionException
    */
-  public static boolean isQualifying(int conceptNid, int pathNid)
+  public static boolean isQualifying(int conceptNid, int pathNid, ViewCoordinate vc)
 	throws ContradictionException, IOException {
-	ConceptVersionBI cv = OTFUtility.getConceptVersion(conceptNid);
+	ConceptVersionBI cv = OTFUtility.getConceptVersion(conceptNid, vc);
 	if (cv.getPathNid() == pathNid)
 	  return true;
-
-	//TODO who says that getViewCoordinate will return us something that aligns with pathNid?
-	ViewCoordinate vc = OTFUtility.getViewCoordinate();
 
 	//TODO dan notes this doesn't check the path of any nested annotations
 	// atts
@@ -88,7 +91,7 @@ public interface Exporter extends ProgressReporter {
 			if(rc != null) {
 				RefexDynamicVersionBI<?> rv = rc.getVersion(vc);
 				if(rv != null) {
-					System.out.println(rc.getVersion(vc));
+//					System.out.println(rc.getVersion(vc));
 					if (rv.getPathNid() == pathNid)  {
 					  return true;
 					}

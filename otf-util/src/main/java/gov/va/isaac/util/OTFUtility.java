@@ -577,6 +577,17 @@ public class OTFUtility {
 	 */
 	public static ConceptVersionBI getConceptVersion(int nid)
 	{
+		ViewCoordinate vc = getViewCoordinate();
+		
+		return OTFUtility.getConceptVersion(nid, vc);
+	}
+	
+	/**
+	 * Get the ConceptVersion identified by NID on the ViewCoordinate configured by {@link #getViewCoordinate()} but 
+	 * only if the concept exists at that point.  Returns null otherwise.
+	 */
+	public static ConceptVersionBI getConceptVersion(int nid, ViewCoordinate vc)
+	{
 		LOG.debug("Get concept by nid: '{}'", nid);
 		if (nid == 0)
 		{
@@ -584,7 +595,7 @@ public class OTFUtility {
 		}
 		try
 		{
-			ConceptVersionBI result = dataStore.getConceptVersion(getViewCoordinate(), nid);
+			ConceptVersionBI result = dataStore.getConceptVersion(vc, nid);
 			// Nothing like an undocumented getter which, rather than returning null when
 			// the thing you are asking for doesn't exist - it goes off and returns
 			// essentially a new, empty, useless node. Sigh.

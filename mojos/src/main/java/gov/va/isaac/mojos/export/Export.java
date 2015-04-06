@@ -59,6 +59,7 @@ public class Export extends AbstractMojo
 	
 	public void execute() throws MojoExecutionException 
 	{
+		// -DskipExportAssembly=true
 		if(System.getProperty("skipExportAssembly").equalsIgnoreCase("false")) {
 			getLog().info("** skipExportAssembly ** paramater = FALSE" );
 			String fileName = "SOLOR_Snapshot_" + path.getFsn() + "";
@@ -94,7 +95,6 @@ public class Export extends AbstractMojo
 			
 			try
 			{
-				
 				getLog().info("Exporting the database " + fileName + " to " + outputFolder.getAbsolutePath());
 				
 				dos_ = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(outputFolder, fileName + ".jbin"))));
@@ -172,7 +172,7 @@ public class Export extends AbstractMojo
 			e1.printStackTrace();
 		}
 		
-		System.setProperty("skipExportAssembly", "false");
+ 		System.setProperty("skipExportAssembly", "false");
 		Export export = new Export();
 //		export.bdbFolderLocation = new File("../../ISAAC-PA/app/solor-snomed-2015.03.06-active-only.bdb");
 		export.outputFolder = new File("target/output");
@@ -180,6 +180,9 @@ public class Export extends AbstractMojo
 //		export.userProfileLocation = new File("../../ISAAC-PA/app/profiles");
 		
 		MojoConceptSpec mojoConceptSpec = new MojoConceptSpec();
+//		mojoConceptSpec.setFsn("ISAAC development path origin");
+//		mojoConceptSpec.setUuid("83637d62-a85f-5ce5-b6b3-b9bcf6262abb");
+		
 		mojoConceptSpec.setFsn("ISAAC development path");
 		mojoConceptSpec.setUuid("f5c0a264-15af-5b94-a964-bb912ea5634f");
 		

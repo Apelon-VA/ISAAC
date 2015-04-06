@@ -1,6 +1,8 @@
 package gov.va.isaac.ie.exporter;
 
 import gov.va.isaac.ExtendedAppContext;
+import gov.va.isaac.config.generated.StatedInferredOptions;
+import gov.va.isaac.config.profiles.UserProfile;
 import gov.va.isaac.models.util.CommonBase;
 import gov.va.isaac.util.ProgressEvent;
 import gov.va.isaac.util.ProgressListener;
@@ -12,10 +14,15 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptFetcherBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ProcessUnfetchedConceptDataBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Position;
+import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
+import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.dto.ChronicleConverter;
@@ -32,6 +39,8 @@ import org.slf4j.LoggerFactory;
 public class EConceptExporter extends CommonBase implements
     Exporter, ProcessUnfetchedConceptDataBI {
 
+	ViewCoordinate vc;
+	
   /** Listeners */
   private List<ProgressListener> listeners = new ArrayList<>();
 
@@ -82,8 +91,9 @@ public class EConceptExporter extends CommonBase implements
   @Override
   public void export(int pathNid) throws Exception {
     this.pathNid = pathNid;
+    vc = makeViewCoordinate(pathNid);
     dataStore.iterateConceptDataInSequence(this);
-
+    
     dos.flush();
     dos.close();
     LOG.info("Wrote " + count + " concepts.");
@@ -121,15 +131,16 @@ public class EConceptExporter extends CommonBase implements
   @Override
   public void processUnfetchedConceptData(int cNid, ConceptFetcherBI fetcher)
     throws Exception {
-    ConceptVersionBI concept = fetcher.fetch(OTFUtility.getViewCoordinate());
+    ConceptVersionBI concept = fetcher.fetch(vc);
     allCount++;
     if (LOG.isDebugEnabled())
     {
       if (concept.getPrimordialUuid().toString().equals("")){
         LOG.debug("Found a concept with no primoridial UUID: {}", concept);
+        return;
       }
     }
-    if (Exporter.isQualifying(concept.getNid(), pathNid)) {
+    if (Exporter.isQualifying(concept.getNid(), pathNid, vc)) {
       count++;
       TtkConceptChronicle converted = ChronicleConverter.convert(concept);
       converted.writeExternal(dos);
@@ -140,6 +151,33 @@ public class EConceptExporter extends CommonBase implements
       fireProgressEvent(progress, progress + " % finished");
     }
   }
+  
+	public static ViewCoordinate makeViewCoordinate(int pathInput) {
+		ViewCoordinate vc = null;
+		try {
+			vc = StandardViewCoordinates.getSnomedInferredThenStatedLatest();
+
+			//LOG.info("Using {} policy for view coordinate", policy);
+
+			final Long time = Long.MAX_VALUE;
+			final ConceptChronicleBI pathChronicle = dataStore.getConcept(pathInput);
+			final int pathNid = pathChronicle.getNid();
+
+			// Start with standard view coordinate and override the path setting to
+			// use the preferred path
+			Position position = dataStore.newPosition(dataStore.getPath(pathNid), time);
+
+			vc.setViewPosition(position);
+
+			//LOG.info("Using ViewCoordinate policy={}, path nid={}, uuid={}, desc={}", policy, pathNid, pathUuid, OTFUtility.getDescription(pathChronicle));
+		} catch (NullPointerException e) {
+			LOG.error("View path UUID does not exist", e);
+		} catch (IOException e) {
+			LOG.error("Unexpected error fetching view coordinates!", e);
+		}
+
+		return vc;
+	}
 
   public int getCount() {
 	  return count;
