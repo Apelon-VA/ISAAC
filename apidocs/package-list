@@ -43,6 +43,7 @@ gov.va.isaac.gui.enhancedsearchview.resulthandler
 gov.va.isaac.gui.enhancedsearchview.searchresultsfilters
 gov.va.isaac.gui.htmlView
 gov.va.isaac.gui.importedmodelsview
+gov.va.isaac.gui.index
 gov.va.isaac.gui.infoModelView
 gov.va.isaac.gui.listview
 gov.va.isaac.gui.listview.operations
@@ -79,6 +80,7 @@ gov.va.isaac.interfaces.sync
 gov.va.isaac.interfaces.utility
 gov.va.isaac.interfaces.workflow
 gov.va.isaac.isaacDbProcessingRules
+gov.va.isaac.isaacDbProcessingRules.loinc
 gov.va.isaac.model
 gov.va.isaac.models
 gov.va.isaac.models.api
@@ -96,7 +98,9 @@ gov.va.isaac.models.util
 gov.va.isaac.mojos.changesets
 gov.va.isaac.mojos.dbBuilder
 gov.va.isaac.mojos.dbTransforms
+gov.va.isaac.mojos.export
 gov.va.isaac.mojos.profileSync
+gov.va.isaac.refexDynamic
 gov.va.isaac.request
 gov.va.isaac.request.loinc
 gov.va.isaac.request.uscrs

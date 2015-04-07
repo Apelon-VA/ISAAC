@@ -80,9 +80,9 @@
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>  
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">final</strong> Logger LOG = LoggerFactory.getLogger(EnhancedConceptBuilder.<strong class="jxr_keyword">class</strong>);
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  	<strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../gov/va/isaac/gui/conceptViews/enhanced/PreferredAcceptabilityPrompt.html">Prompt</a> <strong class="jxr_keyword">extends</strong> Stage {
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  	<strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../gov/va/isaac/gui/conceptViews/enhanced/EnhancedConceptDynamicRefexPopup.html">Prompt</a> <strong class="jxr_keyword">extends</strong> Stage {
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  	
-<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		<strong class="jxr_keyword">public</strong> <a href="../../../../../../gov/va/isaac/gui/conceptViews/enhanced/PreferredAcceptabilityPrompt.html">Prompt</a>( String title, Stage owner, Scene scene) {
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>  		<strong class="jxr_keyword">public</strong> <a href="../../../../../../gov/va/isaac/gui/conceptViews/enhanced/EnhancedConceptDynamicRefexPopup.html">Prompt</a>( String title, Stage owner, Scene scene) {
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  		    setTitle( title );
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>  		    initStyle( StageStyle.UTILITY );
 <a class="jxr_linenumber" name="L80" href="#L80">80</a>  		    initModality( Modality.APPLICATION_MODAL );
@@ -116,7 +116,7 @@
 <a class="jxr_linenumber" name="L108" href="#L108">108</a> 	    prompt.showDialog();
 <a class="jxr_linenumber" name="L109" href="#L109">109</a> 	}
 <a class="jxr_linenumber" name="L110" href="#L110">110</a> 
-<a class="jxr_linenumber" name="L111" href="#L111">111</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> HBox setupButtons(<a href="../../../../../../gov/va/isaac/gui/conceptViews/enhanced/PreferredAcceptabilityPrompt.html">Prompt</a> prompt, ConceptVersionBI con) {
+<a class="jxr_linenumber" name="L111" href="#L111">111</a> 	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> HBox setupButtons(<a href="../../../../../../gov/va/isaac/gui/conceptViews/enhanced/EnhancedConceptDynamicRefexPopup.html">Prompt</a> prompt, ConceptVersionBI con) {
 <a class="jxr_linenumber" name="L112" href="#L112">112</a> 	    Button commitButton = <strong class="jxr_keyword">new</strong> Button( <span class="jxr_string">"Commit"</span> );
 <a class="jxr_linenumber" name="L113" href="#L113">113</a> 	    commitButton.setOnAction((e) -&gt; {
 <a class="jxr_linenumber" name="L114" href="#L114">114</a>             prompt.close();

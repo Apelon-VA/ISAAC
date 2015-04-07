@@ -184,7 +184,7 @@
 <a class="jxr_linenumber" name="L176" href="#L176">176</a>     <em class="jxr_comment">// Key may contain things indexer can't handle, URL encode</em>
 <a class="jxr_linenumber" name="L177" href="#L177">177</a>     infoModel.setKey(URLEncoder.encode(key, StandardCharsets.UTF_8.name()));
 <a class="jxr_linenumber" name="L178" href="#L178">178</a> 
-<a class="jxr_linenumber" name="L179" href="#L179">179</a>     <a href="../../../../../../org/hl7/knowledgeartifact/r1/Metadata.html">Identifiers</a> identifiers = kd.getMetadata().getIdentifiers();
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>     <a href="../../../../../../org/hl7/knowledgeartifact/r1/KnowledgeResource.html">Identifiers</a> identifiers = kd.getMetadata().getIdentifiers();
 <a class="jxr_linenumber" name="L180" href="#L180">180</a>     LOG.debug(<span class="jxr_string">"      identifiers = "</span> + identifiers);
 <a class="jxr_linenumber" name="L181" href="#L181">181</a>     infoModel.setIdentifiers(identifiers);
 <a class="jxr_linenumber" name="L182" href="#L182">182</a> 
@@ -201,7 +201,7 @@
 <a class="jxr_linenumber" name="L193" href="#L193">193</a>     LOG.debug(<span class="jxr_string">"      schemaIdentifier = "</span> + schemaIdentifier);
 <a class="jxr_linenumber" name="L194" href="#L194">194</a>     infoModel.setSchemaIdentifier(schemaIdentifier);
 <a class="jxr_linenumber" name="L195" href="#L195">195</a> 
-<a class="jxr_linenumber" name="L196" href="#L196">196</a>     <a href="../../../../../../org/hl7/knowledgeartifact/r1/Metadata.html">TemplateIds</a> templateIds = kd.getMetadata().getTemplateIds();
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>     <a href="../../../../../../org/hl7/knowledgeartifact/r1/KnowledgeResource.html">TemplateIds</a> templateIds = kd.getMetadata().getTemplateIds();
 <a class="jxr_linenumber" name="L197" href="#L197">197</a>     LOG.debug(<span class="jxr_string">"      templateIds = "</span> + templateIds);
 <a class="jxr_linenumber" name="L198" href="#L198">198</a>     infoModel.setTemplateIds(templateIds);
 <a class="jxr_linenumber" name="L199" href="#L199">199</a> 

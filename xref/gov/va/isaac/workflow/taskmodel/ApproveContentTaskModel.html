@@ -47,19 +47,19 @@
 <a class="jxr_linenumber" name="L39" href="#L39">39</a>  <em class="jxr_javadoccomment"> *</em>
 <a class="jxr_linenumber" name="L40" href="#L40">40</a>  <em class="jxr_javadoccomment"> */</em>
 <a class="jxr_linenumber" name="L41" href="#L41">41</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/ApproveContentTaskModel.html">ApproveContentTaskModel</a> <strong class="jxr_keyword">extends</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/TaskModel.html">TaskModel</a> {
-<a class="jxr_linenumber" name="L42" href="#L42">42</a>  	<strong class="jxr_keyword">public</strong> enum <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewAdjudicateContentTaskModel.html">InputVariable</a> {
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  	<strong class="jxr_keyword">public</strong> enum <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewReviewContentTaskModel.html">InputVariable</a> {
 <a class="jxr_linenumber" name="L43" href="#L43">43</a>  		component_id(<span class="jxr_string">"Component Id"</span>),
 <a class="jxr_linenumber" name="L44" href="#L44">44</a>  		component_name(<span class="jxr_string">"Component Name"</span>),
 <a class="jxr_linenumber" name="L45" href="#L45">45</a>  		instructions(<span class="jxr_string">"Instructions"</span>);
 <a class="jxr_linenumber" name="L46" href="#L46">46</a>  		
 <a class="jxr_linenumber" name="L47" href="#L47">47</a>  		<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> String labelName;
-<a class="jxr_linenumber" name="L48" href="#L48">48</a>  		<strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewAdjudicateContentTaskModel.html">InputVariable</a>(String labelName) {
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>  		<strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewReviewContentTaskModel.html">InputVariable</a>(String labelName) {
 <a class="jxr_linenumber" name="L49" href="#L49">49</a>  			<strong class="jxr_keyword">this</strong>.labelName = labelName;
 <a class="jxr_linenumber" name="L50" href="#L50">50</a>  		}
 <a class="jxr_linenumber" name="L51" href="#L51">51</a>  		
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  		<strong class="jxr_keyword">public</strong> String getLabelName() { <strong class="jxr_keyword">return</strong> labelName; }
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  		
-<a class="jxr_linenumber" name="L54" href="#L54">54</a>  		<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewAdjudicateContentTaskModel.html">InputVariable</a> fromString(String str) {
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>  		<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewReviewContentTaskModel.html">InputVariable</a> fromString(String str) {
 <a class="jxr_linenumber" name="L55" href="#L55">55</a>  			<strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>  				<strong class="jxr_keyword">return</strong> valueOf(str);
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>  			} <strong class="jxr_keyword">catch</strong> (Throwable t) {
@@ -68,20 +68,20 @@
 <a class="jxr_linenumber" name="L60" href="#L60">60</a>  		}
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>  	}
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>  	
-<a class="jxr_linenumber" name="L63" href="#L63">63</a>  	<strong class="jxr_keyword">public</strong> enum <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewAdjudicateContentTaskModel.html">OutputVariable</a> {
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>  	<strong class="jxr_keyword">public</strong> enum <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewReviewContentTaskModel.html">OutputVariable</a> {
 <a class="jxr_linenumber" name="L64" href="#L64">64</a>  		<em class="jxr_comment">// TODO (artf231904) out_submit_list should be restricted and/or defaulted and preferably actually used someplace.  Should also probably exist in ApproveContentTaskModel.</em>
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>  
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  		out_response(<span class="jxr_string">"Response"</span>),
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  		out_comment(<span class="jxr_string">"Comment"</span>);
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>  
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>  		<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> String labelName;
-<a class="jxr_linenumber" name="L70" href="#L70">70</a>  		<strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewAdjudicateContentTaskModel.html">OutputVariable</a>(String labelName) {
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  		<strong class="jxr_keyword">private</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewReviewContentTaskModel.html">OutputVariable</a>(String labelName) {
 <a class="jxr_linenumber" name="L71" href="#L71">71</a>  			<strong class="jxr_keyword">this</strong>.labelName = labelName;
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>  		}
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  		
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  		<strong class="jxr_keyword">public</strong> String getLabelName() { <strong class="jxr_keyword">return</strong> labelName; }
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>  
-<a class="jxr_linenumber" name="L76" href="#L76">76</a>  		<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewAdjudicateContentTaskModel.html">OutputVariable</a> fromString(String str) {
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  		<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> <a href="../../../../../gov/va/isaac/workflow/taskmodel/DualReviewReviewContentTaskModel.html">OutputVariable</a> fromString(String str) {
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  			<strong class="jxr_keyword">try</strong> {
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  				<strong class="jxr_keyword">return</strong> valueOf(str);
 <a class="jxr_linenumber" name="L79" href="#L79">79</a>  			} <strong class="jxr_keyword">catch</strong> (Throwable t) {

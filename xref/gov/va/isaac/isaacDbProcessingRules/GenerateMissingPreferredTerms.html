@@ -100,7 +100,7 @@
 <a class="jxr_linenumber" name="L92" href="#L92">92</a>  	@Override
 <a class="jxr_linenumber" name="L93" href="#L93">93</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> transform(TerminologyStoreDI ts, ConceptChronicleBI cc) <strong class="jxr_keyword">throws</strong> Exception
 <a class="jxr_linenumber" name="L94" href="#L94">94</a>  	{
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		examinedConcepts.getAndIncrement();
 <a class="jxr_linenumber" name="L96" href="#L96">96</a>  		<strong class="jxr_keyword">boolean</strong> foundPreferred = false;;
 <a class="jxr_linenumber" name="L97" href="#L97">97</a>  		String fsnText = <strong class="jxr_keyword">null</strong>;
 <a class="jxr_linenumber" name="L98" href="#L98">98</a>  		LanguageCode fsnLC = <strong class="jxr_keyword">null</strong>;
@@ -197,7 +197,16 @@
 <a class="jxr_linenumber" name="L189" href="#L189">189</a> 		<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Examined "</span> + examinedConcepts.get() + <span class="jxr_string">" concepts and generated "</span> + generatedDescriptions.get() + <span class="jxr_string">" new descriptions"</span>
 <a class="jxr_linenumber" name="L190" href="#L190">190</a> 				+ (missingFSNs.get() &gt; 0 ? <span class="jxr_string">".  ERROR: ["</span> + missingFSNs.get() + <span class="jxr_string">" concepts were missing FSNs]"</span> : <span class="jxr_string">""</span>);
 <a class="jxr_linenumber" name="L191" href="#L191">191</a> 	}
-<a class="jxr_linenumber" name="L192" href="#L192">192</a> }
+<a class="jxr_linenumber" name="L192" href="#L192">192</a> 
+<a class="jxr_linenumber" name="L193" href="#L193">193</a> 	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L194" href="#L194">194</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()</em>
+<a class="jxr_linenumber" name="L195" href="#L195">195</a> <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L196" href="#L196">196</a> 	@Override
+<a class="jxr_linenumber" name="L197" href="#L197">197</a> 	<strong class="jxr_keyword">public</strong> String getWorkResultDocBookTable()
+<a class="jxr_linenumber" name="L198" href="#L198">198</a> 	{
+<a class="jxr_linenumber" name="L199" href="#L199">199</a> 		<strong class="jxr_keyword">return</strong> <span class="jxr_string">"Not yet created"</span>;
+<a class="jxr_linenumber" name="L200" href="#L200">200</a> 	}
+<a class="jxr_linenumber" name="L201" href="#L201">201</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>

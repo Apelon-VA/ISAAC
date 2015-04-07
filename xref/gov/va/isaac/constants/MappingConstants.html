@@ -76,10 +76,10 @@
 <a class="jxr_linenumber" name="L68" href="#L68">68</a>  		UUID.fromString(<span class="jxr_string">"250d3a08-4f28-5127-8758-e8df4947f89c"</span>), 
 <a class="jxr_linenumber" name="L69" href="#L69">69</a>  		MAPPING_QUALIFIERS);
 <a class="jxr_linenumber" name="L70" href="#L70">70</a>  	
-<a class="jxr_linenumber" name="L71" href="#L71">71</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> ConceptSpecWithDescriptions MAPPING_STATUS = <strong class="jxr_keyword">new</strong> ConceptSpecWithDescriptions(<span class="jxr_string">"mapping status types"</span>, 
-<a class="jxr_linenumber" name="L72" href="#L72">72</a>  			UUID.fromString(<span class="jxr_string">"1d28d3a2-1b3d-5f97-add5-06b5f8ef08d7"</span>), 
-<a class="jxr_linenumber" name="L73" href="#L73">73</a>  			<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"mapping status types"</span>},
-<a class="jxr_linenumber" name="L74" href="#L74">74</a>  			<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"Stores the editor selected mapping item status"</span>},
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> ConceptSpecWithDescriptions MAPPING_STATUS = <strong class="jxr_keyword">new</strong> ConceptSpecWithDescriptions(<span class="jxr_string">"mapping status type"</span>, 
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>  			UUID.fromString(<span class="jxr_string">"f4523b36-3714-5d0e-999b-edb8f21dc0fa"</span>), 
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  			<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"mapping status type"</span>},
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  			<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"Stores the editor selected status of the mapping set or mapping instance"</span>},
 <a class="jxr_linenumber" name="L75" href="#L75">75</a>  			Taxonomies.WB_AUX);
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  	
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  	<strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> ConceptSpec pending = <strong class="jxr_keyword">new</strong> ConceptSpec(<span class="jxr_string">"Pending"</span>, 
@@ -90,41 +90,35 @@
 <a class="jxr_linenumber" name="L82" href="#L82">82</a>  		UUID.fromString(<span class="jxr_string">"45b49b0d-e2d2-5a27-a08d-8f79856b6307"</span>), 
 <a class="jxr_linenumber" name="L83" href="#L83">83</a>  		MAPPING_STATUS);
 <a class="jxr_linenumber" name="L84" href="#L84">84</a>  	
-<a class="jxr_linenumber" name="L85" href="#L85">85</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> ConceptSpecWithDescriptions COLUMN_STATUS = <strong class="jxr_keyword">new</strong> ConceptSpecWithDescriptions(<span class="jxr_string">"status"</span>, 
-<a class="jxr_linenumber" name="L86" href="#L86">86</a>  		UUID.fromString(<span class="jxr_string">"2da30f4a-e930-50ad-9e86-c81598dfd8c3"</span>),
-<a class="jxr_linenumber" name="L87" href="#L87">87</a>  		<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"status"</span>},
-<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"Stores the editor selected status of the mapping set or mapping instance"</span>},
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> ConceptSpecWithDescriptions COLUMN_PURPOSE = <strong class="jxr_keyword">new</strong> ConceptSpecWithDescriptions(<span class="jxr_string">"purpose"</span>, 
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  		UUID.fromString(<span class="jxr_string">"e5de9548-35b9-5e3b-9968-fd9c0a665b51"</span>),
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>  		<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"purpose"</span>},
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  		<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"Stores the editor stated purpose of the mapping set"</span>},
 <a class="jxr_linenumber" name="L89" href="#L89">89</a>  		RefexDynamic.REFEX_DYNAMIC_COLUMNS);
 <a class="jxr_linenumber" name="L90" href="#L90">90</a>  	
-<a class="jxr_linenumber" name="L91" href="#L91">91</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> ConceptSpecWithDescriptions COLUMN_PURPOSE = <strong class="jxr_keyword">new</strong> ConceptSpecWithDescriptions(<span class="jxr_string">"purpose"</span>, 
-<a class="jxr_linenumber" name="L92" href="#L92">92</a>  		UUID.fromString(<span class="jxr_string">"e5de9548-35b9-5e3b-9968-fd9c0a665b51"</span>),
-<a class="jxr_linenumber" name="L93" href="#L93">93</a>  		<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"purpose"</span>},
-<a class="jxr_linenumber" name="L94" href="#L94">94</a>  		<strong class="jxr_keyword">new</strong> String[] {<span class="jxr_string">"Stores the editor stated purpose of the mapping set"</span>},
-<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		RefexDynamic.REFEX_DYNAMIC_COLUMNS);
-<a class="jxr_linenumber" name="L96" href="#L96">96</a>  	
-<a class="jxr_linenumber" name="L97" href="#L97">97</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> DynamicRefexConceptSpec MAPPING_SEMEME_TYPE;
-<a class="jxr_linenumber" name="L98" href="#L98">98</a>  	<strong class="jxr_keyword">static</strong>
-<a class="jxr_linenumber" name="L99" href="#L99">99</a>  	{
-<a class="jxr_linenumber" name="L100" href="#L100">100</a> 		<strong class="jxr_keyword">try</strong>
-<a class="jxr_linenumber" name="L101" href="#L101">101</a> 		{
-<a class="jxr_linenumber" name="L102" href="#L102">102</a> 			<em class="jxr_comment">//This sememe defines how the mapping sememe's are constructed</em>
-<a class="jxr_linenumber" name="L103" href="#L103">103</a> 			MAPPING_SEMEME_TYPE = <strong class="jxr_keyword">new</strong> DynamicRefexConceptSpec(<span class="jxr_string">"Mapping Sememe Type"</span>, 
-<a class="jxr_linenumber" name="L104" href="#L104">104</a> 				UUID.fromString(<span class="jxr_string">"aa4c75a1-fc69-51c9-88dc-a1a1c7f84e01"</span>),
-<a class="jxr_linenumber" name="L105" href="#L105">105</a> 				<strong class="jxr_keyword">true</strong>, 
-<a class="jxr_linenumber" name="L106" href="#L106">106</a> 				<span class="jxr_string">"A Sememe used to specify how user-created mapping Sememes are structured"</span>, 
-<a class="jxr_linenumber" name="L107" href="#L107">107</a> 				<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo[] {
-<a class="jxr_linenumber" name="L108" href="#L108">108</a> 					<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo(0, COLUMN_STATUS.getPrimodialUuid(), RefexDynamicDataType.UUID, <strong class="jxr_keyword">null</strong>, false, 
-<a class="jxr_linenumber" name="L109" href="#L109">109</a> 						RefexDynamicValidatorType.IS_KIND_OF, <strong class="jxr_keyword">new</strong> RefexDynamicUUID(MAPPING_STATUS.getPrimodialUuid())),
-<a class="jxr_linenumber" name="L110" href="#L110">110</a> 					<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo(1, COLUMN_PURPOSE.getPrimodialUuid(), RefexDynamicDataType.STRING, <strong class="jxr_keyword">null</strong>, false, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>)},
-<a class="jxr_linenumber" name="L111" href="#L111">111</a> 				RefexDynamic.REFEX_DYNAMIC_IDENTITY,
-<a class="jxr_linenumber" name="L112" href="#L112">112</a> 				<strong class="jxr_keyword">new</strong> Integer[] {});  <em class="jxr_comment">//want to index this sememe, but don't need to index the data columns</em>
-<a class="jxr_linenumber" name="L113" href="#L113">113</a> 		}
-<a class="jxr_linenumber" name="L114" href="#L114">114</a> 		<strong class="jxr_keyword">catch</strong> (PropertyVetoException e)
-<a class="jxr_linenumber" name="L115" href="#L115">115</a> 		{
-<a class="jxr_linenumber" name="L116" href="#L116">116</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(e);
-<a class="jxr_linenumber" name="L117" href="#L117">117</a> 		}
-<a class="jxr_linenumber" name="L118" href="#L118">118</a> 	}
-<a class="jxr_linenumber" name="L119" href="#L119">119</a> }
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  	<strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">static</strong> DynamicRefexConceptSpec MAPPING_SEMEME_TYPE;
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  	<strong class="jxr_keyword">static</strong>
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  	{
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>  		<strong class="jxr_keyword">try</strong>
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>  		{
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>  			<em class="jxr_comment">//This sememe defines how the mapping sememe's are constructed</em>
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>  			MAPPING_SEMEME_TYPE = <strong class="jxr_keyword">new</strong> DynamicRefexConceptSpec(<span class="jxr_string">"Mapping Sememe Type"</span>, 
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  				UUID.fromString(<span class="jxr_string">"aa4c75a1-fc69-51c9-88dc-a1a1c7f84e01"</span>),
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>  				<strong class="jxr_keyword">true</strong>, 
+<a class="jxr_linenumber" name="L100" href="#L100">100</a> 				<span class="jxr_string">"A Sememe used to specify how user-created mapping Sememes are structured"</span>, 
+<a class="jxr_linenumber" name="L101" href="#L101">101</a> 				<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo[] {
+<a class="jxr_linenumber" name="L102" href="#L102">102</a> 					<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo(0, MAPPING_STATUS.getPrimodialUuid(), RefexDynamicDataType.UUID, <strong class="jxr_keyword">null</strong>, false, 
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 						RefexDynamicValidatorType.IS_KIND_OF, <strong class="jxr_keyword">new</strong> RefexDynamicUUID(MAPPING_STATUS.getPrimodialUuid())),
+<a class="jxr_linenumber" name="L104" href="#L104">104</a> 					<strong class="jxr_keyword">new</strong> RefexDynamicColumnInfo(1, COLUMN_PURPOSE.getPrimodialUuid(), RefexDynamicDataType.STRING, <strong class="jxr_keyword">null</strong>, false, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">null</strong>)},
+<a class="jxr_linenumber" name="L105" href="#L105">105</a> 				RefexDynamic.REFEX_DYNAMIC_IDENTITY,
+<a class="jxr_linenumber" name="L106" href="#L106">106</a> 				<strong class="jxr_keyword">new</strong> Integer[] {});  <em class="jxr_comment">//want to index this sememe, but don't need to index the data columns</em>
+<a class="jxr_linenumber" name="L107" href="#L107">107</a> 		}
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> 		<strong class="jxr_keyword">catch</strong> (PropertyVetoException e)
+<a class="jxr_linenumber" name="L109" href="#L109">109</a> 		{
+<a class="jxr_linenumber" name="L110" href="#L110">110</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(e);
+<a class="jxr_linenumber" name="L111" href="#L111">111</a> 		}
+<a class="jxr_linenumber" name="L112" href="#L112">112</a> 	}
+<a class="jxr_linenumber" name="L113" href="#L113">113</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>
