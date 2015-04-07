@@ -2,11 +2,10 @@ package gov.va.isaac.gui.mapping;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.UUID;
 
-import gov.va.isaac.gui.mapping.data.MappingSet;
-import gov.va.isaac.gui.util.Images;
-import gov.va.isaac.interfaces.gui.views.PopupViewI;
+import org.glassfish.hk2.api.PerLookup;
+import org.jvnet.hk2.annotations.Service;
+
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -14,22 +13,20 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.Window;
-
-import org.glassfish.hk2.api.PerLookup;
-import org.jvnet.hk2.annotations.Service;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
+import gov.va.isaac.gui.mapping.data.MappingItem;
+import gov.va.isaac.gui.util.Images;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
 
 @Service
 @PerLookup
-public class CreateMappingItemView implements PopupViewI{
+public class EditMappingItemView implements PopupViewI {
 
-	//private Logger logger = LoggerFactory.getLogger(this.getClass());
-	private CreateMappingItemController controller;
+	private final EditMappingItemController controller;
 
-	public CreateMappingItemView() throws IOException {
+	public EditMappingItemView() throws IOException {
 		super();
-		URL resource = MappingController.class.getResource("CreateMappingItem.fxml");
+		
+		URL resource = MappingController.class.getResource("EditMappingItem.fxml");
 		FXMLLoader loader = new FXMLLoader(resource);
 		loader.load();
 		controller = loader.getController();
@@ -39,7 +36,7 @@ public class CreateMappingItemView implements PopupViewI{
     public void showView(Window parent) {
 		Stage s = new Stage();
 		s.initOwner(parent);
-		s.initModality(Modality.NONE);
+		s.initModality(Modality.APPLICATION_MODAL);
 		s.initStyle(StageStyle.DECORATED);
 
 		s.setScene(new Scene(controller.getRootNode()));
@@ -54,11 +51,9 @@ public class CreateMappingItemView implements PopupViewI{
 	    
     }
 	
-	public void setMappingSet(MappingSet mappingSet) {
-		controller.setMappingSet(mappingSet);
+	public void setMappingItem(MappingItem mappingItem) {
+		controller.setMappingItem(mappingItem);
 	}
 	
-	public void setSourceConcept(UUID sourceConcept) {
-		controller.setSourceConcept(sourceConcept);
-	}
+
 }

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>gov.va.isaac</groupId>
 		<artifactId>isaac-parent</artifactId>
-		<version>Sprint_20</version>
+		<version>Sprint_20.1</version>
 	</parent>
 
 	<groupId>gov.va.isaac.modules</groupId>
@@ -81,13 +81,27 @@
 			<scope>provided</scope><!-- annotations are needed only to build the plugin -->
 		</dependency>
 	</dependencies>
-	<build>		
+	
+	<!-- Deal with older (broken) versions of maven that can't find mojo code properly without help -->
+	<build>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
 				<version>3.4</version>
-			</plugin>	
+				<configuration>
+					<!-- see http://jira.codehaus.org/browse/MNG-5346 -->
+					<skipErrorNoDescriptorsFound>true</skipErrorNoDescriptorsFound>
+				</configuration>
+				<executions>
+					<execution>
+						<id>mojo-descriptor</id>
+						<goals>
+							<goal>descriptor</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 		</plugins>
 	</build>
 </project>

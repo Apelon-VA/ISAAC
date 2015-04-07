@@ -5,7 +5,8 @@ import gov.va.isaac.ie.exporter.EConceptExporter;
 import gov.va.isaac.mojos.dbBuilder.MojoConceptSpec;
 import gov.va.isaac.mojos.dbBuilder.Setup;
 import gov.va.isaac.util.OTFUtility;
-
+import gov.va.isaac.util.ProgressEvent;
+import gov.va.isaac.util.ProgressListener;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -13,40 +14,23 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
 import java.util.List;
-
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
-//import org.apache.maven.execution.MavenSession;
-//import org.apache.maven.plugin.MojoExecution;
-//import org.apache.maven.plugin.descriptor.PluginDescriptor;
-
 
 /**
  * Exports a jBin file type (an eConcept) .
- * @goal touch
- * @phase process-sources
  */
 @Mojo( name = "Export")
 public class Export extends AbstractMojo
 {
-	
-	public enum ExportReleaseType {
-		SNAPSHOT,
-		DELTA,
-		FULL
-	}
-	
-	private int conCount = 0;
+	private EConceptExporter eConExporter;
 	private DataOutputStream dos_;
 	
 	//REQUIRED
-	@Parameter (name = "bdbFolderLocation", required = true)
-	private File bdbFolderLocation;
-	
 	@Parameter (name = "outputFolder", required = true)
 	private File outputFolder;
  
@@ -55,9 +39,6 @@ public class Export extends AbstractMojo
 	
 	@Parameter (name = "path", required = true)
 	private MojoConceptSpec path;
-	
-	@Parameter(name = "userProfileLocation", required = true)
-	private File userProfileLocation;
 	
 	//OPTIONAL
 	@Parameter (name="namespace")
@@ -68,113 +49,153 @@ public class Export extends AbstractMojo
 	
 	@Parameter (name = "pathFilter")
 	private MojoConceptSpec[] pathFilter;
+	
+	@Parameter (name="skipExportAssembly", defaultValue="false")
+	private boolean skipExportAssembly;
 
 	
+	@Override
 	public void execute() throws MojoExecutionException 
 	{
-		String fileName = "EXPORT";
-				
-		//Check if requireed Parameters are Empty
-		// We can proably remove these
-		if(bdbFolderLocation != null && bdbFolderLocation.exists()) {
-			getLog().info("We found the bdbFolderLocation succesfully at " + bdbFolderLocation.getAbsolutePath());
-		} else {
-			getLog().error("Missing bdbFolderLocation");
-			throw new MojoExecutionException("Missing bdbFolderLocation");
+		if(skipExportAssembly)
+		{
+			getLog().info("Content Export Mojo will not run due to 'skipExportAssembly' being set to true.  Set skipExportAssembly=false to enable the Content Export" );
 		}
-		if(outputFolder != null) {
-			if(outputFolder.exists()) {
-				getLog().info("Output directory exists: " + outputFolder.getAbsolutePath());
+		else
+		{
+			getLog().info("Executing Content Export" );
+			String fileName = "SOLOR_Snapshot_" + path.getFsn() + "";
+					
+			//Check if requireed Parameters are Empty
+			if(outputFolder != null) {
+				if(outputFolder.exists()) {
+					getLog().info("Output directory exists: " + outputFolder.getAbsolutePath());
+				} else {
+					outputFolder.mkdir();
+					getLog().info("Output directory created: " + outputFolder.getAbsolutePath());
+				}
+				
 			} else {
-				outputFolder.mkdir();
-				getLog().info("Output directory created: " + outputFolder.getAbsolutePath());
+				getLog().error("Missing outputFolder parameter");
+				throw new MojoExecutionException("Missing outputFolder");
 			}
 			
-		} else {
-			getLog().error("Missing outputFolder parameter");
-			throw new MojoExecutionException("Missing outputFolder");
-		}
-		
-		if(exportType.length < 1) {
-			getLog().error("exportType array parameter is emnpty");
-			throw new MojoExecutionException("Missing exportType");
-		} else {
-			getLog().info("exportType: " + exportType);
-		}
-		
-		
-		if(namespace != null) {
-			fileName = fileName + "-" + namespace;
-		}
-		if(releaseDate != null) {
-			fileName = fileName + "-" + releaseDate;
-		}
-		
-		try
-		{
-			//STARTUP
-			Setup setup = new Setup();
-			setup.setBdbFolderLocation(bdbFolderLocation.getAbsolutePath());
-			setup.setUserProfileFolderLocation(userProfileLocation);
-			setup.execute();
+			if(exportType.length < 1) {
+				getLog().error("exportType array parameter is emnpty");
+				throw new MojoExecutionException("Missing exportType");
+			} else {
+				getLog().info("exportType: " + exportType);
+			}
 			
-			getLog().info("Exporting the database " + fileName + " to " + outputFolder.getAbsolutePath());
 			
-			dos_ = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(fileName + ".jbin")));
+			if(namespace != null) {
+				fileName = fileName + "_[" + namespace + "]";
+			}
+			if(releaseDate != null) {
+				fileName = fileName + "_[" + releaseDate + "]";
+			}
 			
-			EConceptExporter eConExporter = new EConceptExporter(dos_);
-			
-			List<ConceptChronicleBI> allPaths = OTFUtility.getPathConcepts(); 
-			
-			boolean pathFound = false;
-			for(ConceptChronicleBI thisPath : allPaths) {
-				if(thisPath.getPrimordialUuid().equals(path.getConceptSpec().getPrimodialUuid())) {
-					int thisNid = thisPath.getConceptNid();
-					eConExporter.export(thisNid);
-					pathFound = true;
-					break;
+			try
+			{
+				getLog().info("Exporting the database " + fileName + " to " + outputFolder.getAbsolutePath());
+				
+				dos_ = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(new File(outputFolder, fileName + ".jbin"))));
+				eConExporter = new EConceptExporter(dos_);
+				List<ConceptChronicleBI> allPaths = OTFUtility.getPathConcepts(); 
+				
+				ProgressListener pListener = new ProgressListener() {
+					@Override
+					public void updateProgress(ProgressEvent pe) {
+						long percent = pe.getPercent();
+						if((percent % 10) == 0){
+							getLog().info(percent + "% complete - " + eConExporter.getCount() + " concepts exported");
+						} else if(percent == 1) {
+							getLog().info("Export started succesfully (1% complete)");
+						}
+					}
+				};
+				
+				eConExporter.addProgressListener(pListener);
+				
+				boolean pathFound = false;
+				for(ConceptChronicleBI thisPath : allPaths) {
+					try {
+						if(thisPath.getPrimordialUuid().equals(path.getConceptSpec().getPrimodialUuid())) {
+							int thisNid = thisPath.getNid();
+							try {
+								eConExporter.export(thisNid);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							pathFound = true;
+							break;
+						}
+					} catch (Exception e) {
+						getLog().error("Exception Error");
+						e.printStackTrace();
+					}
+				}
+					
+				if(!pathFound){
+					getLog().error("Could not find a matching path!");
+					//throw new MojoExecutionException("We could not find a matching path");
 				}
 			}
-			
-			if(!pathFound){
-				getLog().error("Could not find a matching path!");
-				throw new MojoExecutionException("We could not find a matching path");
+			catch (Exception e) {
+				getLog().error("Error exporting DB");
+				throw new MojoExecutionException("Unexpected error exporting the DB", e);
+			} finally {
+				
+				//CLOSE DATA OUTPUT STREAM
+				try {
+					if(dos_ != null) {
+						dos_.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+				getLog().info("Done exporting the DB - exported " + eConExporter.getCount() + " concepts");
 			}
-			
-			//SHUTDOWN
-			TerminologyStoreDI store = AppContext.getService(TerminologyStoreDI.class);
-			getLog().info("  Shutting Down");
-			store.shutdown();
-			
-			dos_.close();
-			
-			getLog().info("Done exporting the DB - exported " + conCount + " concepts");
-		}
-		catch (Exception e)
-		{
-			throw new MojoExecutionException("Unexpected error exporting the DB", e);
 		}
 	}
 	
 	public static void main(String[] args) {
+		
+		Setup setup = new Setup();
+		setup.setBdbFolderLocation("../../ISAAC-PA/app/solor-snomed-2015.03.06-active-only.bdb");
+		setup.setUserProfileFolderLocation( new File("../../ISAAC-PA/app/profiles"));
+		
+		try {
+			setup.execute();
+		} catch (MojoExecutionException e1) {
+			e1.printStackTrace();
+		}
+		
 		Export export = new Export();
-		export.bdbFolderLocation = new File("../../ISAAC-PA/app/solor-snomed-2015.03.06-active-only.bdb");
+//		export.bdbFolderLocation = new File("../../ISAAC-PA/app/solor-snomed-2015.03.06-active-only.bdb");
 		export.outputFolder = new File("target/output");
 		export.exportType = new ExportReleaseType[]{ExportReleaseType.SNAPSHOT};
-		export.userProfileLocation = new File("../../ISAAC-PA/app/profiles");
+		export.skipExportAssembly = false;
+//		export.userProfileLocation = new File("../../ISAAC-PA/app/profiles");
 		
 		MojoConceptSpec mojoConceptSpec = new MojoConceptSpec();
+//		mojoConceptSpec.setFsn("ISAAC development path origin");
+//		mojoConceptSpec.setUuid("83637d62-a85f-5ce5-b6b3-b9bcf6262abb");
+		
 		mojoConceptSpec.setFsn("ISAAC development path");
 		mojoConceptSpec.setUuid("f5c0a264-15af-5b94-a964-bb912ea5634f");
 		
 		export.path = mojoConceptSpec;
 		
 		try {
-	        export.execute();
-        } catch (MojoExecutionException e) {
-	        e.printStackTrace();
-        }
+			export.execute();
+		} catch (MojoExecutionException e) {
+			e.printStackTrace();
+		}
 		
+		//SHUTDOWN
+		AppContext.getService(TerminologyStoreDI.class).shutdown();
 		
 	}
 	

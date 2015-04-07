@@ -10,7 +10,7 @@ import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
 import gov.va.isaac.gui.mapping.data.MappingUtils;
 import gov.va.isaac.gui.util.ErrorMarkerUtils;
-import gov.va.isaac.util.TaskCompleteCallback;
+//import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
 import javafx.application.Platform;
@@ -18,7 +18,7 @@ import javafx.beans.property.StringProperty;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
-import javafx.geometry.Insets;
+//import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -28,8 +28,8 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
+//import javafx.scene.layout.HBox;
+//import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 import org.slf4j.Logger;
@@ -83,12 +83,17 @@ public class CreateMappingSetController {
 			try
 			{
 				List<SimpleDisplayConcept> status = MappingUtils.getStatusConcepts();
-				status.add(0, new SimpleDisplayConcept("NO STATUS", Integer.MIN_VALUE));
+				status.add(0, new SimpleDisplayConcept("No Status", Integer.MIN_VALUE));
 				
 				Platform.runLater(() ->
 				{
 					statusCombo.getItems().addAll(status);
-					statusCombo.getSelectionModel().select(0);
+					if (mappingSet_ != null) {
+						MappingController.setComboSelection(statusCombo, mappingSet_.getEditorStatusConceptProperty().getValue(), 0); 	
+					} else {
+						statusCombo.getSelectionModel().select(0);
+					}
+					
 				});
 			}
 			catch (Exception e1)
@@ -142,6 +147,8 @@ public class CreateMappingSetController {
 				
 				if (mappingSet_ == null) {
 					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), statusUUID);
+					AppContext.getService(Mapping.class).refreshMappingSets();
+
 				} else {
 					// Edit mapping set
 					mappingSet_.setName(nameInput.getText());
@@ -151,12 +158,10 @@ public class CreateMappingSetController {
 					MappingSetDAO.updateMappingSet(mappingSet_);
 				}
 				
-				AppContext.getService(Mapping.class).refreshMappingSets();
 				createButton.getScene().getWindow().hide();
 			}
 			catch (Exception e)
 			{
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			
@@ -188,9 +193,8 @@ public class CreateMappingSetController {
 		nameInput.setText(mappingSet.getName());
 		purposeInput.setText(mappingSet.getPurpose());
 		descInput.setText(mappingSet.getDescription());
-		//TODO status
-		
 	}
+
 }
 
 

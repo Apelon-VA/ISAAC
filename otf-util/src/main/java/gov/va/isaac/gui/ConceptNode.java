@@ -100,7 +100,7 @@ public class ConceptNode implements ConceptLookupCallback
 		}
 	};
 	
-	private WeakListChangeListener<SimpleDisplayConcept> listChangeListener_;
+	private ListChangeListener<SimpleDisplayConcept> listChangeListener_;
 	private volatile boolean disableChangeListener_ = false;
 	private Function<ConceptVersionBI, String> descriptionReader_;
 	private ObservableList<SimpleDisplayConcept> dropDownOptions_;
@@ -118,8 +118,26 @@ public class ConceptNode implements ConceptLookupCallback
 			Function<ConceptVersionBI, String> descriptionReader)
 	{
 		c_ = initialConcept;
+		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
+		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
+		listChangeListener_ = new ListChangeListener<SimpleDisplayConcept>()
+		{
+			@Override
+			public void onChanged(Change<? extends SimpleDisplayConcept> c)
+			{
+				//TODO I still have an infinite loop here.  Find and fix.
+				logger.debug("updating concept dropdown");
+				disableChangeListener_ = true;
+				SimpleDisplayConcept temp = cb_.getValue();
+				cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
+				cb_.setValue(temp);
+				cb_.getSelectionModel().select(temp);
+				disableChangeListener_ = false;
+			}
+		};
 		descriptionReader_ = (descriptionReader == null ? (conceptVersion) -> {return conceptVersion == null ? "" : OTFUtility.getDescription(conceptVersion);} : descriptionReader);
 		dropDownOptions_ = dropDownOptions == null ? AppContext.getService(CommonlyUsedConcepts.class).getObservableConcepts() : dropDownOptions;
+		dropDownOptions_.addListener(new WeakListChangeListener<SimpleDisplayConcept>(listChangeListener_));
 		conceptBinding_ = new ObjectBinding<ConceptVersionBI>()
 		{
 			@Override
@@ -151,26 +169,7 @@ public class ConceptNode implements ConceptLookupCallback
 		cb_.setPrefWidth(ComboBox.USE_COMPUTED_SIZE);
 		cb_.setMinWidth(200.0);
 		cb_.setPromptText("Type, drop or select a concept");
-		//We can't simply use the ObservableList from the CommonlyUsedConcepts, because it infinite loops - there doesn't seem to be a way 
-		//to change the items in the drop down without changing the selection.  So, we have this hack instead.
-		listChangeListener_ = new WeakListChangeListener<SimpleDisplayConcept>(new ListChangeListener<SimpleDisplayConcept>()
-		{
-			@Override
-			public void onChanged(Change<? extends SimpleDisplayConcept> c)
-			{
-				//TODO I still have an infinite loop here.  Find and fix.
-				logger.debug("updating concept dropdown");
-				disableChangeListener_ = true;
-				SimpleDisplayConcept temp = cb_.getValue();
-				cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
-				cb_.setValue(temp);
-				cb_.getSelectionModel().select(temp);
-				disableChangeListener_ = false;
-			}
-		});
-		
-		dropDownOptions_.addListener(listChangeListener_);
-		
+
 		cb_.setItems(FXCollections.observableArrayList(dropDownOptions_));
 		cb_.setVisibleRowCount(11);
 		

@@ -1,18 +1,25 @@
 package gov.va.isaac.gui.mapping.data;
 
+import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 
 import java.util.HashMap;
 import java.util.UUID;
 
+import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
 
 public class MappingObject extends StampedItem {
 	
-	protected UUID editorStatusConcept;
-	protected HashMap<UUID, SimpleStringProperty> cachedValues = new HashMap<>();
+	protected UUID editorStatusConcept = null;
+	protected int editorStatusConceptNid = 0;
+	protected final SimpleStringProperty editorStatusConceptProperty = new SimpleStringProperty();
+	protected HashMap<UUID, String> cachedValues = new HashMap<>();
+	
+	protected static BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
 	
 	/**
 	 * @return the editorStatusConcept
@@ -28,40 +35,40 @@ public class MappingObject extends StampedItem {
 	public void setEditorStatusConcept(UUID editorStatusConcept)
 	{
 		this.editorStatusConcept = editorStatusConcept;
+		this.editorStatusConceptNid = getNidForUuidSafe(editorStatusConcept);
+		propertyLookup(editorStatusConcept, editorStatusConceptProperty);
+	}
+
+	public int getEditorStatusConceptNid() {
+		return editorStatusConceptNid;
 	}
 
 	public SimpleStringProperty getEditorStatusConceptProperty()
 	{
-		return propertyLookup(getEditorStatusConcept());
+		return editorStatusConceptProperty;
 	}
 
-	
-	protected SimpleStringProperty propertyLookup(UUID uuid)
-	{
-		if (uuid == null)
-		{
-			return new SimpleStringProperty("");
-		}
-		SimpleStringProperty ssp = cachedValues.get(uuid);
-		if (ssp == null)
-		{
-			ssp = new SimpleStringProperty("-");
-			cachedValues.put(uuid, ssp);
-		}
-		
-		SimpleStringProperty ssp2 = cachedValues.get(uuid);
-		
-		if (ssp.get().equals("-"))
-		{
-			Utility.execute(() ->
-			{
-				String s = OTFUtility.getDescription(uuid);
-				Platform.runLater(() ->
-				{
-					ssp2.set(s);
+	protected void propertyLookup(UUID uuid, SimpleStringProperty property)	{
+		if (uuid == null) {
+			property.set(null);
+		} else {
+			String cachedValue = cachedValues.get(uuid);
+			if (cachedValue != null) {
+				property.set(cachedValue);
+			} else {
+				property.set("-");
+				Utility.execute(() -> {
+					String s = OTFUtility.getDescription(uuid);
+					cachedValues.put(uuid, s);
+					Platform.runLater(() -> {
+						property.set(s);
+					});
 				});
-			});
+			}
 		}
-		return ssp2;
+	}
+	
+	public static int getNidForUuidSafe(UUID uuid) {
+		return (uuid == null)? 0 : dataStore.getNidForUuids(new UUID[] { uuid });
 	}
 }

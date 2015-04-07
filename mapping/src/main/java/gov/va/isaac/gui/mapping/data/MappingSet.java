@@ -51,9 +51,14 @@ public class MappingSet extends MappingObject
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingSet.class);
 
-	private String name, inverseName, description, purpose;
+	//private String name, inverseName, description, purpose;
 	private UUID primordialUUID;
 
+	private final SimpleStringProperty nameProperty        = new SimpleStringProperty();
+	private final SimpleStringProperty purposeProperty 	   = new SimpleStringProperty();
+	private final SimpleStringProperty descriptionProperty = new SimpleStringProperty();
+	private final SimpleStringProperty inverseNameProperty = new SimpleStringProperty();
+	
 	/**
 	 * 
 	 * Read an existing mapping set from the database
@@ -81,17 +86,17 @@ public class MappingSet extends MappingObject
 		return mappingItems;
 	}
 	
-	public SimpleStringProperty getNameProperty() 		 { return new SimpleStringProperty(name); }
-	public SimpleStringProperty getPurposeProperty() 	 { return new SimpleStringProperty(purpose); }
-	public SimpleStringProperty getDescriptionProperty() { return new SimpleStringProperty(description); }
-	public SimpleStringProperty getInverseNameProperty() { return new SimpleStringProperty(inverseName); }
+	public SimpleStringProperty getNameProperty() 		 { return nameProperty; }
+	public SimpleStringProperty getPurposeProperty() 	 { return purposeProperty; }
+	public SimpleStringProperty getDescriptionProperty() { return descriptionProperty; }
+	public SimpleStringProperty getInverseNameProperty() { return inverseNameProperty; }
 	
 	/**
 	 * @param purpose - The 'purpose' of the mapping set. May specify null.
 	 */
 	public void setPurpose(String purpose)
 	{
-		this.purpose = purpose;
+		purposeProperty.set(purpose);
 	}
 
 	/**
@@ -99,7 +104,7 @@ public class MappingSet extends MappingObject
 	 */
 	public String getPurpose()
 	{
-		return purpose;
+		return purposeProperty.get();
 	}
 
 	/**
@@ -107,7 +112,7 @@ public class MappingSet extends MappingObject
 	 */
 	public String getName()
 	{
-		return name;
+		return nameProperty.get();
 	}
 
 	/**
@@ -115,7 +120,7 @@ public class MappingSet extends MappingObject
 	 */
 	public String getInverseName()
 	{
-		return inverseName;
+		return inverseNameProperty.get();
 	}
 
 	/**
@@ -123,7 +128,7 @@ public class MappingSet extends MappingObject
 	 */
 	public String getDescription()
 	{
-		return description;
+		return descriptionProperty.get();
 	}
 
 	/**
@@ -131,7 +136,7 @@ public class MappingSet extends MappingObject
 	 */
 	public void setName(String name)
 	{
-		this.name = name;
+		this.nameProperty.set(name);
 	}
 
 	/**
@@ -139,7 +144,7 @@ public class MappingSet extends MappingObject
 	 */
 	public void setInverseName(String inverseName)
 	{
-		this.inverseName = inverseName;
+		this.inverseNameProperty.set(inverseName);
 	}
 
 	/**
@@ -147,7 +152,7 @@ public class MappingSet extends MappingObject
 	 */
 	public void setDescription(String description)
 	{
-		this.description = description;
+		this.descriptionProperty.set(description);
 	}
 
 	/**
@@ -187,13 +192,10 @@ public class MappingSet extends MappingObject
 			{
 				primordialUUID = mappingConcept.getPrimordialUuid();
 				readStampDetails(mappingConcept);
-				if (refex.getData().length > 0 && refex.getData()[0] != null)
-				{
-					editorStatusConcept = ((RefexDynamicUUID) refex.getData()[0]).getDataUUID();
-				}
+				setEditorStatusConcept((refex.getData().length > 0 && refex.getData()[0] != null ? ((RefexDynamicUUID) refex.getData()[0]).getDataUUID() : null));
 				if (refex.getData().length > 1 && refex.getData()[1] != null)
 				{
-					purpose = ((RefexDynamicString) refex.getData()[1]).getDataString();
+					setPurpose(((RefexDynamicString) refex.getData()[1]).getDataString());
 				}
 
 				for (DescriptionVersionBI<?> desc : mappingConcept.getDescriptionsActive())
@@ -202,7 +204,7 @@ public class MappingSet extends MappingObject
 					{
 						if (OTFUtility.isPreferred(desc.getAnnotations()))
 						{
-							name = desc.getText();
+							setName(desc.getText());
 						}
 						else
 						//see if it is the inverse name
@@ -211,7 +213,7 @@ public class MappingSet extends MappingObject
 							{
 								if (annotation.getAssemblageNid() == ISAAC.ASSOCIATION_INVERSE_NAME.getNid())
 								{
-									inverseName = desc.getText();
+									setInverseName(desc.getText()); 
 									break;
 								}
 							}
@@ -221,11 +223,11 @@ public class MappingSet extends MappingObject
 					{
 						if (OTFUtility.isPreferred(desc.getAnnotations()))
 						{
-							description = desc.getText();
+							setDescription(desc.getText());
 						}
 					}
 
-					if (name != null && description != null && inverseName != null)
+					if (getName() != null && getDescription() != null && getInverseName() != null)
 					{
 						//found everything we are looking for
 						break;

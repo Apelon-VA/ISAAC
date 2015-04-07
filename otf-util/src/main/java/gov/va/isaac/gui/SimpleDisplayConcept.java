@@ -38,7 +38,7 @@ import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
  */
 public class SimpleDisplayConcept implements Comparable<SimpleDisplayConcept>
 {
-	private String description_;
+	protected String description_;
 	private int nid_;
 	private boolean ignoreChange_ = false;
 	private boolean uncommitted_ = false;

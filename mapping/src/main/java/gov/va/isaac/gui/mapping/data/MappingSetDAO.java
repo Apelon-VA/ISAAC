@@ -225,10 +225,12 @@ public class MappingSetDAO extends MappingDAO
 						getComponentVersion(OTFUtility.getViewCoordinateAllowInactive(), sr.getNid());
 				if (rc != null)
 				{
-					ConceptVersionBI mappingConcept = getMappingConcept(rc);
-					if (mappingConcept.isActive() || !activeOnly)
+					MappingSet mappingSet = new MappingSet(rc);
+					//ConceptVersionBI mappingConcept = getMappingConcept(rc);
+					if (mappingSet.isActive() || !activeOnly)
 					{
-						result.add(new MappingSet(rc));
+						result.add(mappingSet);
+						//result.add(new MappingSet(rc));
 					}
 				}
 			}

@@ -16,14 +16,14 @@ import javafx.stage.Window;
 
 import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
 
 @Service
 @PerLookup
 public class CreateMappingSetView implements PopupViewI{
 
-	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	//private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	private final CreateMappingSetController controller;
 
 	public CreateMappingSetView() throws IOException {
@@ -39,7 +39,7 @@ public class CreateMappingSetView implements PopupViewI{
     public void showView(Window parent) {
 		Stage s = new Stage();
 		s.initOwner(parent);
-		s.initModality(Modality.NONE);
+		s.initModality(Modality.APPLICATION_MODAL);
 		s.initStyle(StageStyle.DECORATED);
 
 		s.setScene(new Scene(controller.getRootNode()));

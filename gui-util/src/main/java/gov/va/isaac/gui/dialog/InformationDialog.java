@@ -70,6 +70,6 @@ public class InformationDialog extends Stage {
 
     public void setVariables(String title, String message) {
         this.setTitle(title);
-        controller.setMessageText(message);
+        controller.setMessageText(message == null || message.length() == 0 ? title : message);
     }
 }
