@@ -98,7 +98,7 @@ class SctTreeView {
     private BorderPane bp_;
     private StackPane sp_;
     private ToolBar tb_ = new ToolBar();
-    private SctTreeItem rootTreeItem;
+    private static SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
     
@@ -201,6 +201,10 @@ class SctTreeView {
         pi.getStyleClass().add("progressIndicator");
         StackPane.setAlignment(pi, Pos.CENTER);
         sp_.getChildren().add(pi);
+    }
+    
+    public static SctTreeItem getRoot() {
+    	return rootTreeItem;
     }
     
     public BorderPane getView()
