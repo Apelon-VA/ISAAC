@@ -124,7 +124,7 @@ public class MappingUtils
 	 * @throws IOException
 	 */
 	public static SearchHandle search(String searchString, TaskCompleteCallback callback, LuceneDescriptionType descriptionType, 
-			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid, Integer childOfNid) throws IOException
+			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid) throws IOException
 	{
 		ArrayList<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> filters = new ArrayList<>();
 		
@@ -213,36 +213,6 @@ public class MappingUtils
 			});
 		}
 		
-		if (childOfNid != null)
-		{
-			filters.add(new Function<List<CompositeSearchResult>, List<CompositeSearchResult>>()
-			{
-				@Override
-				public List<CompositeSearchResult> apply(List<CompositeSearchResult> t)
-				{
-					try
-					{
-						ArrayList<CompositeSearchResult> keep = new ArrayList<>();
-						BdbTerminologyStore ds = ExtendedAppContext.getDataStore();
-						ViewCoordinate vc = OTFUtility.getViewCoordinate();
-						
-						for (CompositeSearchResult csr : t)
-						{
-							if (ds.isChildOf(csr.getContainingConcept().getNid(), childOfNid, vc))
-							{
-								keep.add(csr);
-							}
-						}
-						return keep;
-					}
-					catch (IOException | ContradictionException e)
-					{
-						throw new RuntimeException(e);
-					}
-				}
-			});
-		}
-		
 		SearchResultsIntersectionFilter filterSet = (filters.size() > 0 ? new SearchResultsIntersectionFilter(filters) : null);
 		
 		if (descriptionType == null && advancedDescriptionType == null)
@@ -277,7 +247,7 @@ public class MappingUtils
 	 * @throws IOException
 	 */
 	public static SearchHandle search(int sourceConceptNid, TaskCompleteCallback callback, LuceneDescriptionType descriptionType, 
-			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid, Integer childOfNid) throws IOException
+			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid) throws IOException
 	{
 		StringBuilder searchString;
 		try
@@ -299,7 +269,7 @@ public class MappingUtils
 			throw new IOException(e);
 		}
 		
-		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, kindOfNid, childOfNid);
+		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, kindOfNid);
 	}
 	
 	public static List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException
