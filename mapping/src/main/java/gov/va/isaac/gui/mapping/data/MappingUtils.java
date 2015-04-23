@@ -118,12 +118,13 @@ public class MappingUtils
 	 * When this parameter is provided, the descriptionType parameter is ignored.
 	 * @param targetCodeSystemPathNid - (optional) Restrict the results to concepts from the specified path. 
 	 * @param memberOfRefsetNid - (optional) Restrict the results to concepts that are members of the specified refset.
+	 * @param kindOfNid - (optional) restrict the results to concepts that are a kind of the specified concept
 	 * @param childOfNid - (optional) restrict the results to concepts that are children of the specified concept
 	 * @return - A handle to the running search.
 	 * @throws IOException
 	 */
 	public static SearchHandle search(String searchString, TaskCompleteCallback callback, LuceneDescriptionType descriptionType, 
-			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer childOfNid) throws IOException
+			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid, Integer childOfNid) throws IOException
 	{
 		ArrayList<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> filters = new ArrayList<>();
 		
@@ -175,6 +176,36 @@ public class MappingUtils
 						return keep;
 					}
 					catch (Exception e)
+					{
+						throw new RuntimeException(e);
+					}
+				}
+			});
+		}
+		
+		if (kindOfNid != null)
+		{
+			filters.add(new Function<List<CompositeSearchResult>, List<CompositeSearchResult>>()
+			{
+				@Override
+				public List<CompositeSearchResult> apply(List<CompositeSearchResult> t)
+				{
+					try
+					{
+						ArrayList<CompositeSearchResult> keep = new ArrayList<>();
+						BdbTerminologyStore ds = ExtendedAppContext.getDataStore();
+						ViewCoordinate vc = OTFUtility.getViewCoordinate();
+						
+						for (CompositeSearchResult csr : t)
+						{
+							if (ds.isKindOf(csr.getContainingConcept().getNid(), kindOfNid, vc))
+							{
+								keep.add(csr);
+							}
+						}
+						return keep;
+					}
+					catch (IOException | ContradictionException e)
 					{
 						throw new RuntimeException(e);
 					}
@@ -246,7 +277,7 @@ public class MappingUtils
 	 * @throws IOException
 	 */
 	public static SearchHandle search(int sourceConceptNid, TaskCompleteCallback callback, LuceneDescriptionType descriptionType, 
-			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer childOfNid) throws IOException
+			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid, Integer childOfNid) throws IOException
 	{
 		StringBuilder searchString;
 		try
@@ -268,7 +299,7 @@ public class MappingUtils
 			throw new IOException(e);
 		}
 		
-		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, childOfNid);
+		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, kindOfNid, childOfNid);
 	}
 	
 	public static List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException

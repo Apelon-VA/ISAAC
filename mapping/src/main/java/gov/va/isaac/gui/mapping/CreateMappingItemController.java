@@ -81,12 +81,14 @@ public class CreateMappingItemController {
 		private SimpleDisplayConcept advancedDescriptionType = null; 
 		private SimpleDisplayConcept targetCodeSystemPath = null;
 		private SimpleDisplayConcept memberOfRefset = null;
+		private ConceptVersionBI     kindOf  = null;
 		private ConceptVersionBI     childOf = null;
 		
 		public LuceneDescriptionType getDescriptionType()         { return descriptionType;	        }
 		public SimpleDisplayConcept  getAdvancedDescriptionType() { return advancedDescriptionType; }
 		public SimpleDisplayConcept  getTargetCodeSystemPath()	  { return targetCodeSystemPath;    }
 		public SimpleDisplayConcept  getMemberOfRefset()          { return memberOfRefset;          }
+		public ConceptVersionBI      getKindOf()                  { return kindOf;                 }
 		public ConceptVersionBI      getChildOf()                 { return childOf;                 }
 		
 		public UUID getAdvancedDescriptionTypeUUID() throws IOException { 
@@ -113,6 +115,14 @@ public class CreateMappingItemController {
 			return nid;
 		}
 		
+		public Integer getKindOfNid() { 
+			Integer nid = null;
+			if (kindOf != null) {
+				nid = new Integer(kindOf.getNid());
+			}
+			return nid;
+		}
+		
 		public Integer getChildOfNid() { 
 			Integer nid = null;
 			if (childOf != null) {
@@ -125,6 +135,7 @@ public class CreateMappingItemController {
 		public void setAdvancedDescriptionType(SimpleDisplayConcept advancedDescriptionType) { this.advancedDescriptionType = advancedDescriptionType; }
 		public void setTargetCodeSystemPath(SimpleDisplayConcept targetCodeSystemPath)       { this.targetCodeSystemPath = targetCodeSystemPath; }
 		public void setMemberOfRefset(SimpleDisplayConcept memberOfRefset)                   { this.memberOfRefset = memberOfRefset; }
+		public void setKindOf(ConceptVersionBI kindOf)                                       { this.kindOf = kindOf; }
 		public void setChildOf(ConceptVersionBI childOf)                                     { this.childOf = childOf; }
 		
 		public void clear() {
@@ -157,7 +168,8 @@ public class CreateMappingItemController {
     @FXML private ToggleGroup 		showFilterToggleGroup;
     @FXML private ToggleButton 		showFilterToggle;
 	
-	@FXML private VBox              childRestrictionVBox;
+	@FXML private VBox              kindOfRestrictionVBox;
+	@FXML private VBox              childOfRestrictionVBox;
 	@FXML private RadioButton 		noRestrictionRadio;
 	@FXML private RadioButton 		descriptionRestrictionRadio;
 	@FXML private RadioButton 		synonymRestrictionRadio;
@@ -177,7 +189,8 @@ public class CreateMappingItemController {
 	
 	private ConceptNode 			sourceConceptNode = new ConceptNode(null, true);
 	private ConceptNode				targetConceptNode = new ConceptNode(null, false);
-	private ConceptNode				childRestrictionConceptNode;
+	private ConceptNode				childOfRestrictionConceptNode;
+	private ConceptNode				kindOfRestrictionConceptNode;
 
 	private MappingSet mappingSet_;
 	private Object searchObject_;
@@ -214,7 +227,7 @@ public class CreateMappingItemController {
 		assert clearRestrictionButton		!= null: "fx:id=\"clearRestrictionButton\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert saveButton					!= null: "fx:id=\"saveButton\" was not injected. Check 'CreateMapping.fxml' file.";
 		assert cancelButton					!= null: "fx:id=\"cancelButton\" was not injected. Check 'CreateMapping.fxml' file.";
-        assert childRestrictionVBox 		!= null : "fx:id=\"childRestricionVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
+        assert childOfRestrictionVBox 		!= null : "fx:id=\"childRestricionVBox\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
         assert applyRestrictionButton 		!= null : "fx:id=\"applyRestrictionButton\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
         assert showFilterToggle 			!= null : "fx:id=\"showFilterToggle\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
         assert showFilterToggleGroup 		!= null : "fx:id=\"showFilterToggleGroup\" was not injected: check your FXML file 'CreateMappingItem.fxml'.";
@@ -413,6 +426,7 @@ public class CreateMappingItemController {
 						searchRestriction.getAdvancedDescriptionTypeUUID(), 
 						searchRestriction.getTargetCodeSystemPathNid(), 
 						searchRestriction.getMemberOfRefsetNid(), 
+						searchRestriction.getKindOfNid(),
 						searchRestriction.getChildOfNid()
 				);
 				
@@ -424,6 +438,7 @@ public class CreateMappingItemController {
 						searchRestriction.getAdvancedDescriptionTypeUUID(), 
 						searchRestriction.getTargetCodeSystemPathNid(), 
 						searchRestriction.getMemberOfRefsetNid(), 
+						searchRestriction.getKindOfNid(),
 						searchRestriction.getChildOfNid()
 				);
 			}
@@ -646,13 +661,11 @@ public class CreateMappingItemController {
 				searchRestriction.setMemberOfRefset(null);
 			}
 			
+			// Kind of concept
+			searchRestriction.setKindOf(kindOfRestrictionConceptNode.getConcept());
+			
 			// Child of concept
-			ConceptVersionBI childOfConcept = childRestrictionConceptNode.getConcept();
-			if (childOfConcept == null) {
-				searchRestriction.setChildOf(null);
-			} else {
-				searchRestriction.setChildOf(childOfConcept);
-			}
+			searchRestriction.setChildOf(childOfRestrictionConceptNode.getConcept());
 			
 		}
 	}
@@ -683,10 +696,9 @@ public class CreateMappingItemController {
 
 		MappingController.setComboSelection(refsetRestrictionCombo, searchRestriction.getMemberOfRefset(), 0);
 
+		resetKindOfRestriction();
+		
 		resetChildOfRestriction();
-		if (searchRestriction.getChildOf() != null) {
-			childRestrictionConceptNode.set(searchRestriction.getChildOf());
-		}
 		
 		restrictionsInitialized = true;
 	}
@@ -696,10 +708,22 @@ public class CreateMappingItemController {
 		paintSearchRestriction();
 	}
 
+	private void resetKindOfRestriction() {
+		kindOfRestrictionConceptNode = new ConceptNode(null, false);
+		kindOfRestrictionVBox.getChildren().clear();
+		kindOfRestrictionVBox.getChildren().add(kindOfRestrictionConceptNode.getNode());
+		if (searchRestriction.getKindOf() != null) {
+			kindOfRestrictionConceptNode.set(searchRestriction.getKindOf());
+		}
+	}
+	
 	private void resetChildOfRestriction() {
-		childRestrictionConceptNode = new ConceptNode(null, false);
-		childRestrictionVBox.getChildren().clear();
-		childRestrictionVBox.getChildren().add(childRestrictionConceptNode.getNode());
+		childOfRestrictionConceptNode = new ConceptNode(null, false);
+		childOfRestrictionVBox.getChildren().clear();
+		childOfRestrictionVBox.getChildren().add(childOfRestrictionConceptNode.getNode());
+		if (searchRestriction.getChildOf() != null) {
+			childOfRestrictionConceptNode.set(searchRestriction.getChildOf());
+		}
 	}
 
 	@SuppressWarnings("unused")

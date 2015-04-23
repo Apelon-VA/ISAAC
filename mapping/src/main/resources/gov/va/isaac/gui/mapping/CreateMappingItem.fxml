@@ -87,9 +87,21 @@
       </VBox>
       </content>
       </TitledPane>
+                  <TitledPane animated="false" text="Target is kind of">
+                     <content>
+                        <VBox fx:id="kindOfRestrictionVBox">
+                           <opaqueInsets>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </opaqueInsets>
+                           <padding>
+                              <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </TitledPane>
       <TitledPane animated="false" text="Target is child of">
       <content>
-      <VBox fx:id="childRestrictionVBox">
+      <VBox fx:id="childOfRestrictionVBox">
                            <padding>
                               <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                            </padding>
