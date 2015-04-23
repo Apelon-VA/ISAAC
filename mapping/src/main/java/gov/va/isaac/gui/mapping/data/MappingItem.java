@@ -40,6 +40,8 @@ public class MappingItem extends MappingObject
 {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingItem.class);
 
+	private static final String NO_MAP_NAME = "(not mapped)";
+	
 	private UUID primordialUUID, mappingSetIDConcept, qualifierConcept, sourceConcept, targetConcept;
 	private int	sourceConceptNid, targetConceptNid, qualifierConceptNid;
 	protected final SimpleStringProperty sourceConceptProperty    = new SimpleStringProperty();
@@ -62,8 +64,8 @@ public class MappingItem extends MappingObject
 		readStampDetails(refex);
 		
 		RefexDynamicDataBI[] data = refex.getData();
-		setTargetConcept(((data != null && data.length > 0) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null));
-		setQualifierConcept(((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null)); 
+		setTargetConcept      (((data != null && data.length > 0 && data[0] != null) ? ((RefexDynamicUUID) data[0]).getDataUUID() : null));
+		setQualifierConcept   (((data != null && data.length > 1 && data[1] != null) ? ((RefexDynamicUUID) data[1]).getDataUUID() : null)); 
 		setEditorStatusConcept(((data != null && data.length > 2 && data[2] != null) ? ((RefexDynamicUUID) data[2]).getDataUUID() : null));
 		
 		targetConceptNid    = getNidForUuidSafe(targetConcept);
@@ -129,7 +131,11 @@ public class MappingItem extends MappingObject
 	
 	private void setTargetConcept(UUID targetConcept) {
 		this.targetConcept = targetConcept;
-		propertyLookup(targetConcept, targetConceptProperty);
+		if (targetConcept == null) {
+			targetConceptProperty.set(NO_MAP_NAME);
+		} else {
+			propertyLookup(targetConcept, targetConceptProperty);
+		}
 	}
 	
 	private void setQualifierConcept(UUID qualifierConcept) {

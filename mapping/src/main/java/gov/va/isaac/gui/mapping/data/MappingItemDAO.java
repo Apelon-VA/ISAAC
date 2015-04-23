@@ -34,28 +34,26 @@ public class MappingItemDAO extends MappingDAO
 	 * @param sourceConcept - the primary ID of the source concept
 	 * @param mappingSetID - the primary ID of the mapping type
 	 * @param targetConcept - the primary ID of the target concept
-	 * @param qualifier - (optional) the primary ID of the qualifier concept
-	 * @param editorStatus - (optional) the primary ID of the status concept
+	 * @param qualifierID - (optional) the primary ID of the qualifier concept
+	 * @param editorStatusID - (optional) the primary ID of the status concept
 	 * @throws IOException
 	 */
-	public static MappingItem createMappingItem(UUID sourceConcept, UUID mappingSetID, UUID targetConcept, UUID qualifier, UUID editorStatus) throws IOException
+	public static MappingItem createMappingItem(ConceptVersionBI sourceConcept, UUID mappingSetID, ConceptVersionBI targetConcept, UUID qualifierID, UUID editorStatusID) throws IOException
 	{
 		try
 		{
-			ConceptVersionBI cv = OTFUtility.getConceptVersion(sourceConcept);
-			
-			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(sourceConcept, mappingSetID);
+			RefexDynamicCAB mappingAnnotation = new RefexDynamicCAB(sourceConcept.getPrimordialUuid(), mappingSetID);
 			mappingAnnotation.setData(new RefexDynamicDataBI[] {
-					(targetConcept == null ? null : new RefexDynamicUUID(targetConcept)),
-					(qualifier == null ? null : new RefexDynamicUUID(qualifier)),
-					(editorStatus == null ? null : new RefexDynamicUUID(editorStatus))}, OTFUtility.getViewCoordinateAllowInactive());
+					(targetConcept == null ? null : new RefexDynamicUUID(targetConcept.getPrimordialUuid())),
+					(qualifierID == null ? null : new RefexDynamicUUID(qualifierID)),
+					(editorStatusID == null ? null : new RefexDynamicUUID(editorStatusID))}, OTFUtility.getViewCoordinateAllowInactive());
 			
 			
 			UUID mappingItemUUID = UuidT5Generator.get(MappingConstants.MAPPING_NAMESPACE.getPrimodialUuid(), 
-					sourceConcept.toString() + "|" 
+					sourceConcept.getPrimordialUuid().toString() + "|" 
 					+ mappingSetID.toString() + "|"
-					+ targetConcept.toString() + "|" 
-					+ ((qualifier == null)? "" : qualifier.toString()));
+					+ ((targetConcept == null)? "" : targetConcept.getPrimordialUuid().toString()) + "|" 
+					+ ((qualifierID == null)?   "" : qualifierID.toString()));
 			
 			if (ExtendedAppContext.getDataStore().hasUuid(mappingItemUUID))
 			{
@@ -66,8 +64,8 @@ public class MappingItemDAO extends MappingDAO
 			OTFUtility.getBuilder().construct(mappingAnnotation);
 
 			AppContext.getRuntimeGlobals().disableAllCommitListeners();
-			ExtendedAppContext.getDataStore().addUncommitted(cv);
-			ExtendedAppContext.getDataStore().commit(cv);
+			ExtendedAppContext.getDataStore().addUncommitted(sourceConcept);
+			ExtendedAppContext.getDataStore().commit(sourceConcept);
 			
 			return new MappingItem((RefexDynamicVersionBI<?>) ExtendedAppContext.getDataStore().getComponent(mappingItemUUID));
 		}
@@ -134,6 +132,7 @@ public class MappingItemDAO extends MappingDAO
 	 * @param mappingSetUUID
 	 * @throws IOException
 	 */
+	/*
 	public static void generateRandomMappingItems(UUID mappingSetUUID)
 	{
 		try
@@ -164,7 +163,8 @@ public class MappingItemDAO extends MappingDAO
 			LOG.error("oops", e);
 		}
 	}
-
+	*/
+	
 	/**
 	 * Store the values passed in as a new revision of a mappingItem (the old revision remains in the DB)
 	 * @param mappingItem - The MappingItem with revisions (contains fields where the setters have been called)

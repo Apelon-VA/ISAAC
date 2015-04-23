@@ -176,7 +176,7 @@ public class CreateMappingItemController {
 	@FXML private Button 			cancelButton;
 	
 	private ConceptNode 			sourceConceptNode = new ConceptNode(null, true);
-	private ConceptNode				targetConceptNode = new ConceptNode(null, true);
+	private ConceptNode				targetConceptNode = new ConceptNode(null, false);
 	private ConceptNode				childRestrictionConceptNode;
 
 	private MappingSet mappingSet_;
@@ -302,17 +302,19 @@ public class CreateMappingItemController {
 				ConceptVersionBI sourceConcept = sourceConceptNode.getConcept();
 				ConceptVersionBI targetConcept = targetConceptNode.getConcept();
 				
-				if (sourceConcept == null || targetConcept == null) {
-					AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", "Source and Target Concepts must be specified.");
+				//if (sourceConcept == null || targetConcept == null) {
+				//	AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", "Source and Target Concepts must be specified.");
+				if (sourceConcept == null) {
+					AppContext.getCommonDialogs().showInformationDialog("Cannot Create Mapping Item", "Source Concept must be specified.");
 				} else {
 					UUID qualifierUUID = (qualifierCombo.getSelectionModel().getSelectedItem().getNid() == Integer.MIN_VALUE ? null : 
 						ExtendedAppContext.getDataStore().getUuidPrimordialForNid(qualifierCombo.getSelectionModel().getSelectedItem().getNid()));
 					UUID statusUUID = (statusCombo.getSelectionModel().getSelectedItem().getNid() == Integer.MIN_VALUE ? null : 
 						ExtendedAppContext.getDataStore().getUuidPrimordialForNid(statusCombo.getSelectionModel().getSelectedItem().getNid()));
 					
-					mi = MappingItemDAO.createMappingItem(sourceConcept.getPrimordialUuid(), 
+					mi = MappingItemDAO.createMappingItem(sourceConcept, 
 														  mappingSet_.getPrimordialUUID(), 
-														  targetConcept.getPrimordialUuid(),
+														  targetConcept,
 														  qualifierUUID,
 														  statusUUID);
 				}
