@@ -132,4 +132,20 @@ public class Utility {
         EXECUTOR.shutdownNow();
         scheduledExecutor_.shutdownNow();
     }
+    
+    public static int compareStringsIgnoreCase(String s1, String s2) {
+    	int rval = 0;
+    	
+    	if (s1 != null || s2 != null) {
+    		if (s1 == null) {
+    			rval = -1;
+    		} else if (s2 == null) {
+    			rval = 1;
+    		} else {
+    			rval = s1.trim().toLowerCase().compareTo(s2.trim().toLowerCase());
+    		}
+    	}
+    	
+    	return rval;
+    }
 }
