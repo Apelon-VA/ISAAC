@@ -557,6 +557,8 @@ public class RelationshipTableView
 				}
 			});
 			tc.setCellFactory(cellFactory);
+			
+			//TODO Dan forgot to put comparators on these columns
 
 			//off by default
 			if (col == RelationshipColumnType.UUID || col == RelationshipColumnType.SOURCE)
