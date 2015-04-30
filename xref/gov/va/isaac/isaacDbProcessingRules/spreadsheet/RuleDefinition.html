@@ -5,7 +5,7 @@
 <link type="text/css" rel="stylesheet" href="../../../../../stylesheet.css" />
 </head>
 <body>
-<div id="overview"><a href="../../../../../../apidocs/gov/va/isaac/isaacDbProcessingRules/loinc/RuleDefinition.html">View Javadoc</a></div><pre>
+<div id="overview"><a href="../../../../../../apidocs/gov/va/isaac/isaacDbProcessingRules/spreadsheet/RuleDefinition.html">View Javadoc</a></div><pre>
 <a class="jxr_linenumber" name="L1" href="#L1">1</a>   <em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L2" href="#L2">2</a>   <em class="jxr_javadoccomment"> * Copyright Notice</em>
 <a class="jxr_linenumber" name="L3" href="#L3">3</a>   <em class="jxr_javadoccomment"> *</em>
@@ -24,7 +24,7 @@
 <a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_javadoccomment"> * See the License for the specific language governing permissions and</em>
 <a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_javadoccomment"> * limitations under the License.</em>
 <a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">package</strong> gov.va.isaac.isaacDbProcessingRules.loinc;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">package</strong> gov.va.isaac.isaacDbProcessingRules.spreadsheet;
 <a class="jxr_linenumber" name="L20" href="#L20">20</a>  
 <a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> java.util.ArrayList;
 <a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> org.apache.mahout.math.Arrays;
@@ -34,12 +34,12 @@
 <a class="jxr_linenumber" name="L26" href="#L26">26</a>  <em class="jxr_javadoccomment"> *</em>
 <a class="jxr_linenumber" name="L27" href="#L27">27</a>  <em class="jxr_javadoccomment"> * @author &lt;a href="<a href="mailto:daniel.armbrust.list@gmail.com" target="alexandria_uri">mailto:daniel.armbrust.list@gmail.com</a>"&gt;Dan Armbrust&lt;/a&gt; </em>
 <a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment"> */</em>
-<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/isaacDbProcessingRules/loinc/RuleDefinition.html">RuleDefinition</a>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../gov/va/isaac/isaacDbProcessingRules/spreadsheet/RuleDefinition.html">RuleDefinition</a>
 <a class="jxr_linenumber" name="L30" href="#L30">30</a>  {
 <a class="jxr_linenumber" name="L31" href="#L31">31</a>  	<strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">int</strong> id;
 <a class="jxr_linenumber" name="L32" href="#L32">32</a>  	<strong class="jxr_keyword">protected</strong> <strong class="jxr_keyword">long</strong> date;
 <a class="jxr_linenumber" name="L33" href="#L33">33</a>  	<strong class="jxr_keyword">protected</strong> ArrayList&lt;SelectionCriteria&gt; criteria;
-<a class="jxr_linenumber" name="L34" href="#L34">34</a>  	<strong class="jxr_keyword">protected</strong> <a href="../../../../../gov/va/isaac/isaacDbProcessingRules/loinc/Action.html">Action</a> action;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  	<strong class="jxr_keyword">protected</strong> <a href="../../../../../gov/va/isaac/isaacDbProcessingRules/spreadsheet/Action.html">Action</a> action;
 <a class="jxr_linenumber" name="L35" href="#L35">35</a>  	<strong class="jxr_keyword">protected</strong> Long sctID;
 <a class="jxr_linenumber" name="L36" href="#L36">36</a>  	<strong class="jxr_keyword">protected</strong> String sctFSN;
 <a class="jxr_linenumber" name="L37" href="#L37">37</a>  	<strong class="jxr_keyword">protected</strong> String author;
@@ -69,7 +69,7 @@
 <a class="jxr_linenumber" name="L61" href="#L61">61</a>  	<em class="jxr_javadoccomment">/**</em>
 <a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment">	 * @return the action</em>
 <a class="jxr_linenumber" name="L63" href="#L63">63</a>  <em class="jxr_javadoccomment">	 */</em>
-<a class="jxr_linenumber" name="L64" href="#L64">64</a>  	<strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/isaacDbProcessingRules/loinc/Action.html">Action</a> getAction()
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>  	<strong class="jxr_keyword">public</strong> <a href="../../../../../gov/va/isaac/isaacDbProcessingRules/spreadsheet/Action.html">Action</a> getAction()
 <a class="jxr_linenumber" name="L65" href="#L65">65</a>  	{
 <a class="jxr_linenumber" name="L66" href="#L66">66</a>  		<strong class="jxr_keyword">return</strong> action;
 <a class="jxr_linenumber" name="L67" href="#L67">67</a>  	}

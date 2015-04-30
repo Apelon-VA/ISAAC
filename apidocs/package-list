@@ -80,7 +80,7 @@ gov.va.isaac.interfaces.sync
 gov.va.isaac.interfaces.utility
 gov.va.isaac.interfaces.workflow
 gov.va.isaac.isaacDbProcessingRules
-gov.va.isaac.isaacDbProcessingRules.loinc
+gov.va.isaac.isaacDbProcessingRules.spreadsheet
 gov.va.isaac.model
 gov.va.isaac.models
 gov.va.isaac.models.api
