@@ -263,8 +263,14 @@ public class MappingUtils
 			
 			for (DescriptionVersionBI<?> desc : cv.getDescriptionsActive())
 			{
+				/*
+				 * No need for processing brackets.  SearchStringProcessor function called in main search function deals with them.
+				 * DT 4/30/15
+				 * 
 				//brackets are somewhat common, and choke the query parser
 				searchString.append(desc.getText().replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]"));
+				*/
+				searchString.append(desc.getText());
 				searchString.append(" ");
 			}
 		}
