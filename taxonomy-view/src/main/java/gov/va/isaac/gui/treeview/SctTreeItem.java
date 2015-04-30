@@ -258,7 +258,9 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
 	public boolean isRoot() {
         TaxonomyReferenceWithConcept ref = getValue();
 
-        if (ref != null && ref.getRelationshipVersion() == null) {
+        if (SctTreeView.getRoot() != null && SctTreeView.getRoot().getConceptUuid().equals(this.getConceptUuid())) {
+        	return true;
+        } else if (ref != null && ref.getRelationshipVersion() == null) {
             return true;
         } else if (this.getParent() == null) {
             return true;

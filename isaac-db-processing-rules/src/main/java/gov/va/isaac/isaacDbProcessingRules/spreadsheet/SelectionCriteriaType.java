@@ -16,33 +16,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.isaacDbProcessingRules.loinc;
+package gov.va.isaac.isaacDbProcessingRules.spreadsheet;
 
 /**
- * {@link Action}
+ * {@link SelectionCriteriaType}
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public enum Action
+public enum SelectionCriteriaType
 {
-	CHILD_OF("Child of"), SAME_AS("Same as");
+	DESCENDENT_OF("descendent of"), COMPONENT("Component"), CONCEPT("Concept"), SYSTEM("SYSTEM"), METHOD("METHOD"), STR("STR"), RXCUI("RXCUI");
 	
 	private String altName_;
 	
-	private Action(String altName)
+	private SelectionCriteriaType(String altName)
 	{
 		this.altName_ = altName;
 	}
 	
-	public static Action parse(String value)
+	public static SelectionCriteriaType parse(String value)
 	{
-		for (Action a : Action.values())
+		for (SelectionCriteriaType a : SelectionCriteriaType.values())
 		{
 			if (a.altName_.equalsIgnoreCase(value))
 			{
 				return a;
 			}
 		}
-		throw new RuntimeException("Couldn't parse action " + value);
+		throw new RuntimeException("Couldn't parse SelectionCriteriaType " + value);
 	}
 }

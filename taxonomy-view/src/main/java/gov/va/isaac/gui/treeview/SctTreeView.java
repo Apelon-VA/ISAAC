@@ -98,13 +98,17 @@ class SctTreeView {
     private BorderPane bp_;
     private StackPane sp_;
     private ToolBar tb_ = new ToolBar();
-    private SctTreeItem rootTreeItem;
+    private static SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
     
     @SuppressWarnings("unused")
     private UpdateableBooleanBinding refreshRequiredListenerHack;
 
+    private ArrayList<SctTreeItem> selectedItems_ = new ArrayList<>();
+    private ArrayList<UUID> selectedUUIDs_ = new ArrayList<>();
+    private ArrayList<UUID> expandedUUIDs_ = new ArrayList<>();
+    
     SctTreeView() {
         treeView_ = new TreeView<>();
         bp_ = new BorderPane();
@@ -199,6 +203,10 @@ class SctTreeView {
         sp_.getChildren().add(pi);
     }
     
+    public static SctTreeItem getRoot() {
+    	return rootTreeItem;
+    }
+    
     public BorderPane getView()
     {
         if (initializationCountDownLatch_.getCount() > 1) {
@@ -237,6 +245,7 @@ class SctTreeView {
             protected void succeeded() {
                 LOG.debug("Succeeded waiting for init() to complete");
 
+                
                 if (rootTreeItem.getChildren().size() > 0) {
                     LOG.debug("Removing existing grandchildren...");
                     rootTreeItem.removeGrandchildren();
@@ -250,6 +259,7 @@ class SctTreeView {
                 LOG.debug("Re-adding children...");
                 rootTreeItem.addChildren();
                 LOG.debug("Re-added children.");
+                
             }
 
             @Override
@@ -265,7 +275,12 @@ class SctTreeView {
             }
         };
 
+        // record which items are expanded
+        saveExpanded();
+        
         Utility.execute(task);
+
+        restoreExpanded();
     }
     
     public void init() {
@@ -659,5 +674,57 @@ class SctTreeView {
         shutdownRequested = true;
         SctTreeItem.shutdown();
         LOG.info("Tree shutdown called!");
+    }
+    
+    private void saveExpanded() {
+    	saveSelected();
+    	expandedUUIDs_.clear();
+    	saveExpanded(rootTreeItem);
+    }
+
+    private void saveExpanded(SctTreeItem item) {
+    	if (item.isExpanded()) {
+    		expandedUUIDs_.add(item.getConceptUuid());
+    		if (!item.isLeaf()) {
+    			for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
+    				saveExpanded((SctTreeItem) child);
+    			}
+    		}
+    	}
+    }
+    
+    private void saveSelected() {
+    	selectedUUIDs_.clear();
+    	selectedItems_.clear();
+    	for (TreeItem<TaxonomyReferenceWithConcept> item : treeView_.getSelectionModel().getSelectedItems()) {
+    		selectedUUIDs_.add(((SctTreeItem) item).getConceptUuid());
+    	}
+    }
+    
+    private void restoreExpanded() {
+    	restoreExpanded(rootTreeItem);
+    	expandedUUIDs_.clear();
+    	restoreSelected();
+    }
+    
+    private void restoreExpanded(SctTreeItem item) {
+    	if (selectedUUIDs_.contains(item.getConceptUuid())) {
+    		selectedItems_.add(item);
+    	}
+    	if (expandedUUIDs_.contains(item.getConceptUuid())) {
+    		showConcept(item.getConceptUuid(), null);
+			for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
+				restoreExpanded((SctTreeItem) child);
+			}
+    	}
+    }
+    
+    private void restoreSelected() {
+    	treeView_.getSelectionModel().clearSelection();
+    	for (SctTreeItem item : selectedItems_) {
+        	treeView_.getSelectionModel().select(item);
+    	}
+    	selectedItems_.clear();
+    	selectedUUIDs_.clear();
     }
 }

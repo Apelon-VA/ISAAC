@@ -21,11 +21,15 @@ package gov.va.isaac.gui.mapping.data;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
+
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Comparator;
 import java.util.UUID;
+
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;
+
 import org.ihtsdo.otf.tcc.api.chronicle.ComponentVersionBI;
 import org.ihtsdo.otf.tcc.api.conattr.ConceptAttributeVersionBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
@@ -154,5 +158,42 @@ public abstract class StampedItem
 	public int getModuleNid() { return moduleNid; }
 	public int getPathNid()   { return pathNid; }
 	
-
+	public static final Comparator<StampedItem> statusComparator = new Comparator<StampedItem>() {
+		@Override
+		public int compare(StampedItem o1, StampedItem o2) {
+			// o1 and o2 intentionally reversed in this call, to make Active come before Inactive
+			return Boolean.compare(o2.isActive(), o1.isActive());
+		}
+	};
+	
+	public static final Comparator<StampedItem> timeComparator = new Comparator<StampedItem>() {
+		@Override
+		public int compare(StampedItem o1, StampedItem o2) {
+			return Long.compare(o1.getCreationDate(), o2.getCreationDate());
+		}
+	};
+	
+	public static final Comparator<StampedItem> authorComparator = new Comparator<StampedItem>() {
+		@Override
+		public int compare(StampedItem o1, StampedItem o2) {
+			return Utility.compareStringsIgnoreCase(o1.getAuthorProperty().get(), o2.getAuthorProperty().get());
+		}
+	};
+	
+	public static final Comparator<StampedItem> moduleComparator = new Comparator<StampedItem>() {
+		@Override
+		public int compare(StampedItem o1, StampedItem o2) {
+			return Utility.compareStringsIgnoreCase(o1.getModuleProperty().get(), o2.getModuleProperty().get());
+		}
+	};
+	
+	public static final Comparator<StampedItem> pathComparator = new Comparator<StampedItem>() {
+		@Override
+		public int compare(StampedItem o1, StampedItem o2) {
+			return Utility.compareStringsIgnoreCase(o1.getPathProperty().get(), o2.getPathProperty().get());
+		}
+	};
+	
+	
+	
 }

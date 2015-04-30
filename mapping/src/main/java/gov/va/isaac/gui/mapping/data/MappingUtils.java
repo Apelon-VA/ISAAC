@@ -28,7 +28,9 @@ import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.SearchStringProcessor;
 import gov.va.isaac.util.TaskCompleteCallback;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -118,12 +121,13 @@ public class MappingUtils
 	 * When this parameter is provided, the descriptionType parameter is ignored.
 	 * @param targetCodeSystemPathNid - (optional) Restrict the results to concepts from the specified path. 
 	 * @param memberOfRefsetNid - (optional) Restrict the results to concepts that are members of the specified refset.
+	 * @param kindOfNid - (optional) restrict the results to concepts that are a kind of the specified concept
 	 * @param childOfNid - (optional) restrict the results to concepts that are children of the specified concept
 	 * @return - A handle to the running search.
 	 * @throws IOException
 	 */
 	public static SearchHandle search(String searchString, TaskCompleteCallback callback, LuceneDescriptionType descriptionType, 
-			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer childOfNid) throws IOException
+			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid) throws IOException
 	{
 		ArrayList<Function<List<CompositeSearchResult>, List<CompositeSearchResult>>> filters = new ArrayList<>();
 		
@@ -182,7 +186,7 @@ public class MappingUtils
 			});
 		}
 		
-		if (childOfNid != null)
+		if (kindOfNid != null)
 		{
 			filters.add(new Function<List<CompositeSearchResult>, List<CompositeSearchResult>>()
 			{
@@ -197,7 +201,7 @@ public class MappingUtils
 						
 						for (CompositeSearchResult csr : t)
 						{
-							if (ds.isChildOf(csr.getContainingConcept().getNid(), childOfNid, vc))
+							if (ds.isKindOf(csr.getContainingConcept().getNid(), kindOfNid, vc))
 							{
 								keep.add(csr);
 							}
@@ -213,6 +217,8 @@ public class MappingUtils
 		}
 		
 		SearchResultsIntersectionFilter filterSet = (filters.size() > 0 ? new SearchResultsIntersectionFilter(filters) : null);
+		
+		searchString = SearchStringProcessor.prepareSearchString(searchString);
 		
 		if (descriptionType == null && advancedDescriptionType == null)
 		{
@@ -246,7 +252,7 @@ public class MappingUtils
 	 * @throws IOException
 	 */
 	public static SearchHandle search(int sourceConceptNid, TaskCompleteCallback callback, LuceneDescriptionType descriptionType, 
-			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer childOfNid) throws IOException
+			UUID advancedDescriptionType, Integer targetCodeSystemPathNid, Integer memberOfRefsetNid, Integer kindOfNid) throws IOException
 	{
 		StringBuilder searchString;
 		try
@@ -257,8 +263,14 @@ public class MappingUtils
 			
 			for (DescriptionVersionBI<?> desc : cv.getDescriptionsActive())
 			{
+				/*
+				 * No need for processing brackets.  SearchStringProcessor function called in main search function deals with them.
+				 * DT 4/30/15
+				 * 
 				//brackets are somewhat common, and choke the query parser
 				searchString.append(desc.getText().replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]"));
+				*/
+				searchString.append(desc.getText());
 				searchString.append(" ");
 			}
 		}
@@ -268,7 +280,7 @@ public class MappingUtils
 			throw new IOException(e);
 		}
 		
-		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, childOfNid);
+		return search(searchString.toString(), callback, descriptionType, advancedDescriptionType, targetCodeSystemPathNid, memberOfRefsetNid, kindOfNid);
 	}
 	
 	public static List<SimpleDisplayConcept> getExtendedDescriptionTypes() throws IOException

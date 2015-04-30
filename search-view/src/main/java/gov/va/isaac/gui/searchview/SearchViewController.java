@@ -265,7 +265,10 @@ public class SearchViewController implements TaskCompleteCallback
 									searchInColumnsHolder.getChildren().add(cbStack);
 									indexNumber++;
 								}
-								optionsContentVBox.getChildren().add(searchInColumnsHolder);
+								if (!optionsContentVBox.getChildren().contains(searchInColumnsHolder))
+								{
+									optionsContentVBox.getChildren().add(searchInColumnsHolder);
+								}
 							}
 							else
 							{
@@ -279,6 +282,7 @@ public class SearchViewController implements TaskCompleteCallback
 					{
 						searchInRefex.isValid().setInvalid("Sememe searches can only be limited to valid Dynamic Sememe Assemblage concept types."
 								+ "  The current value is not a Dynamic Sememe Assemblage concept.");
+						LOG.debug("Exception while checking is sememe concept field in search box was a dynamic sememe", e1);
 						displayIndexConfigMenu_.set(false);
 						currentlyEnteredAssemblageNid = null;
 						optionsContentVBox.getChildren().remove(searchInColumnsHolder);

@@ -7,6 +7,7 @@ import gov.va.isaac.gui.mapping.data.MappingItemDAO;
 import gov.va.isaac.gui.mapping.data.MappingObject;
 import gov.va.isaac.gui.mapping.data.MappingSet;
 import gov.va.isaac.gui.mapping.data.MappingSetDAO;
+import gov.va.isaac.gui.mapping.data.StampedItem;
 import gov.va.isaac.gui.util.CustomClipboard;
 import gov.va.isaac.gui.util.FxUtils;
 import gov.va.isaac.gui.util.Images;
@@ -20,6 +21,8 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
 //import java.util.UUID;
+
+
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -91,32 +94,32 @@ public class MappingController {
 	@FXML private TableView<MappingSet> 	 mappingSetTableView;
 	@FXML private TableView<MappingItem> 	 mappingItemTableView;
 
-    @FXML private TableColumn<MappingSet, ?> mappingSetSTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetNameTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetDescriptionTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetPurposeTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetEditorStatusTableColumn;
+    @FXML private TableColumn<MappingSet, MappingSet> mappingSetSTableColumn;
+    @FXML private TableColumn<MappingSet, MappingSet> mappingSetNameTableColumn;
+    @FXML private TableColumn<MappingSet, MappingSet> mappingSetDescriptionTableColumn;
+    @FXML private TableColumn<MappingSet, MappingSet> mappingSetPurposeTableColumn;
+    @FXML private TableColumn<MappingSet, MappingObject> mappingSetEditorStatusTableColumn;
 
     @FXML private TableColumn<MappingSet, ?> mappingSetSTAMPTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetStatusTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetTimeTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetAuthorTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetModuleTableColumn;
-    @FXML private TableColumn<MappingSet, ?> mappingSetPathTableColumn;
+    @FXML private TableColumn<MappingSet, StampedItem> mappingSetStatusTableColumn;
+    @FXML private TableColumn<MappingSet, StampedItem> mappingSetTimeTableColumn;
+    @FXML private TableColumn<MappingSet, StampedItem> mappingSetAuthorTableColumn;
+    @FXML private TableColumn<MappingSet, StampedItem> mappingSetModuleTableColumn;
+    @FXML private TableColumn<MappingSet, StampedItem> mappingSetPathTableColumn;
     
-    @FXML private TableColumn<MappingItem, ?> mappingItemSTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemSourceTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemTargetTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemQualifierTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemCommentsTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemEditorStatusTableColumn;
+    @FXML private TableColumn<MappingItem, MappingItem> mappingItemSTableColumn;
+    @FXML private TableColumn<MappingItem, MappingItem> mappingItemSourceTableColumn;
+    @FXML private TableColumn<MappingItem, MappingItem> mappingItemTargetTableColumn;
+    @FXML private TableColumn<MappingItem, MappingItem> mappingItemQualifierTableColumn;
+    @FXML private TableColumn<MappingItem, MappingItem> mappingItemCommentsTableColumn;
+    @FXML private TableColumn<MappingItem, MappingObject> mappingItemEditorStatusTableColumn;
 
     @FXML private TableColumn<MappingItem, ?> mappingItemSTAMPTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemStatusTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemTimeTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemAuthorTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemModuleTableColumn;
-    @FXML private TableColumn<MappingItem, ?> mappingItemPathTableColumn;
+    @FXML private TableColumn<MappingItem, StampedItem> mappingItemStatusTableColumn;
+    @FXML private TableColumn<MappingItem, StampedItem> mappingItemTimeTableColumn;
+    @FXML private TableColumn<MappingItem, StampedItem> mappingItemAuthorTableColumn;
+    @FXML private TableColumn<MappingItem, StampedItem> mappingItemModuleTableColumn;
+    @FXML private TableColumn<MappingItem, StampedItem> mappingItemPathTableColumn;
 	
 	
 	public static MappingController init() throws IOException {
@@ -273,6 +276,17 @@ public class MappingController {
 		
 		setMappingSetTableFactories(mappingSetTableView.getColumns());
 		
+		mappingSetNameTableColumn.setComparator(MappingSet.nameComparator);
+		mappingSetPurposeTableColumn.setComparator(MappingSet.purposeComparator);
+		mappingSetDescriptionTableColumn.setComparator(MappingSet.descriptionComparator);
+		mappingSetEditorStatusTableColumn.setComparator(MappingObject.editorStatusComparator);
+
+	    mappingSetStatusTableColumn.setComparator(StampedItem.statusComparator);
+	    mappingSetTimeTableColumn.setComparator(StampedItem.timeComparator);
+	    mappingSetAuthorTableColumn.setComparator(StampedItem.authorComparator);
+	    mappingSetModuleTableColumn.setComparator(StampedItem.moduleComparator);
+	    mappingSetPathTableColumn.setComparator(StampedItem.pathComparator);
+
 		mappingSetTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<MappingSet>()
 		{
 			@Override
@@ -289,7 +303,19 @@ public class MappingController {
 	private void setupMappingItemTable() {
 
 		setMappingItemTableFactories(mappingItemTableView.getColumns());
-		
+
+	    mappingItemSourceTableColumn.setComparator(MappingItem.sourceComparator);
+	    mappingItemTargetTableColumn.setComparator(MappingItem.targetComparator);
+	    mappingItemQualifierTableColumn.setComparator(MappingItem.qualifierComparator);
+	    mappingItemCommentsTableColumn.setComparator(MappingItem.commentsComparator);
+		mappingItemEditorStatusTableColumn.setComparator(MappingObject.editorStatusComparator);
+
+		mappingItemStatusTableColumn.setComparator(StampedItem.statusComparator);
+	    mappingItemTimeTableColumn.setComparator(StampedItem.timeComparator);
+	    mappingItemAuthorTableColumn.setComparator(StampedItem.authorComparator);
+	    mappingItemModuleTableColumn.setComparator(StampedItem.moduleComparator);
+	    mappingItemPathTableColumn.setComparator(StampedItem.pathComparator);
+
 		mappingItemTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<MappingItem>() {
 			@Override
 			public void onChanged(javafx.collections.ListChangeListener.Change<? extends MappingItem> c) {
@@ -759,5 +785,6 @@ public class MappingController {
 			combo.getSelectionModel().select(defaultIndex);
 		}
 	}
+
 	
 }

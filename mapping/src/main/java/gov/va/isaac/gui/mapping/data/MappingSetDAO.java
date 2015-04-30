@@ -65,6 +65,8 @@ public class MappingSetDAO extends MappingDAO
 	{
 		try
 		{
+			AppContext.getRuntimeGlobals().disableAllCommitListeners();
+
 			//We need to create a new concept - which itself is defining a dynamic refex - so set that up here.
 			RefexDynamicUsageDescription rdud = RefexDynamicUsageDescriptionBuilder
 					.createNewRefexDynamicUsageDescriptionConcept(mappingName, mappingName, description, 
@@ -108,7 +110,6 @@ public class MappingSetDAO extends MappingDAO
 			associationAnnotation.setData(new RefexDynamicDataBI[] {}, null);
 			OTFUtility.getBuilder().construct(associationAnnotation);
 			
-			AppContext.getRuntimeGlobals().disableAllCommitListeners();
 			ExtendedAppContext.getDataStore().addUncommitted(createdConcept);
 			ExtendedAppContext.getDataStore().commit(createdConcept);
 			
