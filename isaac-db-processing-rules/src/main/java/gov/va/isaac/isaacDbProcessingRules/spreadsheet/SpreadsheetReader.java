@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.isaacDbProcessingRules.loinc;
+package gov.va.isaac.isaacDbProcessingRules.spreadsheet;
 
 
 import java.io.IOException;
@@ -48,7 +48,7 @@ public class SpreadsheetReader
 	{
 		XSSFWorkbook ss = new XSSFWorkbook(is);
 		
-		Sheet sheet = ss.getSheetAt(0);
+		Sheet sheet = ss.getSheetAt(1);
 		
 		{
 			//row 0 is just a comment
@@ -91,7 +91,18 @@ public class SpreadsheetReader
 			rd.date = readDateColumn(rowNum, "Date");
 			rd.action = Action.parse(readStringColumn(rowNum, "Action"));
 			rd.sctFSN = readStringColumn(rowNum, "SCT FSN");
-			rd.sctID = readLongColumn(rowNum, "SCT ID");
+			try
+			{
+				rd.sctID = readLongColumn(rowNum, "SCT ID");
+			}
+			catch (IllegalStateException e)
+			{
+				String temp = readStringColumn(rowNum, "SCT ID");
+				if (temp != null)
+				{
+					rd.sctID = Long.parseLong(temp);
+				}
+			}
 			rd.author = readStringColumn(rowNum, "Author");
 			rd.comments = readStringColumn(rowNum, "Comments");
 			
@@ -103,7 +114,15 @@ public class SpreadsheetReader
 				SelectionCriteria sc = new SelectionCriteria();
 				sc.operand = readOperand(rowNum);
 				sc.type = SelectionCriteriaType.parse(readStringColumn(rowNum, "Type"));
-				sc.value = readStringColumn(rowNum, "Value");
+				try
+				{
+					//If we read a long, as a string, we get an extra .0 on the end - so read as a long first, if it is one.
+					sc.value = readLongColumn(rowNum, "Value").toString();
+				}
+				catch (IllegalStateException e)
+				{
+					sc.value = readStringColumn(rowNum, "Value");
+				}
 				sc.valueId = readStringColumn(rowNum, "Value ID");
 				
 				criteria.add(sc);
