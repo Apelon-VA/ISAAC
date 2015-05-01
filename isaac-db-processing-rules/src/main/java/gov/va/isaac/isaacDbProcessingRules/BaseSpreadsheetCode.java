@@ -260,6 +260,8 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 		return sb.toString();
 	}
 	
+	//TODO need to rework this to write all of the summary information to a folder - a number of files - then package that along 
+	//with the DB and publish it as an artifact.  Console output is getting too large - especially for RxNorm which broke docbook.
 	/**
 	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultSummary()
 	 */
