@@ -22,27 +22,20 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.config.profiles.UserProfileManager;
 import gov.va.isaac.init.SystemInit;
-import gov.va.isaac.isaacDbProcessingRules.loinc.Operand;
-import gov.va.isaac.isaacDbProcessingRules.loinc.RuleDefinition;
-import gov.va.isaac.isaacDbProcessingRules.loinc.SelectionCriteria;
-import gov.va.isaac.isaacDbProcessingRules.loinc.SpreadsheetReader;
+import gov.va.isaac.isaacDbProcessingRules.spreadsheet.Operand;
+import gov.va.isaac.isaacDbProcessingRules.spreadsheet.RuleDefinition;
+import gov.va.isaac.isaacDbProcessingRules.spreadsheet.SelectionCriteria;
 import gov.va.isaac.mojos.dbTransforms.TransformConceptIterateI;
-import gov.va.isaac.search.CompositeSearchResult;
-import gov.va.isaac.search.SearchHandle;
-import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.Utility;
 import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.TreeMap;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Named;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
@@ -54,9 +47,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.EditCoordinate;
-import org.ihtsdo.otf.tcc.api.coordinate.Position;
 import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
-import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
 import org.ihtsdo.otf.tcc.api.description.DescriptionVersionBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
@@ -66,11 +57,6 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
 import org.ihtsdo.otf.tcc.api.spec.ValidationException;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
-import org.ihtsdo.otf.tcc.api.uuid.UuidFactory;
-import org.ihtsdo.otf.tcc.dto.TtkConceptChronicle;
-import org.ihtsdo.otf.tcc.dto.component.identifier.TtkIdentifier;
-import org.ihtsdo.otf.tcc.dto.component.identifier.TtkIdentifierUuid;
-import org.ihtsdo.otf.tcc.model.cc.concept.ConceptChronicle;
 import org.ihtsdo.otf.tcc.model.cc.refexDynamic.data.dataTypes.RefexDynamicString;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.jvnet.hk2.annotations.Service;
@@ -86,7 +72,7 @@ import org.jvnet.hk2.annotations.Service;
  */
 @Service
 @Named(value = "LOINC spreadsheet rules")
-public class LOINCSpreadsheetRules implements TransformConceptIterateI
+public class LOINCSpreadsheetRules  extends BaseSpreadsheetCode implements TransformConceptIterateI
 {
 	private final UUID LOINC_PATH = UUID.fromString("b2b1cc96-9ca6-5513-aad9-aa21e61ddc29");
 	
@@ -107,26 +93,12 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 	//has_METHOD_TYP
 	private final UUID HAS_METHOD_TYPE = UUID.fromString("a0e9ca70-0c0e-5cc8-ad2f-442fff44be6f");
 	
-	private HashMap<UUID, Integer> uuidToNidMap_ = new HashMap<>();
-	private HashMap<Integer, AtomicInteger> generatedRels = new HashMap<>();
-	private HashMap<Integer, AtomicInteger> mergedConcepts = new HashMap<>();
-	private AtomicInteger examinedConcepts = new AtomicInteger();
-	private TreeMap<Integer, AtomicInteger> ruleHits = new TreeMap<>();
-	private List<RuleDefinition> rules;
-	private long startTime;
-
-	private TerminologyStoreDI ts_;
-	private ViewCoordinate vc_;
-
-	/**
-	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getName()
-	 */
-	@Override
-	public String getName()
-	{
-		return "LOINC spreadsheet rules";
-	}
 	
+	private LOINCSpreadsheetRules()
+	{
+		super("LOINC spreadsheet rules");
+	}
+
 	/**
 	 * @throws IOException 
 	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#configure(java.io.File, org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI)
@@ -134,45 +106,9 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 	@Override
 	public void configure(File configFile, TerminologyStoreDI ts) throws IOException
 	{
-		startTime = System.currentTimeMillis();
-		//TODO pass in the spreadsheet?  But then where to store it?
-		ts_ = ts;
-		vc_ = StandardViewCoordinates.getSnomedStatedLatest();
-		
-		// Start with standard view coordinate and override the path setting to use the LOINC path
-		Position position = ts.newPosition(ts.getPath(getNid(LOINC_PATH)), Long.MAX_VALUE);
-		vc_.setViewPosition(position);
-		
-		rules = new SpreadsheetReader().readSpreadSheet(SpreadsheetReader.class.getResourceAsStream("/rules.xlsx"));
-		for (RuleDefinition rd : rules)
-		{
-			ruleHits.put(rd.getId(), new AtomicInteger());
-			generatedRels.put(rd.getId(), new AtomicInteger());
-			mergedConcepts.put(rd.getId(), new AtomicInteger());
-		}
+		configure("/SOLOR LOINC Rules.xlsx", LOINC_PATH, ts);
 	}
 	
-	private int getNid(UUID uuid)
-	{
-		Integer nid = uuidToNidMap_.get(uuid);
-		if (nid == null)
-		{
-			try
-			{
-				nid = ts_.getConcept(uuid).getNid();
-				uuidToNidMap_.put(uuid, nid);
-			}
-			catch (IOException e)
-			{
-				throw new RuntimeException(e);
-			}
-		}
-		if (nid == null || nid == 0)
-		{
-			throw new RuntimeException("Failed to find nid for uuid " + uuid);
-		}
-		return nid;
-	}
 
 	/**
 	 * 
@@ -235,7 +171,7 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 				case DESCENDENT_OF:
 					passed = ts_.isKindOf(cc.getConceptNid(), getLoincConceptNid(sc), vc_);
 					break;
-				case METHOD_TYPE:
+				case METHOD:
 					passed = methodTypeIs(sc.getValue(), cc);
 					break;
 				case SYSTEM:
@@ -255,41 +191,25 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		}
 		
 		//passed all criteria
-		ruleHits.get(rd.getId()).incrementAndGet();
-		
-		UUID sctTargetConcept = null;
-		if (rd.getSctID() != null)
+		ruleHits.get(rd.getId()).add(cc.getPrimordialUuid() + "," + OTFUtility.getFullySpecifiedName(cc));
+		if (rd.getId() != 1000)  //skip rule 1000, it modifies the entire LOINC set
 		{
-			sctTargetConcept = UuidFactory.getUuidFromAlternateId(TermAux.SNOMED_IDENTIFIER.getUuids()[0], rd.getSctID().toString());
-		}
-		if (sctTargetConcept == null || !ts_.hasConcept(sctTargetConcept))
-		{
-			//try to find by FSN
-			sctTargetConcept = null;
-			SearchHandle sh = SearchHandler.descriptionSearch("\"" + rd.getSctFSN() + "\"", 5, null, true);
-			for (CompositeSearchResult csr : sh.getResults())
+			Set<Integer> rules = conceptHitsByRule.get(cc.getPrimordialUuid());
+			if (rules == null)
 			{
-				for (String s : csr.getMatchingStrings())
+				rules = Collections.newSetFromMap(new ConcurrentHashMap<Integer, Boolean>());
+				Set<Integer> oldRules = conceptHitsByRule.put(cc.getPrimordialUuid().toString() + "," + OTFUtility.getFullySpecifiedName(cc), rules);
+				if (oldRules != null)
 				{
-					if (rd.getSctFSN().equals(s))
-					{
-						//this is the concept we wanted.
-						sctTargetConcept = csr.getContainingConcept().getPrimordialUuid();
-						break;
-					}
-				}
-				if (sctTargetConcept != null)
-				{
-					break;
+					//two different threads tried to do this at the same time.  merge
+					rules.addAll(oldRules);
 				}
 			}
+			rules.add(rd.getId());
 		}
 		
-		if (sctTargetConcept == null)
-		{
-			throw new RuntimeException("Couldn't find target concept");
-		}
-		
+		UUID sctTargetConcept = findSCTTarget(rd);
+
 		switch (rd.getAction())
 		{
 			case CHILD_OF:
@@ -297,7 +217,7 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 				generatedRels.get(rd.getId()).getAndIncrement();
 				break;
 			case SAME_AS:
-				mergeConcepts(cc, sctTargetConcept);
+				mergeConcepts(cc, sctTargetConcept, LOINC_PATH);
 				mergedConcepts.get(rd.getId()).incrementAndGet();
 				break;
 			default :
@@ -428,52 +348,6 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		ts_.addUncommitted(source);
 	}
 	
-	private void mergeConcepts(ConceptChronicleBI source, UUID mergeOnto) throws IOException, InvalidCAB, ContradictionException
-	{
-		//TODO this doesn't work - 
-
-		//Create a TtkConcept of the thing we want to merge - but change the primary UUID to the thing we want to merge onto.
-		//Keep our UUID as a secondary.
-		//TRY 1 - this still doesn't seem quite right - the other id ends up as an alternate identifier, instead of a primary... which seems wrong.
-		TtkConceptChronicle tcc = new TtkConceptChronicle(source);
-		
-		UUID temp = tcc.getPrimordialUuid();
-		tcc.setPrimordialUuid(mergeOnto);
-		if (tcc.getConceptAttributes().getAdditionalIdComponents() == null)
-		{
-			tcc.getConceptAttributes().setAdditionalIdComponents(new ArrayList<TtkIdentifier>());
-		}
-		
-		TtkIdentifier id = new TtkIdentifierUuid(temp);
-		id.setStatus(tcc.getConceptAttributes().getStatus());
-		id.setTime(tcc.getConceptAttributes().getTime());
-		id.setAuthorUuid(tcc.getConceptAttributes().getAuthorUuid());
-		id.setModuleUuid(tcc.getConceptAttributes().getModuleUuid());
-		id.setPathUuid(tcc.getConceptAttributes().getPathUuid());
-		id.setAuthorityUuid(LOINC_PATH);
-
-		tcc.getConceptAttributes().getAdditionalIdComponents().add(id);
-		
-		//THIS didn't work either
-//		ConceptVersionBI sourceVersion = source.getVersion(vc);
-//		ConceptAttributeAB cab = new ConceptAttributeAB(sourceVersion.getConceptNid(), true, RefexDirective.EXCLUDE);
-//		cab.setStatus(Status.INACTIVE);
-//		
-//		ts.getTerminologyBuilder(new EditCoordinate(TermAux.USER.getLenient().getConceptNid(), TermAux.UNSPECIFIED_MODULE.getLenient().getNid(), 
-//				loincPathNid), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
-//		ts.addUncommitted(sourceVersion);
-		
-		ConceptChronicle.mergeAndWrite(tcc);
-		
-		
-		
-		//TRY 2 - this still lost the other UUID - need to ask Keith about this
-//		ConceptChronicle mergeOntoCC = ConceptChronicle.get(ts.getNidForUuids(mergeOnto));
-//		
-//		ConceptChronicle.mergeWithEConcept(tcc, mergeOntoCC);
-//		ts.addUncommittedNoChecks(mergeOntoCC);
-	}
-
 	/**
 	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getDescription()
 	 */
@@ -483,98 +357,6 @@ public class LOINCSpreadsheetRules implements TransformConceptIterateI
 		return "Implementation of rules processing from a spreadsheet";
 	}
 
-	/**
-	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultSummary()
-	 */
-	@Override
-	public String getWorkResultSummary()
-	{
-		String eol = System.getProperty("line.separator");
-		StringBuilder sb = new StringBuilder();
-		
-		int totalRelCount = sum(generatedRels.values());
-		int totalMergedCount = sum(generatedRels.values());
-		
-		sb.append("Examined " + examinedConcepts.get() + " concepts and added hierarchy linkages to " + totalRelCount + " concepts.  "
-				+ "Merged " + totalMergedCount + " concepts" + eol);
-		
-		for (Entry<Integer, AtomicInteger> x : ruleHits.entrySet())
-		{
-			sb.append("  Rule " + x.getKey() + " hit on " + x.getValue() + " concepts" + eol);
-		}
-		
-		return sb.toString();
-	}
-	
-	private int sum(Collection<AtomicInteger> values)
-	{
-		int total = 0;
-		for (AtomicInteger ai : values)
-		{
-			total += ai.get();
-		}
-		return total;
-	}
-	
-	/**
-	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultDocBookTable()
-	 */
-	@Override
-	public String getWorkResultDocBookTable()
-	{
-		StringBuilder sb = new StringBuilder();
-		String eol = System.getProperty("line.separator");
-
-		sb.append("<table frame='all'>" + eol);
-		sb.append("\t<title>Results</title>" + eol);
-		sb.append("\t<tgroup cols='6' align='center' colsep='1' rowsep='1'>" + eol);
-		for (int i = 1; i <= 6; i++)
-		{
-			sb.append("\t\t<colspec colname='c" + i + "' colwidth='1*' />" + eol);
-		}
-		sb.append("\t\t<thead>" + eol);
-		sb.append("\t\t\t<row>" + eol);
-		sb.append("\t\t\t\t<entry>Transform</entry>" + eol);
-		sb.append("\t\t\t\t<entry>Examined Concepts</entry>" + eol);
-		sb.append("\t\t\t\t<entry>Generated Descriptions</entry>" + eol);
-		sb.append("\t\t\t\t<entry>Generated Relationships</entry>" + eol);
-		sb.append("\t\t\t\t<entry>Merged Concepts</entry>" + eol);
-		sb.append("\t\t\t\t<entry>Execution Time</entry>" + eol);
-		sb.append("\t\t\t</row>" + eol);
-		sb.append("\t\t</thead>" + eol);
-		
-		sb.append("\t\t<tbody>" + eol);
-		
-		int i = 0;
-		for (Entry<Integer, AtomicInteger> x : ruleHits.entrySet())
-		{
-			i++;
-			sb.append("\t\t\t<row>" + eol);
-			sb.append("\t\t\t\t<entry>LOINC " + x.getKey() + "</entry>" + eol);
-			if (i == 1)
-			{
-				sb.append("\t\t\t\t<entry morerows='" + (ruleHits.size() - 1) + "'>" + examinedConcepts.get() + "</entry>" + eol);
-				sb.append("\t\t\t\t<entry morerows='" + (ruleHits.size() - 1) + "'>-</entry>" + eol);  //no descriptions generated here
-			}
-			sb.append("\t\t\t\t<entry>" + generatedRels.get(x.getKey()).get() + "</entry>" + eol);
-			sb.append("\t\t\t\t<entry>" + mergedConcepts.get(x.getKey()).get() + "</entry>" + eol);
-			if (i == 1)
-			{
-				long temp = System.currentTimeMillis() - startTime;
-				int seconds = (int)(temp / 1000l);
-				sb.append("\t\t\t\t<entry morerows='" + (ruleHits.size() - 1) + "'>" + seconds + " seconds</entry>" + eol);
-			}
-			
-			sb.append("\t\t\t</row>" + eol);
-		}
-	
-		sb.append("\t\t</tbody>" + eol);
-		sb.append("\t</tgroup>" + eol);
-		sb.append("</table>" + eol);
-		
-		return sb.toString();
-	}
-	
 	public static void main(String[] args) throws Exception
 	{
 		IOException dataStoreLocationInitException = SystemInit.doBasicSystemInit(new File("../../../ISAAC-DB/isaac-db-solor/target/"));
