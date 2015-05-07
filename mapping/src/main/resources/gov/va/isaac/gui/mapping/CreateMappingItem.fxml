@@ -71,7 +71,7 @@
       </VBox>
       </content>
       </TitledPane>
-      <TitledPane animated="false" text="Target is member of refset">
+      <TitledPane animated="false" text="Target is Member of Assemblage">
       <content>
       <VBox>
       <children>
@@ -87,7 +87,7 @@
       </VBox>
       </content>
       </TitledPane>
-                  <TitledPane animated="false" text="Target is kind of">
+                  <TitledPane animated="false" text="Target is Kind of">
                      <content>
                         <VBox fx:id="kindOfRestrictionVBox">
                            <opaqueInsets>
