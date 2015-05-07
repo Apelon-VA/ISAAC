@@ -218,7 +218,7 @@ public class ErrorMarkerUtils
 	 * 
 	 * @return the replacementNode
 	 */
-	public static StackPane swapGridPaneComponents(Node placedNode, StackPane replacementNode, GridPane gp)
+	public static Node swapGridPaneComponents(Node placedNode, Node replacementNode, GridPane gp)
 	{
 		int index = gp.getChildren().indexOf(placedNode);
 		if (index < 0)

@@ -18,7 +18,9 @@
  */
 package gov.va.isaac.gui.util;
 
+import javafx.scene.Node;
 import javafx.scene.control.Labeled;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 
@@ -41,5 +43,27 @@ public class WrappedLabeled
 		labeled.prefWidthProperty().bind(result.widthProperty().subtract(20));
 		result.minHeightProperty().bind(labeled.heightProperty());
 		return result;
+	}
+	
+	/**
+	 * Useful when taking a node already placed by a fxml file, for example, so it wraps properly.
+	 * WARNING - the mechanism of moving the properties isn't currently very smart - it should only target
+	 * GridPane properties, but it takes everything.
+	 */
+	public static HBox wrapInstalledLabel(Labeled placedNode, GridPane gp)
+	{
+		int index = gp.getChildren().indexOf(placedNode);
+		if (index < 0)
+		{
+			throw new RuntimeException("Placed Node is not in the grid pane");
+		}
+
+		gp.getChildren().remove(index);
+		HBox replacementNode = wrap(placedNode);
+		gp.getChildren().add(index, replacementNode);
+
+		//this transfers the node specific constraints
+		replacementNode.getProperties().putAll(placedNode.getProperties());
+		return replacementNode;
 	}
 }
