@@ -355,7 +355,8 @@ public class CreateMappingItemController {
 			
 			if (mi != null) {
 				saveButton.getScene().getWindow().hide();
-				AppContext.getService(Mapping.class).refreshMappingItems();
+				//TODO need a proper wait for index update here... runLater helps
+				Platform.runLater(() -> AppContext.getService(Mapping.class).refreshMappingItems());
 			} else {
 				saveButton.getScene().getWindow().requestFocus();
 			}
