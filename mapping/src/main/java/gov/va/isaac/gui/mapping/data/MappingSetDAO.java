@@ -82,11 +82,16 @@ public class MappingSetDAO extends MappingDAO
 			{
 				try
 				{
+					AppContext.getRuntimeGlobals().disableAllCommitListeners();
 					LuceneDynamicRefexIndexerConfiguration.configureColumnsToIndex(rdud.getRefexUsageDescriptorNid(), new Integer[] {0, 1, 2}, true);
 				}
 				catch (Exception e)
 				{
 					LOG.error("Unexpected error enabling the index on newly created mapping set!", e);
+				}
+				finally
+				{
+					AppContext.getRuntimeGlobals().enableAllCommitListeners();
 				}
 			});
 			
