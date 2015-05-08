@@ -152,17 +152,7 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 			}
 			@Override
 			protected boolean computeValue() {
-				if (getProperty().getValue() == null)
-				{
-					//in reality, I don't think this ever happens - it will likely be an empty string
-					this.setInvalidReason("missing value for " + name);
-					logger.debug(getReasonWhyInvalid().get());
-
-					TextErrorColorHelper.setTextErrorColor(label);
-
-					return false;
-				}
-				else if (!emptyStringAllowed && StringUtils.isBlank(getProperty().getValue())) {
+				if (!emptyStringAllowed && StringUtils.isBlank(getProperty().getValue())) {
 					this.setInvalidReason("unspecified value for " + name);
 					logger.debug(getReasonWhyInvalid().get());
 
