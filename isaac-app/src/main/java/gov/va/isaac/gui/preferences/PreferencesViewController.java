@@ -172,6 +172,11 @@ public class PreferencesViewController {
 						}
 					}
 				});
+				//Initialize, if stored value is wrong
+				if (StringUtils.isNotEmpty(plugin.validationFailureMessageProperty().getValue()))
+				{
+					TextErrorColorHelper.setTextErrorColor(tabLabel);
+				}
 				pluginTab.setContent(vBox);
 				tabPane_.getTabs().add(pluginTab);
 			}
