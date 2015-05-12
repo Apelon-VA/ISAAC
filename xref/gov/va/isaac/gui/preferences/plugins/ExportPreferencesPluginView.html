@@ -60,7 +60,7 @@
 <a class="jxr_linenumber" name="L52" href="#L52">52</a>  		List&lt;PreferencesPluginProperty&lt;?, ? <strong class="jxr_keyword">extends</strong> Control&gt;&gt; properties = <strong class="jxr_keyword">new</strong> ArrayList&lt;&gt;();
 <a class="jxr_linenumber" name="L53" href="#L53">53</a>  
 <a class="jxr_linenumber" name="L54" href="#L54">54</a>  		PreferencesPluginTextFieldProperty releaseVersionProperty = 
-<a class="jxr_linenumber" name="L55" href="#L55">55</a>  				<strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/preferences/plugins/properties/PreferencesPluginTextFieldProperty.html">PreferencesPluginTextFieldProperty</a>(<span class="jxr_string">"Release Version"</span>) {
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>  				<strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/preferences/plugins/properties/PreferencesPluginTextFieldProperty.html">PreferencesPluginTextFieldProperty</a>(<span class="jxr_string">"Release Version"</span>, <strong class="jxr_keyword">true</strong>) {
 <a class="jxr_linenumber" name="L56" href="#L56">56</a>  			@Override
 <a class="jxr_linenumber" name="L57" href="#L57">57</a>  			<strong class="jxr_keyword">public</strong> String readFromPersistedPreferences() {
 <a class="jxr_linenumber" name="L58" href="#L58">58</a>  				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
@@ -80,7 +80,7 @@
 <a class="jxr_linenumber" name="L72" href="#L72">72</a>  		properties.add(releaseVersionProperty);
 <a class="jxr_linenumber" name="L73" href="#L73">73</a>  
 <a class="jxr_linenumber" name="L74" href="#L74">74</a>  		PreferencesPluginTextFieldProperty extensionNamespaceProperty = 
-<a class="jxr_linenumber" name="L75" href="#L75">75</a>  				<strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/preferences/plugins/properties/PreferencesPluginTextFieldProperty.html">PreferencesPluginTextFieldProperty</a>(<span class="jxr_string">"Extension Namespace"</span>) {
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  				<strong class="jxr_keyword">new</strong> <a href="../../../../../../gov/va/isaac/gui/preferences/plugins/properties/PreferencesPluginTextFieldProperty.html">PreferencesPluginTextFieldProperty</a>(<span class="jxr_string">"Extension Namespace"</span>, <strong class="jxr_keyword">true</strong>) {
 <a class="jxr_linenumber" name="L76" href="#L76">76</a>  			@Override
 <a class="jxr_linenumber" name="L77" href="#L77">77</a>  			<strong class="jxr_keyword">public</strong> String readFromPersistedPreferences() {
 <a class="jxr_linenumber" name="L78" href="#L78">78</a>  				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();

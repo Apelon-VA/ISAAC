@@ -268,93 +268,95 @@
 <a class="jxr_linenumber" name="L260" href="#L260">260</a> 		<strong class="jxr_keyword">return</strong> sb.toString();
 <a class="jxr_linenumber" name="L261" href="#L261">261</a> 	}
 <a class="jxr_linenumber" name="L262" href="#L262">262</a> 	
-<a class="jxr_linenumber" name="L263" href="#L263">263</a> 	<em class="jxr_javadoccomment">/**</em>
-<a class="jxr_linenumber" name="L264" href="#L264">264</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultSummary()</em>
-<a class="jxr_linenumber" name="L265" href="#L265">265</a> <em class="jxr_javadoccomment">	 */</em>
-<a class="jxr_linenumber" name="L266" href="#L266">266</a> 	@Override
-<a class="jxr_linenumber" name="L267" href="#L267">267</a> 	<strong class="jxr_keyword">public</strong> String getWorkResultSummary()
-<a class="jxr_linenumber" name="L268" href="#L268">268</a> 	{
-<a class="jxr_linenumber" name="L269" href="#L269">269</a> 		String eol = System.getProperty(<span class="jxr_string">"line.separator"</span>);
-<a class="jxr_linenumber" name="L270" href="#L270">270</a> 		StringBuilder sb = <strong class="jxr_keyword">new</strong> StringBuilder();
-<a class="jxr_linenumber" name="L271" href="#L271">271</a> 		
-<a class="jxr_linenumber" name="L272" href="#L272">272</a> 		<strong class="jxr_keyword">int</strong> totalRelCount = sum(generatedRels.values());
-<a class="jxr_linenumber" name="L273" href="#L273">273</a> 		<strong class="jxr_keyword">int</strong> totalMergedCount = sum(mergedConcepts.values());
-<a class="jxr_linenumber" name="L274" href="#L274">274</a> 		
-<a class="jxr_linenumber" name="L275" href="#L275">275</a> 		sb.append(<span class="jxr_string">"Examined "</span> + examinedConcepts.get() + <span class="jxr_string">" concepts and added hierarchy linkages to "</span> + totalRelCount + <span class="jxr_string">" concepts.  "</span>
-<a class="jxr_linenumber" name="L276" href="#L276">276</a> 				+ <span class="jxr_string">"Merged "</span> + totalMergedCount + <span class="jxr_string">" concepts"</span> + eol);
-<a class="jxr_linenumber" name="L277" href="#L277">277</a> 		
-<a class="jxr_linenumber" name="L278" href="#L278">278</a> 		sb.append(<span class="jxr_string">"Rule,Concept Count,Concept UUID,Concept FSN,Concept UUID,Concept FSN"</span> + eol);
-<a class="jxr_linenumber" name="L279" href="#L279">279</a> 		<strong class="jxr_keyword">for</strong> (Entry&lt;Integer, Set&lt;String&gt;&gt; x : ruleHits.entrySet())
-<a class="jxr_linenumber" name="L280" href="#L280">280</a> 		{
-<a class="jxr_linenumber" name="L281" href="#L281">281</a> 			sb.append(x.getKey() + <span class="jxr_string">","</span> + x.getValue().size());
-<a class="jxr_linenumber" name="L282" href="#L282">282</a> 			<strong class="jxr_keyword">if</strong> (x.getValue().size() &lt;= 50)
-<a class="jxr_linenumber" name="L283" href="#L283">283</a> 			{
-<a class="jxr_linenumber" name="L284" href="#L284">284</a> 				<strong class="jxr_keyword">for</strong> (String s : x.getValue())
-<a class="jxr_linenumber" name="L285" href="#L285">285</a> 				{
-<a class="jxr_linenumber" name="L286" href="#L286">286</a> 					sb.append(<span class="jxr_string">","</span> + s);
-<a class="jxr_linenumber" name="L287" href="#L287">287</a> 				}
-<a class="jxr_linenumber" name="L288" href="#L288">288</a> 			}
-<a class="jxr_linenumber" name="L289" href="#L289">289</a> 			sb.append(eol);
-<a class="jxr_linenumber" name="L290" href="#L290">290</a> 		}
-<a class="jxr_linenumber" name="L291" href="#L291">291</a> 		
-<a class="jxr_linenumber" name="L292" href="#L292">292</a> 		sb.append(eol);
-<a class="jxr_linenumber" name="L293" href="#L293">293</a> 		sb.append(eol);
-<a class="jxr_linenumber" name="L294" href="#L294">294</a> 		sb.append(<span class="jxr_string">"Concepts modified by more than one rule:"</span> + eol);
-<a class="jxr_linenumber" name="L295" href="#L295">295</a> 		sb.append(<span class="jxr_string">"Concept UUID,Concept FSN,Rule ID,Rule ID"</span> + eol);
-<a class="jxr_linenumber" name="L296" href="#L296">296</a> 		<strong class="jxr_keyword">for</strong> (Entry&lt;String, Set&lt;Integer&gt;&gt; x : conceptHitsByRule.entrySet())
-<a class="jxr_linenumber" name="L297" href="#L297">297</a> 		{
-<a class="jxr_linenumber" name="L298" href="#L298">298</a> 			<strong class="jxr_keyword">if</strong> (x.getValue().size() &gt; 1)
-<a class="jxr_linenumber" name="L299" href="#L299">299</a> 			{
-<a class="jxr_linenumber" name="L300" href="#L300">300</a> 				sb.append(x.getKey());
-<a class="jxr_linenumber" name="L301" href="#L301">301</a> 				<strong class="jxr_keyword">for</strong> (Integer ruleId : x.getValue())
-<a class="jxr_linenumber" name="L302" href="#L302">302</a> 				{
-<a class="jxr_linenumber" name="L303" href="#L303">303</a> 					sb.append(<span class="jxr_string">","</span> + ruleId);
-<a class="jxr_linenumber" name="L304" href="#L304">304</a> 				}
-<a class="jxr_linenumber" name="L305" href="#L305">305</a> 				sb.append(eol);
-<a class="jxr_linenumber" name="L306" href="#L306">306</a> 			}
-<a class="jxr_linenumber" name="L307" href="#L307">307</a> 		}
-<a class="jxr_linenumber" name="L308" href="#L308">308</a> 		
-<a class="jxr_linenumber" name="L309" href="#L309">309</a> 		<strong class="jxr_keyword">return</strong> sb.toString();
-<a class="jxr_linenumber" name="L310" href="#L310">310</a> 	}
-<a class="jxr_linenumber" name="L311" href="#L311">311</a> 	
-<a class="jxr_linenumber" name="L312" href="#L312">312</a> 	<strong class="jxr_keyword">protected</strong> UUID findSCTTarget(<a href="../../../../gov/va/isaac/isaacDbProcessingRules/spreadsheet/RuleDefinition.html">RuleDefinition</a> rd) <strong class="jxr_keyword">throws</strong> Exception
-<a class="jxr_linenumber" name="L313" href="#L313">313</a> 	{
-<a class="jxr_linenumber" name="L314" href="#L314">314</a> 		UUID sctTargetConcept = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L315" href="#L315">315</a> 		<strong class="jxr_keyword">if</strong> (rd.getSctID() != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="L316" href="#L316">316</a> 		{
-<a class="jxr_linenumber" name="L317" href="#L317">317</a> 			sctTargetConcept = UuidFactory.getUuidFromAlternateId(TermAux.SNOMED_IDENTIFIER.getUuids()[0], rd.getSctID().toString());
-<a class="jxr_linenumber" name="L318" href="#L318">318</a> 		}
-<a class="jxr_linenumber" name="L319" href="#L319">319</a> 		<strong class="jxr_keyword">if</strong> (sctTargetConcept == <strong class="jxr_keyword">null</strong> || !ts_.hasConcept(sctTargetConcept))
-<a class="jxr_linenumber" name="L320" href="#L320">320</a> 		{
-<a class="jxr_linenumber" name="L321" href="#L321">321</a> 			<em class="jxr_comment">//try to find by FSN</em>
-<a class="jxr_linenumber" name="L322" href="#L322">322</a> 			sctTargetConcept = <strong class="jxr_keyword">null</strong>;
-<a class="jxr_linenumber" name="L323" href="#L323">323</a> 			SearchHandle sh = SearchHandler.descriptionSearch(<span class="jxr_string">"\&quot;"</span> + rd.getSctFSN() + <span class="jxr_string">"\&quot;"</span>, 5, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>);
-<a class="jxr_linenumber" name="L324" href="#L324">324</a> 			<strong class="jxr_keyword">for</strong> (CompositeSearchResult csr : sh.getResults())
-<a class="jxr_linenumber" name="L325" href="#L325">325</a> 			{
-<a class="jxr_linenumber" name="L326" href="#L326">326</a> 				<strong class="jxr_keyword">for</strong> (String s : csr.getMatchingStrings())
-<a class="jxr_linenumber" name="L327" href="#L327">327</a> 				{
-<a class="jxr_linenumber" name="L328" href="#L328">328</a> 					<strong class="jxr_keyword">if</strong> (rd.getSctFSN().equals(s))
-<a class="jxr_linenumber" name="L329" href="#L329">329</a> 					{
-<a class="jxr_linenumber" name="L330" href="#L330">330</a> 						<em class="jxr_comment">//this is the concept we wanted.</em>
-<a class="jxr_linenumber" name="L331" href="#L331">331</a> 						sctTargetConcept = csr.getContainingConcept().getPrimordialUuid();
-<a class="jxr_linenumber" name="L332" href="#L332">332</a> 						<strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L333" href="#L333">333</a> 					}
-<a class="jxr_linenumber" name="L334" href="#L334">334</a> 				}
-<a class="jxr_linenumber" name="L335" href="#L335">335</a> 				<strong class="jxr_keyword">if</strong> (sctTargetConcept != <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="L336" href="#L336">336</a> 				{
-<a class="jxr_linenumber" name="L337" href="#L337">337</a> 					<strong class="jxr_keyword">break</strong>;
-<a class="jxr_linenumber" name="L338" href="#L338">338</a> 				}
-<a class="jxr_linenumber" name="L339" href="#L339">339</a> 			}
-<a class="jxr_linenumber" name="L340" href="#L340">340</a> 		}
-<a class="jxr_linenumber" name="L341" href="#L341">341</a> 		
-<a class="jxr_linenumber" name="L342" href="#L342">342</a> 		<strong class="jxr_keyword">if</strong> (sctTargetConcept == <strong class="jxr_keyword">null</strong>)
-<a class="jxr_linenumber" name="L343" href="#L343">343</a> 		{
-<a class="jxr_linenumber" name="L344" href="#L344">344</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(<span class="jxr_string">"Couldn't find target concept"</span>);
-<a class="jxr_linenumber" name="L345" href="#L345">345</a> 		}
-<a class="jxr_linenumber" name="L346" href="#L346">346</a> 		<strong class="jxr_keyword">return</strong> sctTargetConcept;
-<a class="jxr_linenumber" name="L347" href="#L347">347</a> 	}
-<a class="jxr_linenumber" name="L348" href="#L348">348</a> 
-<a class="jxr_linenumber" name="L349" href="#L349">349</a> }
+<a class="jxr_linenumber" name="L263" href="#L263">263</a> 	<em class="jxr_comment">//TODO need to rework this to write all of the summary information to a folder - a number of files - then package that along </em>
+<a class="jxr_linenumber" name="L264" href="#L264">264</a> 	<em class="jxr_comment">//with the DB and publish it as an artifact.  Console output is getting too large - especially for RxNorm which broke docbook.</em>
+<a class="jxr_linenumber" name="L265" href="#L265">265</a> 	<em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L266" href="#L266">266</a> <em class="jxr_javadoccomment">	 * @see gov.va.isaac.mojos.dbTransforms.TransformI#getWorkResultSummary()</em>
+<a class="jxr_linenumber" name="L267" href="#L267">267</a> <em class="jxr_javadoccomment">	 */</em>
+<a class="jxr_linenumber" name="L268" href="#L268">268</a> 	@Override
+<a class="jxr_linenumber" name="L269" href="#L269">269</a> 	<strong class="jxr_keyword">public</strong> String getWorkResultSummary()
+<a class="jxr_linenumber" name="L270" href="#L270">270</a> 	{
+<a class="jxr_linenumber" name="L271" href="#L271">271</a> 		String eol = System.getProperty(<span class="jxr_string">"line.separator"</span>);
+<a class="jxr_linenumber" name="L272" href="#L272">272</a> 		StringBuilder sb = <strong class="jxr_keyword">new</strong> StringBuilder();
+<a class="jxr_linenumber" name="L273" href="#L273">273</a> 		
+<a class="jxr_linenumber" name="L274" href="#L274">274</a> 		<strong class="jxr_keyword">int</strong> totalRelCount = sum(generatedRels.values());
+<a class="jxr_linenumber" name="L275" href="#L275">275</a> 		<strong class="jxr_keyword">int</strong> totalMergedCount = sum(mergedConcepts.values());
+<a class="jxr_linenumber" name="L276" href="#L276">276</a> 		
+<a class="jxr_linenumber" name="L277" href="#L277">277</a> 		sb.append(<span class="jxr_string">"Examined "</span> + examinedConcepts.get() + <span class="jxr_string">" concepts and added hierarchy linkages to "</span> + totalRelCount + <span class="jxr_string">" concepts.  "</span>
+<a class="jxr_linenumber" name="L278" href="#L278">278</a> 				+ <span class="jxr_string">"Merged "</span> + totalMergedCount + <span class="jxr_string">" concepts"</span> + eol);
+<a class="jxr_linenumber" name="L279" href="#L279">279</a> 		
+<a class="jxr_linenumber" name="L280" href="#L280">280</a> 		sb.append(<span class="jxr_string">"Rule,Concept Count,Concept UUID,Concept FSN,Concept UUID,Concept FSN"</span> + eol);
+<a class="jxr_linenumber" name="L281" href="#L281">281</a> 		<strong class="jxr_keyword">for</strong> (Entry&lt;Integer, Set&lt;String&gt;&gt; x : ruleHits.entrySet())
+<a class="jxr_linenumber" name="L282" href="#L282">282</a> 		{
+<a class="jxr_linenumber" name="L283" href="#L283">283</a> 			sb.append(x.getKey() + <span class="jxr_string">","</span> + x.getValue().size());
+<a class="jxr_linenumber" name="L284" href="#L284">284</a> 			<strong class="jxr_keyword">if</strong> (x.getValue().size() &lt;= 50)
+<a class="jxr_linenumber" name="L285" href="#L285">285</a> 			{
+<a class="jxr_linenumber" name="L286" href="#L286">286</a> 				<strong class="jxr_keyword">for</strong> (String s : x.getValue())
+<a class="jxr_linenumber" name="L287" href="#L287">287</a> 				{
+<a class="jxr_linenumber" name="L288" href="#L288">288</a> 					sb.append(<span class="jxr_string">","</span> + s);
+<a class="jxr_linenumber" name="L289" href="#L289">289</a> 				}
+<a class="jxr_linenumber" name="L290" href="#L290">290</a> 			}
+<a class="jxr_linenumber" name="L291" href="#L291">291</a> 			sb.append(eol);
+<a class="jxr_linenumber" name="L292" href="#L292">292</a> 		}
+<a class="jxr_linenumber" name="L293" href="#L293">293</a> 		
+<a class="jxr_linenumber" name="L294" href="#L294">294</a> 		sb.append(eol);
+<a class="jxr_linenumber" name="L295" href="#L295">295</a> 		sb.append(eol);
+<a class="jxr_linenumber" name="L296" href="#L296">296</a> 		sb.append(<span class="jxr_string">"Concepts modified by more than one rule:"</span> + eol);
+<a class="jxr_linenumber" name="L297" href="#L297">297</a> 		sb.append(<span class="jxr_string">"Concept UUID,Concept FSN,Rule ID,Rule ID"</span> + eol);
+<a class="jxr_linenumber" name="L298" href="#L298">298</a> 		<strong class="jxr_keyword">for</strong> (Entry&lt;String, Set&lt;Integer&gt;&gt; x : conceptHitsByRule.entrySet())
+<a class="jxr_linenumber" name="L299" href="#L299">299</a> 		{
+<a class="jxr_linenumber" name="L300" href="#L300">300</a> 			<strong class="jxr_keyword">if</strong> (x.getValue().size() &gt; 1)
+<a class="jxr_linenumber" name="L301" href="#L301">301</a> 			{
+<a class="jxr_linenumber" name="L302" href="#L302">302</a> 				sb.append(x.getKey());
+<a class="jxr_linenumber" name="L303" href="#L303">303</a> 				<strong class="jxr_keyword">for</strong> (Integer ruleId : x.getValue())
+<a class="jxr_linenumber" name="L304" href="#L304">304</a> 				{
+<a class="jxr_linenumber" name="L305" href="#L305">305</a> 					sb.append(<span class="jxr_string">","</span> + ruleId);
+<a class="jxr_linenumber" name="L306" href="#L306">306</a> 				}
+<a class="jxr_linenumber" name="L307" href="#L307">307</a> 				sb.append(eol);
+<a class="jxr_linenumber" name="L308" href="#L308">308</a> 			}
+<a class="jxr_linenumber" name="L309" href="#L309">309</a> 		}
+<a class="jxr_linenumber" name="L310" href="#L310">310</a> 		
+<a class="jxr_linenumber" name="L311" href="#L311">311</a> 		<strong class="jxr_keyword">return</strong> sb.toString();
+<a class="jxr_linenumber" name="L312" href="#L312">312</a> 	}
+<a class="jxr_linenumber" name="L313" href="#L313">313</a> 	
+<a class="jxr_linenumber" name="L314" href="#L314">314</a> 	<strong class="jxr_keyword">protected</strong> UUID findSCTTarget(<a href="../../../../gov/va/isaac/isaacDbProcessingRules/spreadsheet/RuleDefinition.html">RuleDefinition</a> rd) <strong class="jxr_keyword">throws</strong> Exception
+<a class="jxr_linenumber" name="L315" href="#L315">315</a> 	{
+<a class="jxr_linenumber" name="L316" href="#L316">316</a> 		UUID sctTargetConcept = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L317" href="#L317">317</a> 		<strong class="jxr_keyword">if</strong> (rd.getSctID() != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L318" href="#L318">318</a> 		{
+<a class="jxr_linenumber" name="L319" href="#L319">319</a> 			sctTargetConcept = UuidFactory.getUuidFromAlternateId(TermAux.SNOMED_IDENTIFIER.getUuids()[0], rd.getSctID().toString());
+<a class="jxr_linenumber" name="L320" href="#L320">320</a> 		}
+<a class="jxr_linenumber" name="L321" href="#L321">321</a> 		<strong class="jxr_keyword">if</strong> (sctTargetConcept == <strong class="jxr_keyword">null</strong> || !ts_.hasConcept(sctTargetConcept))
+<a class="jxr_linenumber" name="L322" href="#L322">322</a> 		{
+<a class="jxr_linenumber" name="L323" href="#L323">323</a> 			<em class="jxr_comment">//try to find by FSN</em>
+<a class="jxr_linenumber" name="L324" href="#L324">324</a> 			sctTargetConcept = <strong class="jxr_keyword">null</strong>;
+<a class="jxr_linenumber" name="L325" href="#L325">325</a> 			SearchHandle sh = SearchHandler.descriptionSearch(<span class="jxr_string">"\&quot;"</span> + rd.getSctFSN() + <span class="jxr_string">"\&quot;"</span>, 5, <strong class="jxr_keyword">null</strong>, <strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L326" href="#L326">326</a> 			<strong class="jxr_keyword">for</strong> (CompositeSearchResult csr : sh.getResults())
+<a class="jxr_linenumber" name="L327" href="#L327">327</a> 			{
+<a class="jxr_linenumber" name="L328" href="#L328">328</a> 				<strong class="jxr_keyword">for</strong> (String s : csr.getMatchingStrings())
+<a class="jxr_linenumber" name="L329" href="#L329">329</a> 				{
+<a class="jxr_linenumber" name="L330" href="#L330">330</a> 					<strong class="jxr_keyword">if</strong> (rd.getSctFSN().equals(s))
+<a class="jxr_linenumber" name="L331" href="#L331">331</a> 					{
+<a class="jxr_linenumber" name="L332" href="#L332">332</a> 						<em class="jxr_comment">//this is the concept we wanted.</em>
+<a class="jxr_linenumber" name="L333" href="#L333">333</a> 						sctTargetConcept = csr.getContainingConcept().getPrimordialUuid();
+<a class="jxr_linenumber" name="L334" href="#L334">334</a> 						<strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L335" href="#L335">335</a> 					}
+<a class="jxr_linenumber" name="L336" href="#L336">336</a> 				}
+<a class="jxr_linenumber" name="L337" href="#L337">337</a> 				<strong class="jxr_keyword">if</strong> (sctTargetConcept != <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L338" href="#L338">338</a> 				{
+<a class="jxr_linenumber" name="L339" href="#L339">339</a> 					<strong class="jxr_keyword">break</strong>;
+<a class="jxr_linenumber" name="L340" href="#L340">340</a> 				}
+<a class="jxr_linenumber" name="L341" href="#L341">341</a> 			}
+<a class="jxr_linenumber" name="L342" href="#L342">342</a> 		}
+<a class="jxr_linenumber" name="L343" href="#L343">343</a> 		
+<a class="jxr_linenumber" name="L344" href="#L344">344</a> 		<strong class="jxr_keyword">if</strong> (sctTargetConcept == <strong class="jxr_keyword">null</strong>)
+<a class="jxr_linenumber" name="L345" href="#L345">345</a> 		{
+<a class="jxr_linenumber" name="L346" href="#L346">346</a> 			<strong class="jxr_keyword">throw</strong> <strong class="jxr_keyword">new</strong> RuntimeException(<span class="jxr_string">"Couldn't find target concept"</span>);
+<a class="jxr_linenumber" name="L347" href="#L347">347</a> 		}
+<a class="jxr_linenumber" name="L348" href="#L348">348</a> 		<strong class="jxr_keyword">return</strong> sctTargetConcept;
+<a class="jxr_linenumber" name="L349" href="#L349">349</a> 	}
+<a class="jxr_linenumber" name="L350" href="#L350">350</a> 
+<a class="jxr_linenumber" name="L351" href="#L351">351</a> }
 </pre>
 <hr/>
 <div id="footer">Copyright &#169; 2015. All rights reserved.</div>
