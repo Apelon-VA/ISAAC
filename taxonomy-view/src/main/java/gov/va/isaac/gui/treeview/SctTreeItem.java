@@ -272,25 +272,10 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
             } else if (getConceptNid(root) == getConceptNid()) {
                 return true;
             }
-//            else if ((root instanceof SctTreeItem) && this.compareTo((SctTreeItem)root) == 0) {
-//                return true;
-//            }
             else {
-//                if (ref == null) {
-//                    // Happens often
-//                    LOG.debug("TaxonomyReferenceWithConcept is null");
-//                }
                 return false;
             }
         }
-
-        //        if (ref != null && ref.getRelationshipVersion() == null) {
-        //            return true;
-        //        } else if (ref != null && ref.getConcept() != null && ref.getConcept().getOriginRelationships().isEmpty()) {
-        //            return true;
-        //        } else {
-        //            return false;
-        //        }
     }
     
     public Node computeGraphic() {

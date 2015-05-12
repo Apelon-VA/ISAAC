@@ -218,6 +218,9 @@ public class MappingUtils
 		
 		SearchResultsIntersectionFilter filterSet = (filters.size() > 0 ? new SearchResultsIntersectionFilter(filters) : null);
 		
+		//TODO At some point, Dan needs to update this to avoid the query processor when we are automating the query generation
+		//we also need to more consistently handle characters like [ and ( when they are going into the query parser
+		//but that is a problem bigger than just the usage in mapping.
 		searchString = SearchStringProcessor.prepareSearchString(searchString);
 		
 		if (descriptionType == null && advancedDescriptionType == null)
