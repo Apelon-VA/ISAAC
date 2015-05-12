@@ -8,7 +8,9 @@ public class SearchStringProcessor {
     public static final String symbolsRegEx = "&|#|\\$|\\%|@|\\\\|_|\\|";
     public static final String operatorsRegEx = "\\+|\\-|\\*|\\/|<|>|=|\\^|~";
     public static final String parensRegEx = "\\(|\\)|\\{|\\}|\\[|\\]";
-
+    
+    public static final String escapedCharactersRegEx = "\\+|\\-|&|\\||!|\\(|\\)|\\{|\\}|\\[|\\]|\\^|\"|~|\\*|\\?|:|\\/";
+    
     // Note: \xc2\xa0 is non-breaking space
 	public static final String nonPrintableRegEx = 
 			"\\x00|\\x01|\\x02|\\x03|\\x04|\\x05|\\x06|\\x07|\\x08|\\x09|\\x0a|\\x0b|\\x0c|\\x0d|\\x0e|\\x0f|" +
@@ -33,8 +35,12 @@ public class SearchStringProcessor {
 	}
 	
 	public static String prepareSearchString(String s) {
-		String processedString = stripAll(s) + " ";
+		String processedString = s;
+		
+		processedString = stripNonPrintable(processedString);
+		processedString = escapeCharacters(processedString);
 
+		/*
         // Remove leading and trailing periods and dashes
         processedString = processedString.replaceAll("((\\.|-)\\s)+|(\\s(\\.|-))+", " ");
 
@@ -42,8 +48,11 @@ public class SearchStringProcessor {
         processedString = processedString.replaceAll("\\s+\\p{Punct}\\s+", " ");
 
 		processedString = removeStopWords(processedString);
-		
+		*/
+
 		return processedString;
+		
+		
 	}
 	
 	
@@ -62,6 +71,10 @@ public class SearchStringProcessor {
     	return s.replaceAll(allRegEx, " ");
     }
     
+    
+    public static String escapeCharacters(String s) {
+    	return s.replaceAll(escapedCharactersRegEx, "\\\\$0");
+    }
     
     public static String removeStopWords(String s) {
         String [] words = s.trim().toLowerCase().split("\\s+");

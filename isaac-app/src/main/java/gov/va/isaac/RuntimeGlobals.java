@@ -18,16 +18,19 @@
  */
 package gov.va.isaac;
 
+import gov.va.isaac.gui.App;
 import gov.va.isaac.interfaces.RuntimeGlobalsI;
 import gov.va.isaac.interfaces.utility.CommitListenerI;
 import gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.naming.InvalidNameException;
 import org.glassfish.hk2.api.IterableProvider;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link RuntimeGlobals}
@@ -40,6 +43,7 @@ public class RuntimeGlobals implements RuntimeGlobalsI
 {
 	private ArrayList<ShutdownBroadcastListenerI> shutdownListeners_ = new ArrayList<>();
 	@Inject private IterableProvider<CommitListenerI> commitListeners_;
+	private AtomicInteger disableRequests = new AtomicInteger(0);
 
 	private RuntimeGlobals()
 	{
@@ -124,9 +128,18 @@ public class RuntimeGlobals implements RuntimeGlobalsI
 	@Override
 	public void enableAllCommitListeners()
 	{
-		for (CommitListenerI cl : commitListeners_)
+		if (disableRequests.get() < 1)
 		{
-			cl.enable();
+			LoggerFactory.getLogger(this.getClass()).error("enableAll called when disable hasn't been called!  Ignoring.");
+			return;
+		}
+		int disableRequestsActive = disableRequests.decrementAndGet();
+		if (disableRequestsActive == 0)
+		{
+			for (CommitListenerI cl : commitListeners_)
+			{
+				cl.enable();
+			}
 		}
 	}
 
@@ -136,6 +149,7 @@ public class RuntimeGlobals implements RuntimeGlobalsI
 	@Override
 	public void disableAllCommitListeners()
 	{
+		disableRequests.getAndIncrement();
 		for (CommitListenerI cl : commitListeners_)
 		{
 			cl.disable();

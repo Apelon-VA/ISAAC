@@ -147,7 +147,8 @@ public class CreateMappingSetController {
 				
 				if (mappingSet_ == null) {
 					mappingSet_ = MappingSetDAO.createMappingSet(nameInput.getText(), null, purposeInput.getText(), descInput.getText(), statusUUID);
-					AppContext.getService(Mapping.class).refreshMappingSets();
+					//TODO need a proper wait on index update here... - platform run later helps...
+					Platform.runLater(() -> AppContext.getService(Mapping.class).refreshMappingSets());
 
 				} else {
 					// Edit mapping set
@@ -162,6 +163,7 @@ public class CreateMappingSetController {
 			}
 			catch (Exception e)
 			{
+				//TODO fix this...
 				e.printStackTrace();
 			}
 			

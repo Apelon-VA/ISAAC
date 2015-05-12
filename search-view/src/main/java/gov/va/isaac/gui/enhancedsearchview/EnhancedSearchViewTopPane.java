@@ -23,7 +23,7 @@ public class EnhancedSearchViewTopPane {
 	private Label maxResultsCustomTextFieldLabel;
 	private HBox maxResultsHBox;
 	
-	private Button searchButton = new Button("SEARCH");
+	private Button searchButton = new Button("Search");
 	
 	private SearchModel searchModel = new SearchModel();
 	
@@ -49,16 +49,18 @@ public class EnhancedSearchViewTopPane {
 
 		// Add Search Button
 		initializeSearchButton();
-
-		searchSaver.getSaveButton().disableProperty().bind(SearchModel.isSearchSavableProperty().not());
+		
+		//searchSaver.getSaveButton().disableProperty().bind(SearchModel.isSearchSavableProperty().not());
 
 		staticTopPanePortionGridPane.setConstraints(searchTypeHBox,  0,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(maxResultsHBox,  1,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 		staticTopPanePortionGridPane.setConstraints(searchModel.getResultsTypeComboBox(),  2,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		staticTopPanePortionGridPane.setConstraints(searchSaver.getSaveButton(),  3,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
-		staticTopPanePortionGridPane.setConstraints(searchButton,  4,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
+		//staticTopPanePortionGridPane.setConstraints(searchSaver.getSaveButton(),  3,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
+		//staticTopPanePortionGridPane.setConstraints(searchButton,  4,  0,  1,  1,  HPos.RIGHT,  VPos.CENTER, Priority.ALWAYS, Priority.ALWAYS);
+		staticTopPanePortionGridPane.setConstraints(searchButton,  3,  0,  1,  1,  HPos.LEFT,  VPos.CENTER, Priority.NEVER, Priority.ALWAYS);
 
-		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), searchSaver.getSaveButton(), searchButton);
+		//staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), searchSaver.getSaveButton(), searchButton);
+		staticTopPanePortionGridPane.addRow(0, searchTypeHBox, maxResultsHBox, searchModel.getResultsTypeComboBox(), searchButton);
 		topPanelVBox.getChildren().add(staticTopPanePortionGridPane);
 
 		searchModel.initializeCriteriaPane(maxResultsHBox, searchModel.getResultsTypeComboBox(), searchModel.getSearchResultsTable());

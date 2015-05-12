@@ -52,7 +52,7 @@ public class ExportPreferencesPluginView extends AbstractPreferencesPluginView {
 		List<PreferencesPluginProperty<?, ? extends Control>> properties = new ArrayList<>();
 
 		PreferencesPluginTextFieldProperty releaseVersionProperty = 
-				new PreferencesPluginTextFieldProperty("Release Version") {
+				new PreferencesPluginTextFieldProperty("Release Version", true) {
 			@Override
 			public String readFromPersistedPreferences() {
 				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();
@@ -72,7 +72,7 @@ public class ExportPreferencesPluginView extends AbstractPreferencesPluginView {
 		properties.add(releaseVersionProperty);
 
 		PreferencesPluginTextFieldProperty extensionNamespaceProperty = 
-				new PreferencesPluginTextFieldProperty("Extension Namespace") {
+				new PreferencesPluginTextFieldProperty("Extension Namespace", true) {
 			@Override
 			public String readFromPersistedPreferences() {
 				UserProfile loggedIn = ExtendedAppContext.getCurrentlyLoggedInUserProfile();

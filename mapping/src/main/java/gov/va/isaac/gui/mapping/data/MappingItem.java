@@ -84,7 +84,8 @@ public class MappingItem extends MappingObject
 	
 	public String getSummary() {
 		return  (isActive() ? "Active " : "Retired ") + "Mapping: " + OTFUtility.getDescription(sourceConcept) + "-" + OTFUtility.getDescription(mappingSetIDConcept)
-				+ "-" + OTFUtility.getDescription(targetConcept) + "-" + (qualifierConcept == null ? "no qualifier" : OTFUtility.getDescription(qualifierConcept)) 
+				+ "-" + (targetConcept == null ? "not mapped" : OTFUtility.getDescription(targetConcept)) + "-" 
+				+ (qualifierConcept == null ? "no qualifier" : OTFUtility.getDescription(qualifierConcept)) 
 				+ "-" + (editorStatusConcept == null ? "no status" : OTFUtility.getDescription(editorStatusConcept)) + "-" + primordialUUID.toString();
 	}
 	
