@@ -50,6 +50,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.RectangleBuilder;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
@@ -245,15 +246,13 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public Collection<Integer> getNIds()
             {
-                ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
+                ComponentReference item = SctTreeCell.this.getItem().getConceptFromRelationshipOrConceptProperties();
                 try
                 {
-                    UUID uuid = null;
-                    
-                    if (concept != null ) {
-                        uuid = concept.getPrimordialUuid();
-                        return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
+                    if (item != null ) {
+                        return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(item.getUuid())});
                     } else {
+                        LOG.warn("Couldn't locate an identifer for the node {}", SctTreeCell.this);
                         return Arrays.asList(new Integer[] {});
                     }
                 }
