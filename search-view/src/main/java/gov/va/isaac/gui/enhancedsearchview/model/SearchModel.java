@@ -24,12 +24,15 @@
  */
 package gov.va.isaac.gui.enhancedsearchview.model;
 
+import java.util.Collection;
+
 import gov.va.isaac.gui.dialog.BusyPopover;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.SearchType;
 import gov.va.isaac.gui.enhancedsearchview.model.type.SearchTypeSelector;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.search.SearchHandle;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -49,6 +52,8 @@ public class SearchModel {
 	private static SearchTypeSelector searchTypeSelector = new SearchTypeSelector();
 
 	private final static SearchResultsTable searchResults = new SearchResultsTable();  
+
+	private static int resultsOffPathCount = 0;
 
 	private static ComboBox<ResultsType> resultsTypeComboBox = new ComboBox<ResultsType>();
 	private static IntegerField maxResultsCustomTextField = new IntegerField(); 
@@ -78,6 +83,9 @@ public class SearchModel {
 				+ ", viewCoordinate=" + (model.getViewCoordinateProperty().get() != null ? model.getViewCoordinateProperty().get().getViewPosition() : null) + "]"
 				+ model.getModelDisplayString();
 	}
+	
+	public static int getResultsOffPathCount() { return resultsOffPathCount; }
+	public static void setResultsOffPathCount(int value) { resultsOffPathCount = value; }
 	
 	public static boolean isSearchSavable() {
 		return searchTypeSelector.getTypeSpecificModel().isSavableSearch();
@@ -185,4 +193,5 @@ public class SearchModel {
 		searchTypeSelector.setResultTypeField(comboBox);
 		searchResultsTable.initializeSearchResultsTable(SearchType.TEXT, ResultsType.DESCRIPTION);
 	}
+
 }

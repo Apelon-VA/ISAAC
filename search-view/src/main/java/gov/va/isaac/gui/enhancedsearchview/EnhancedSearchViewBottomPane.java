@@ -59,12 +59,13 @@ public class EnhancedSearchViewBottomPane {
 
 	private VBox labelsVBox;
 	private Label totalResultsSelectedLabel;
+	private Label resultsOffPathLabel;
 	private Label totalResultsReturnedLabel;
 
 	//private VBox saveSearchContainerVBox;
 
 	private SearchModel searchModel = new SearchModel();
-
+	
 	private Font boldFont = new Font("System Bold", 13.0);
 	private BorderStroke borderStroke = new BorderStroke(Paint.valueOf("BLACK"), BorderStrokeStyle.SOLID, new CornerRadii(10), new BorderWidths(1), new Insets(5));
 
@@ -104,9 +105,15 @@ public class EnhancedSearchViewBottomPane {
 		totalResultsSelectedLabel.setFont(boldFont);
 		totalResultsSelectedLabel.setPrefWidth(Control.USE_COMPUTED_SIZE);
 		totalResultsSelectedLabel.setMinWidth(Control.USE_PREF_SIZE);
-
+		 
+		resultsOffPathLabel = new Label();
+		resultsOffPathLabel.setFont(boldFont);
+		resultsOffPathLabel.setPrefWidth(Control.USE_COMPUTED_SIZE);
+		resultsOffPathLabel.setMinWidth(Control.USE_PREF_SIZE);
+		
 		labelsVBox = new VBox(15);
 		labelsVBox.getChildren().add(totalResultsReturnedLabel);
+		labelsVBox.getChildren().add(resultsOffPathLabel);
 		labelsVBox.getChildren().add(totalResultsSelectedLabel);
 	}
 
@@ -148,6 +155,8 @@ public class EnhancedSearchViewBottomPane {
 			totalResultsReturnedLabel.setText(SearchModel.getSearchResultsTable().getResults().getItems().size() + " entries displayed");
 		}
 
+		resultsOffPathLabel.setText(SearchModel.getResultsOffPathCount() + " off-path " + ((SearchModel.getResultsOffPathCount() == 1)? "entry" : "entries") + " not displayed");
+		
 		// Why unconditionally enable buttons here when you conditionally disable them above???
 		//disableButtons(false);		
 	}
