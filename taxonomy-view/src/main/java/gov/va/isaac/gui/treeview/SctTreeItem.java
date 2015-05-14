@@ -18,28 +18,23 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemI;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
-import javafx.concurrent.Task;
+import javafx.beans.property.DoubleProperty;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.scene.Node;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeItem;
-import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
-import org.ihtsdo.otf.tcc.api.thread.NamedThreadFactory;
 import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
@@ -52,24 +47,16 @@ import org.slf4j.LoggerFactory;
  *
  * @author kec
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctTreeItemI, Comparable<SctTreeItem> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SctTreeItem.class);
 
-    private static final ThreadGroup sctTreeItemThreadGroup = new ThreadGroup("SctTreeItem child fetcher pool");
-
-    //TODO (artf231879) dan needs to fix this - the executors are static - but the shutdown registry is per-instance... which isn't right.
-    //realistically, it shouldn't have its own executor service anyway, we should be using thread pools from OTF-UTIL.
-    static ExecutorService childFetcherService;
-    static ExecutorService conceptFetcherService;
-    static {
-        initExecutorPools();
-    }
-
     private final List<SctTreeItem> extraParents = new ArrayList<>();
-
-    private ProgressIndicator progressIndicator;
+    private CountDownLatch childrenLoadedLatch = new CountDownLatch(1);
+    private DoubleProperty childLoadPercentComplete = new SimpleDoubleProperty(-1.0);
+    private volatile boolean cancelLookup = false;
     private boolean defined = false;
     private boolean multiParent = false;
     private int multiParentDepth = 0;
@@ -100,27 +87,23 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     }
     
     void addChildren() {
-        LOG.debug("Adding children to " + getConceptUuid());
         final TaxonomyReferenceWithConcept taxRef = getValue();
         if (! shouldDisplay()) {
             // Don't add children to something that shouldn't be displayed
             LOG.debug("this.shouldDisplay() == false: not adding children to " + this.getConceptUuid());
+            childLoadComplete();
         } else if (taxRef == null || taxRef.getConcept() == null) {
             LOG.debug("addChildren(): taxRef={}, taxRef.getConcept()={}", taxRef, taxRef.getConcept());
+            childLoadComplete();
         } else if (taxRef.getConcept() != null) {
-            // Configure a new progress indicator.
-            ProgressIndicator pi = new ProgressIndicator();
-            //TODO (artf231880) Figure out what to do with the progress indicator
-//            pi.setSkin(new TaxonomyProgressIndicatorSkin(pi));
-            pi.setPrefSize(16, 16);
-            pi.setProgress(-1);
-            setProgressIndicator(pi);
-
             // Gather the children
             ArrayList<SctTreeItem> childrenToProcess = new ArrayList<>();
 
             for (RelationshipChronicleDdo r : taxRef.conceptProperty().get().getDestinationRelationships()) {
                 for (RelationshipVersionDdo rv : r.getVersions()) {
+                    if (cancelLookup) {
+                        return;
+                    }
                     try {
                         TaxonomyReferenceWithConcept fxtrc = new TaxonomyReferenceWithConcept(rv);
                         SctTreeItem childItem = new SctTreeItem(fxtrc, displayPolicies);
@@ -136,40 +119,40 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
             }
 
             Collections.sort(childrenToProcess);
-            getChildren().addAll(childrenToProcess);
-
-            FetchConceptsTask fetchChildrenTask = new FetchConceptsTask(childrenToProcess);
-
-            //pi.progressProperty().bind(fetchChildrenTask.progressProperty());
-            fetchChildrenTask.progressProperty().addListener(new ChangeListener<Number>() {
-                @Override
-                public void changed(
-                        ObservableValue<? extends Number> observable,
-                        Number oldValue, Number newValue) {
-//                    LOG.debug("addChildren(): ProgressIndicator progress for taxRef={} changing from {} to {}", taxRef, oldValue, newValue);
-
-                    pi.progressProperty().set(newValue.doubleValue());
-                }
+            if (cancelLookup) {
+                return;
+            }
+            
+            Platform.runLater(() ->
+            {
+                getChildren().addAll(childrenToProcess);
+                childLoadComplete();
             });
-            FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
+            
+
+            //This loads the childrens children
+            for (SctTreeItem child : childrenToProcess) {
+                //TODO switch this to the blocking queue
+                Utility.execute(new GetSctTreeItemConceptCallable(child));
+            }
         }
     }
 
-    void addChildrenConceptsAndGrandchildrenItems(ProgressIndicator p1) {
+    void addChildrenConceptsAndGrandchildrenItems() {
         ArrayList<SctTreeItem> grandChildrenToProcess = new ArrayList<>();
 
         if (! shouldDisplay()) {
             // Don't add children to something that shouldn't be displayed
             LOG.debug("this.shouldDisplay() == false: not adding children concepts and grandchildren items to " + this.getConceptUuid());
+            childLoadComplete();
         } else {
             for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren()) {
-                SctTreeItem tempChild = new SctTreeItem(child.getValue(), this.getDisplayPolicies());
-                if (tempChild.shouldDisplay()) {
+                if (cancelLookup) {
+                    return;
+                }
+                if (((SctTreeItem)child).shouldDisplay()) {
                     if (child.getChildren().isEmpty() && (child.getValue().getConcept() != null)) {
                         if (child.getValue().getConcept().getDestinationRelationships().isEmpty()) {
-                            // TODO Why are we removing TaxonomyReferenceWithConcept from childless child,
-                            // computing its graphic,
-                            // then setting it back again?
                             TaxonomyReferenceWithConcept value = child.getValue();
                             child.setValue(null);
                             SctTreeItem noChildItem = (SctTreeItem) child;
@@ -178,8 +161,10 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
                         } else {
                             ArrayList<SctTreeItem> grandChildrenToAdd = new ArrayList<>();
 
-                            for (RelationshipChronicleDdo r :
-                                child.getValue().conceptProperty().get().getDestinationRelationships()) {
+                            for (RelationshipChronicleDdo r : child.getValue().conceptProperty().get().getDestinationRelationships()) {
+                                if (cancelLookup) {
+                                    return;
+                                }
                                 for (RelationshipVersionDdo rv : r.getVersions()) {
                                     try {
                                         TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
@@ -189,7 +174,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
                                             grandChildrenToProcess.add(grandChildItem);
                                             grandChildrenToAdd.add(grandChildItem);
                                         } else {
-                                            LOG.debug("grandChildItem.shouldDisplay() == false: not adding " + grandChildItem.getConceptUuid() + " as child of " + tempChild.getConceptUuid());
+                                            LOG.debug("grandChildItem.shouldDisplay() == false: not adding " + grandChildItem.getConceptUuid() + " as child of " + ((SctTreeItem)child).getConceptUuid());
                                         }
                                     } catch (IOException | ContradictionException ex) {
                                         LOG.error(null, ex);
@@ -198,30 +183,33 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
                             }
 
                             Collections.sort(grandChildrenToAdd);
-                            child.getChildren().addAll(grandChildrenToAdd);
+                            if (cancelLookup) {
+                                return;
+                            }
+                            
+                            Platform.runLater(() ->
+                            {
+                                child.getChildren().addAll(grandChildrenToAdd);
+                                ((SctTreeItem)child).childLoadComplete();
+                            });
                         }
                     } else if (child.getValue().getConcept() == null) {
                         grandChildrenToProcess.add((SctTreeItem) child);
                     }
                 } else {
-                    LOG.debug("childItem.shouldDisplay() == false: not adding " + tempChild.getConceptUuid() + " as child of " + this.getConceptUuid());
+                    LOG.debug("childItem.shouldDisplay() == false: not adding " + ((SctTreeItem)child).getConceptUuid() + " as child of " + this.getConceptUuid());
                 }
             }
+            
+            if (cancelLookup) {
+                return;
+            }
 
-            FetchConceptsTask fetchChildrenTask = new FetchConceptsTask(grandChildrenToProcess);
-
-            //p1.progressProperty().bind(fetchChildrenTask.progressProperty());
-            fetchChildrenTask.progressProperty().addListener(new ChangeListener<Number>() {
-                @Override
-                public void changed(
-                        ObservableValue<? extends Number> observable,
-                        Number oldValue, Number newValue) {
-//                    LOG.debug("addChildrenConceptsAndGrandchildrenItems(): ProgressIndicator progress for taxRef={} changing from {} to {}", getValue(), oldValue, newValue);
-
-                    p1.progressProperty().set(newValue.doubleValue());
-                }
-            });
-            FutureHelper.addFuture(childFetcherService.submit(fetchChildrenTask));
+            //This loads the childrens children
+            for (SctTreeItem childsChild : grandChildrenToProcess) {
+                //TODO switch this to the blocking queue
+                Utility.execute(new GetSctTreeItemConceptCallable(childsChild));
+            }
         }
     }
 
@@ -240,7 +228,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
         }
     }
     @Override
-	public Integer getConceptNid() {
+    public Integer getConceptNid() {
         return getConceptNid(getValue());
     }
     private static Integer getConceptNid(TreeItem<TaxonomyReferenceWithConcept> item) {
@@ -255,11 +243,11 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     }
     
     @Override
-	public boolean isRoot() {
+    public boolean isRoot() {
         TaxonomyReferenceWithConcept ref = getValue();
 
-        if (SctTreeView.getRoot() != null && SctTreeView.getRoot().getConceptUuid().equals(this.getConceptUuid())) {
-        	return true;
+        if (ISAAC.ISAAC_ROOT.getPrimodialUuid().equals(this.getConceptUuid())) {
+            return true;
         } else if (ref != null && ref.getRelationshipVersion() == null) {
             return true;
         } else if (this.getParent() == null) {
@@ -286,42 +274,15 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
         return displayPolicies.shouldDisplay(this);
     }
 
-    public void removeGrandchildren() {
-        for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren()) {
-            child.getChildren().clear();
-        }
-    }
-
     /**
-     * Initialize the {@link #childFetcherService} and {@link #conceptFetcherService}.
-     */
-    private static void initExecutorPools() {
-        childFetcherService = Executors.newFixedThreadPool(Math.min(6,
-                Runtime.getRuntime().availableProcessors() + 1), new NamedThreadFactory(sctTreeItemThreadGroup,
-                "SctTreeItem child fetcher"));
-        conceptFetcherService = Executors.newFixedThreadPool(Math.min(6,
-                Runtime.getRuntime().availableProcessors() + 1), new NamedThreadFactory(sctTreeItemThreadGroup,
-                "SctTreeItem concept fetcher"));
-    }
-
-    /**
-     * Stop the {@link #childFetcherService} and {@link #conceptFetcherService}.
-     */
-    public static void shutdown() {
-        childFetcherService.shutdown();
-        conceptFetcherService.shutdown();
-    }
-
-    /* (non-Javadoc)
      * @see javafx.scene.control.TreeItem#toString()
-     * 
      * WARNING: toString is currently used in compareTo()
-     * 
      */
     @Override
     public String toString() {
         return toString(this);
     }
+    
     public static String toString(SctTreeItem item) {
         try {
             if (item.getValue().getRelationshipVersion() != null) {
@@ -363,16 +324,19 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     }
 
     @Override
-	public int getMultiParentDepth() {
+    public int getMultiParentDepth() {
         return multiParentDepth;
     }
 
-    public ProgressIndicator getProgressIndicator() {
-        return progressIndicator;
+    /**
+     * returns -1 when not yet started, otherwise, a value between 0 and 1 (1 when complete)
+     */
+    public DoubleProperty getChildLoadPercentComplete() {
+        return childLoadPercentComplete;
     }
 
     @Override
-	public boolean isDefined() {
+    public boolean isDefined() {
         return defined;
     }
 
@@ -386,7 +350,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     }
 
     @Override
-	public boolean isMultiParent() {
+    public boolean isMultiParent() {
         if (multiParent) {
             return true;
         } else {
@@ -395,7 +359,7 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
     }
 
     @Override
-	public boolean isSecondaryParentOpened() {
+    public boolean isSecondaryParentOpened() {
         if (secondaryParentOpened) {
             return true;
         } else {
@@ -415,96 +379,89 @@ class SctTreeItem extends TreeItem<TaxonomyReferenceWithConcept> implements SctT
         this.multiParentDepth = multiParentDepth;
     }
 
-    public void setProgressIndicator(ProgressIndicator pi) {
-        synchronized (childFetcherService) {
-            this.progressIndicator = pi;
-            childFetcherService.notifyAll();
-        }
-    }
-
     public void setSecondaryParentOpened(boolean secondaryParentOpened) {
         this.secondaryParentOpened = secondaryParentOpened;
     }
 
-
-    public void blockUntilChildrenReady() {
-        if (progressIndicator != null) {
-            synchronized (childFetcherService) {
-                while (progressIndicator != null) {
-                    try {
-                        childFetcherService.wait();
-                    } catch (InterruptedException e) {
-                        // noop
-                    }
-                }
+    public void blockUntilChildrenReady() throws InterruptedException {
+        childrenLoadedLatch.await();
+    }
+    
+    public void clearChildren()
+    {
+        cancelLookup = true;
+        for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren())
+        {
+            ((SctTreeItem)child).clearChildren();
+        }
+        getChildren().clear();
+    }
+    
+    protected void resetChildrenCalculators()
+    {
+        CountDownLatch cdl = new CountDownLatch(1);
+        Runnable r = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                cancelLookup = false;
+                childLoadPercentComplete.set(-1);
+                childrenLoadedLatch = new CountDownLatch(1);
+                cdl.countDown();
             }
+        };
+        if (Platform.isFxApplicationThread())
+        {
+            r.run();
+        }
+        else
+        {
+            Platform.runLater(r);
+        }
+        try
+        {
+            cdl.await();
+        }
+        catch (InterruptedException e)
+        {
+            LOG.error("unexpected interrupt", e);
         }
     }
-
+    
+    public void removeGrandchildren() {
+        for (TreeItem<TaxonomyReferenceWithConcept> child : getChildren()) {
+           ((SctTreeItem)child).clearChildren();
+           ((SctTreeItem)child).resetChildrenCalculators();
+        }
+    }
+    
     /**
-     * A concrete {@link Task} to fetch concepts.
+     * Can be called on either a background or the FX thread
      */
-    private final class FetchConceptsTask extends Task<Boolean> {
-
-        List<SctTreeItem> children;
-
-        public FetchConceptsTask(List<SctTreeItem> children) {
-            this.children = children;
+    protected void childLoadComplete()
+    {
+        Runnable r = new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                childLoadPercentComplete.set(1.0);
+                childrenLoadedLatch.countDown();
+            }
+        };
+        if (Platform.isFxApplicationThread())
+        {
+            r.run();
         }
-
-        @Override
-        protected Boolean call() throws Exception {
-            int size = children.size() - 1;
-            int processedCount = 0;
-            List<Future<Boolean>> futureList = new ArrayList<>();
-
-            for (SctTreeItem childItem : children) {
-                if (SctTreeView.shutdownRequested) {
-                    return false;
-                }
-                if (childItem.getValue().conceptProperty().get() == null) {
-                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(childItem);
-                    futureList.add(conceptFetcherService.submit(fetcher));
-                } else {
-                    updateProgress(Math.min(processedCount++, size), size);
-                }
-            }
-
-            updateProgress(Math.min(processedCount, size), size);
-
-            for (Future<Boolean> future : futureList) {
-                try {
-                    future.get();
-                    updateProgress(Math.min(processedCount++, size), size);
-                } catch (ExecutionException ex) {
-                    if (SctTreeView.shutdownRequested) {
-                        return false;
-                    } else {
-                        LOG.error(null, ex);
-                    }
-                } catch (InterruptedException ex) {
-                    LOG.error(null, ex);
-                }
-            }
-
-            if (SctTreeView.shutdownRequested) {
-                return false;
-            }
-
-            updateProgress(1, 1);
-
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    TaxonomyReferenceWithConcept item = SctTreeItem.this.getValue();
-
-                    SctTreeItem.this.setValue(null);
-                    setProgressIndicator(null);
-                    SctTreeItem.this.setValue(item);
-                }
-            });
-
-            return true;
+        else
+        {
+            Platform.runLater(r);
         }
+    }
+    
+    protected boolean isCancelRequested()
+    {
+        return cancelLookup;
     }
 }

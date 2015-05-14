@@ -411,4 +411,12 @@ public class SnomedConceptViewController {
 		
 		return conceptNid;
 	}
+
+	/**
+	 * See  {@link SctTreeViewIsaacView#cancelOperations()}
+	 */
+	public void stopOperations()
+	{
+		sctTree.cancelOperations();
+	}
 }

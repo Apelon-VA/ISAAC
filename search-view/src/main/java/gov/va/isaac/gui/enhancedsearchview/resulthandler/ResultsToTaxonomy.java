@@ -4,14 +4,13 @@ import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.SctTreeItemSearchResultsDisplayPolicies;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.TaxonomyViewMode;
 import gov.va.isaac.gui.enhancedsearchview.model.SearchModel;
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.OTFUtility;
-
 import java.util.HashSet;
 import java.util.Set;
-
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
@@ -23,7 +22,6 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
-
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +45,7 @@ public class ResultsToTaxonomy {
 		initializeTaxonomyPanel();
 		
 		if (taxonomyView == null) {
-			taxonomyView = AppContext.getService(TaxonomyViewI.class);
+			taxonomyView = AppContext.getService(TaxonomyViewI.class, SharedServiceNames.EMBEDDED);
 
 			taxonomyDisplayPolicies = new SctTreeItemSearchResultsDisplayPolicies(taxonomyView.getDefaultDisplayPolicies());
 			taxonomyDisplayPolicies.setFilterMode(taxonomyPanelShouldFilterProperty);

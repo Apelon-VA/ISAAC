@@ -182,6 +182,7 @@ public class ConceptView implements PopupConceptViewI {
 		
 		s.onHiddenProperty().set((eventHandler) ->
 		{
+			controller.stopOperations();
 			s.setScene(null);
 			//No other way to force a timely release of all of the bindings that would still fire / still recalculate data..
 			try

@@ -32,12 +32,14 @@ import gov.va.isaac.util.UpdateableBooleanBinding;
 import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -56,6 +58,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.util.Callback;
+import org.apache.mahout.math.Arrays;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
@@ -77,6 +80,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author kec
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 class SctTreeView {
 
@@ -84,8 +88,7 @@ class SctTreeView {
 
     private final static SctTreeItemDisplayPolicies defaultDisplayPolicies = new DefaultSctTreeItemDisplayPolicies();
 
-    /** Package access for other classes. */
-    static volatile boolean shutdownRequested = false;
+    private static volatile boolean shutdownRequested = false;
 
     // initializationCountDownLatch_ begins with count of 2, indicating init() not yet run
     // initializationCountDownLatch_ count is decremented to 1 during init, indicating that init() started
@@ -98,18 +101,18 @@ class SctTreeView {
     private BorderPane bp_;
     private StackPane sp_;
     private ToolBar tb_ = new ToolBar();
-    private static SctTreeItem rootTreeItem;
+    private SctTreeItem rootTreeItem;
     private TreeView<TaxonomyReferenceWithConcept> treeView_;
     private SctTreeItemDisplayPolicies displayPolicies = defaultDisplayPolicies;
     
     @SuppressWarnings("unused")
     private UpdateableBooleanBinding refreshRequiredListenerHack;
 
-    private ArrayList<SctTreeItem> selectedItems_ = new ArrayList<>();
-    private ArrayList<UUID> selectedUUIDs_ = new ArrayList<>();
+    private Optional<UUID> selectedItem_ = Optional.empty();
     private ArrayList<UUID> expandedUUIDs_ = new ArrayList<>();
     
     SctTreeView() {
+        long startTime = System.currentTimeMillis();
         treeView_ = new TreeView<>();
         bp_ = new BorderPane();
         
@@ -201,10 +204,11 @@ class SctTreeView {
         pi.getStyleClass().add("progressIndicator");
         StackPane.setAlignment(pi, Pos.CENTER);
         sp_.getChildren().add(pi);
+        LOG.debug("Tree View construct time: {}", System.currentTimeMillis() - startTime);
     }
     
-    public static SctTreeItem getRoot() {
-    	return rootTreeItem;
+    public SctTreeItem getRoot() {
+        return rootTreeItem;
     }
     
     public BorderPane getView()
@@ -245,20 +249,17 @@ class SctTreeView {
             protected void succeeded() {
                 LOG.debug("Succeeded waiting for init() to complete");
 
-                
-                if (rootTreeItem.getChildren().size() > 0) {
-                    LOG.debug("Removing existing grandchildren...");
-                    rootTreeItem.removeGrandchildren();
-                    LOG.debug("Removed existing grandchildren.");
-                }
+             // record which items are expanded
+                saveExpanded();
                 
                 LOG.debug("Removing existing children...");
-                rootTreeItem.getChildren().clear();
+                rootTreeItem.clearChildren();
+                rootTreeItem.resetChildrenCalculators();
                 LOG.debug("Removed existing children.");
                 
                 LOG.debug("Re-adding children...");
-                rootTreeItem.addChildren();
-                LOG.debug("Re-added children.");
+                Utility.execute(() -> rootTreeItem.addChildren());
+                restoreExpanded();
                 
             }
 
@@ -275,12 +276,7 @@ class SctTreeView {
             }
         };
 
-        // record which items are expanded
-        saveExpanded();
-        
         Utility.execute(task);
-
-        restoreExpanded();
     }
     
     public void init() {
@@ -289,10 +285,10 @@ class SctTreeView {
 
     private synchronized void init(final UUID rootConcept) {
         if (initializationCountDownLatch_.getCount() == 0) {
-            LOG.warn("Ignoring call to init({}) after previous init() already completed", rootConcept);
+            LOG.debug("Ignoring call to init({}) after previous init() already completed", rootConcept);
             return;
         } else if (initializationCountDownLatch_.getCount() <= 1) {
-            LOG.warn("Ignoring call to init({}) while initial init() still running", rootConcept);
+            LOG.debug("Ignoring call to init({}) while initial init() still running", rootConcept);
             return;
         } else if (initializationCountDownLatch_.getCount() == 2) {
             initializationCountDownLatch_.countDown();
@@ -332,17 +328,24 @@ class SctTreeView {
 
                 refreshRequiredListenerHack = new UpdateableBooleanBinding()
                 {
+                    private volatile boolean enabled = false;
                     private volatile AtomicBoolean refreshQueued = new AtomicBoolean(false);
                     {
                         setComputeOnInvalidate(true);
                         addBinding(AppContext.getService(UserProfileBindings.class).getViewCoordinatePath(), 
                                 AppContext.getService(UserProfileBindings.class).getDisplayFSN(), 
                                 AppContext.getService(UserProfileBindings.class).getStatedInferredPolicy());
+                        enabled = true;
                     }
 
                     @Override
                     protected boolean computeValue()
                     {
+                        if (!enabled)
+                        {
+                            LOG.debug("Skip initial spurious refresh calls");
+                            return false;
+                        }
                         synchronized (refreshQueued)
                         {
                             if (refreshQueued.get())
@@ -421,7 +424,7 @@ class SctTreeView {
         rootTreeItem = new SctTreeItem(visibleRootConcept, displayPolicies, Images.ROOT.createImageView());
 
         treeView_.setRoot(rootTreeItem);
-        rootTreeItem.addChildren();
+        Utility.execute(() -> rootTreeItem.addChildren());
 
         // put this event handler on the root
         rootTreeItem.addEventHandler(TreeItem.<TaxonomyReferenceWithConcept>branchCollapsedEvent(),
@@ -429,9 +432,7 @@ class SctTreeView {
                     @Override
                     public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
                         // remove grandchildren
-                        SctTreeItem sourceTreeItem = (SctTreeItem) t
-                                .getSource();
-                        sourceTreeItem.removeGrandchildren();
+                        ((SctTreeItem) t.getSource()).removeGrandchildren();
                     }
                 });
 
@@ -441,16 +442,7 @@ class SctTreeView {
                     public void handle(TreeItem.TreeModificationEvent<TaxonomyReferenceWithConcept> t) {
                         // add grandchildren
                         SctTreeItem sourceTreeItem = (SctTreeItem) t.getSource();
-                        ProgressIndicator p2 = new ProgressIndicator();
-
-                        //TODO (artf231880) figure out what to do with the progress indicator
-//                        p2.setSkin(new TaxonomyProgressIndicatorSkin(p2));
-                        p2.setPrefSize(16, 16);
-                        p2.setProgress(-1);
-                        sourceTreeItem.setProgressIndicator(p2);
-                        if (sourceTreeItem.shouldDisplay()) {
-                            sourceTreeItem.addChildrenConceptsAndGrandchildrenItems(p2);
-                        }
+                        Utility.execute(() -> sourceTreeItem.addChildrenConceptsAndGrandchildrenItems());
                     }
                 });
         sp_.getChildren().add(treeView_);
@@ -476,6 +468,8 @@ class SctTreeView {
             protected SctTreeItem call() throws Exception {
                 // await() init() completion.
                 initializationCountDownLatch_.await();
+                
+                LOG.debug("Looking for concept {} in tree", conceptUUID);
 
                 final ArrayList<UUID> pathToRoot = new ArrayList<>();
                 pathToRoot.add(conceptUUID);
@@ -511,18 +505,18 @@ class SctTreeView {
                         break;
                     }
                 }
+                
+                LOG.debug("Calculated root path {}", Arrays.toString(pathToRoot.toArray()));
 
                 SctTreeItem currentTreeItem = rootTreeItem;
 
                 // Walk down path from root.
-                boolean isLast = true;
                 for (int i = pathToRoot.size() - 1; i >= 0; i--) {
-                    SctTreeItem child = findChild(currentTreeItem, pathToRoot.get(i), isLast);
+                    SctTreeItem child = findChild(currentTreeItem, pathToRoot.get(i));
                     if (child == null) {
                         break;
                     }
                     currentTreeItem = child;
-                    isLast = false;
                 }
 
                 return currentTreeItem;
@@ -561,73 +555,56 @@ class SctTreeView {
     }
 
     /**
-     * Ugly nasty threading code to try to get a handle on waiting until
-     * children are populated before requesting them. The first call you make to
-     * this should pass in the root node, and its children should already be
-     * populated. After that you can call it repeatedly to walk down the tree.
+     * The first call you make to this should pass in the root node.
+     * 
+     * After that you can call it repeatedly to walk down the tree (you need to know the path first)
+     * This will handle the waiting for each node to open, before moving on to the next node.
+     * 
+     * This should be called on a background thread.
      *
      * @return the found child, or null, if not found. found child will have
      *         already been told to expand and fetch its children.
+     * @throws InterruptedException 
      */
-    private SctTreeItem findChild(final SctTreeItem item,
-            final UUID targetChildUUID, final boolean isLast) {
+    private SctTreeItem findChild(final SctTreeItem item, final UUID targetChildUUID) throws InterruptedException {
+        
+        LOG.debug("Looking for {}", targetChildUUID);
+        SimpleObjectProperty<SctTreeItem> found = new SimpleObjectProperty<SctTreeItem>(null);
+        if (item.getValue().getConcept().getPrimordialUuid().equals(targetChildUUID)) {
+            // Found it.
+            found.set(item);
+        }
+        else 
+        {
+            item.blockUntilChildrenReady();
+            // Iterate through children and look for child with target UUID.
+            for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
+                if (child != null && child.getValue() != null && child.getValue().getConceptFromRelationshipOrConceptProperties() != null
+                        && child.getValue().getConceptFromRelationshipOrConceptProperties().getUuid().equals(targetChildUUID)) {
 
-        // This will hold
-        final ArrayList<SctTreeItem> answers = new ArrayList<>(1);
-
-        Runnable finder = new Runnable() {
-
-            @Override
-            public void run() {
-                synchronized (answers) {
-                    if (item.getValue().getConcept().getPrimordialUuid().equals(targetChildUUID)) {
-                        // Found it.
-                        answers.add(item);
-                    } else {
-
-                        // Iterate through children and look for child with target UUID.
-                        for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
-                            if (child != null
-                                    && child.getValue() != null
-                                    && child.getValue().getConcept() != null
-                                    && child.getValue().getConcept().getPrimordialUuid().equals(targetChildUUID)) {
-
-                                // Found it.
-                                answers.add((SctTreeItem) child);
-                                break;
-                            }
-                        }
-                    }
-
-                    if (answers.size() == 0) {
-                        answers.add(null);
-                    } else {
-                        SctTreeItem answer = answers.get(0);
-                        treeView_.scrollTo(treeView_.getRow(answer));
-                        answer.setExpanded(true);
-                    }
-
-                    answers.notify();
-                }
-            }
-        };
-
-        item.blockUntilChildrenReady();
-
-        synchronized (answers) {
-            Platform.runLater(finder);
-
-            // Wait until finder done.
-            while (answers.size() == 0) {
-                try {
-                    answers.wait();
-                } catch (InterruptedException e) {
-                    // No-op.
+                    // Found it.
+                    found.set((SctTreeItem) child);
+                    break;
                 }
             }
         }
-
-        return answers.get(0);
+        if (found.get() != null)
+        {
+            found.get().blockUntilChildrenReady();
+            CountDownLatch cdl = new CountDownLatch(1);
+            Platform.runLater(() ->
+            {
+                treeView_.scrollTo(treeView_.getRow(found.get()));
+                found.get().setExpanded(true);
+                cdl.countDown();
+            });
+            cdl.await();
+        }
+        else
+        {
+            LOG.debug("Find child failed to find {}", targetChildUUID);
+        }
+        return found.get();
     }
 
     /**
@@ -638,7 +615,6 @@ class SctTreeView {
     private ConceptChronicleDdo buildFxConcept(UUID conceptUUID)
             throws IOException, ContradictionException {
 
-        //TODO (artf231882) see if this is still the case... we should be using the Fx APIs directly....
         ConceptVersionBI wbConcept = OTFUtility.getConceptVersion(conceptUUID);
         if (wbConcept == null) {
             return null;
@@ -669,62 +645,84 @@ class SctTreeView {
      * since the application is exiting.
      * @see gov.va.isaac.interfaces.utility.ShutdownBroadcastListenerI#shutdown()
      */
-    public static void globalShutdown()
+    public static void globalShutdownRequested()
     {
         shutdownRequested = true;
-        SctTreeItem.shutdown();
-        LOG.info("Tree shutdown called!");
+        LOG.info("Global Tree shutdown called!");
+    }
+    
+    protected void shutdownInstance()
+    {
+        LOG.info("Shutdown taxonomy instance");
+        if (rootTreeItem != null)
+        {
+            rootTreeItem.clearChildren();  //This recursively cancels any active lookups
+        }
+    }
+    
+    protected static boolean wasGlobalShutdownRequested()
+    {
+        return shutdownRequested;
     }
     
     private void saveExpanded() {
-    	saveSelected();
-    	expandedUUIDs_.clear();
-    	saveExpanded(rootTreeItem);
+        TreeItem<TaxonomyReferenceWithConcept> selected = treeView_.getSelectionModel().getSelectedItem();
+        selectedItem_ = Optional.ofNullable(selected == null ? null : selected.getValue().getConceptFromRelationshipOrConceptProperties().getUuid());
+        expandedUUIDs_.clear();
+        saveExpanded(rootTreeItem);
+        LOG.debug("Saved {} expanded nodes", expandedUUIDs_.size());
     }
 
     private void saveExpanded(SctTreeItem item) {
-    	if (item.isExpanded()) {
-    		expandedUUIDs_.add(item.getConceptUuid());
-    		if (!item.isLeaf()) {
-    			for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
-    				saveExpanded((SctTreeItem) child);
-    			}
-    		}
-    	}
-    }
-    
-    private void saveSelected() {
-    	selectedUUIDs_.clear();
-    	selectedItems_.clear();
-    	for (TreeItem<TaxonomyReferenceWithConcept> item : treeView_.getSelectionModel().getSelectedItems()) {
-    		selectedUUIDs_.add(((SctTreeItem) item).getConceptUuid());
-    	}
+        if (!item.isLeaf() && item.isExpanded()) {
+            expandedUUIDs_.add(item.getConceptUuid());
+            if (!item.isLeaf()) {
+                for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
+                    saveExpanded((SctTreeItem) child);
+                }
+            }
+        }
     }
     
     private void restoreExpanded() {
-    	restoreExpanded(rootTreeItem);
-    	expandedUUIDs_.clear();
-    	restoreSelected();
+        treeView_.getSelectionModel().clearSelection();
+        
+        Utility.execute(() -> 
+        {
+            try
+            {
+                SimpleObjectProperty<SctTreeItem> scrollTo = new SimpleObjectProperty<SctTreeItem>();
+                restoreExpanded(rootTreeItem, scrollTo);
+                
+                expandedUUIDs_.clear();
+                selectedItem_ = Optional.empty();
+                if (scrollTo.get() != null)
+                {
+                    Platform.runLater(() -> 
+                    {
+                        treeView_.scrollTo(treeView_.getRow(scrollTo.get()));
+                        treeView_.getSelectionModel().select(scrollTo.get());
+                    });
+                }
+            }
+            catch (InterruptedException e)
+            {
+                LOG.info("Interrupted while looking restoring expanded items");
+            }
+        });
+        
     }
     
-    private void restoreExpanded(SctTreeItem item) {
-    	if (selectedUUIDs_.contains(item.getConceptUuid())) {
-    		selectedItems_.add(item);
-    	}
-    	if (expandedUUIDs_.contains(item.getConceptUuid())) {
-    		showConcept(item.getConceptUuid(), null);
-			for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
-				restoreExpanded((SctTreeItem) child);
-			}
-    	}
-    }
-    
-    private void restoreSelected() {
-    	treeView_.getSelectionModel().clearSelection();
-    	for (SctTreeItem item : selectedItems_) {
-        	treeView_.getSelectionModel().select(item);
-    	}
-    	selectedItems_.clear();
-    	selectedUUIDs_.clear();
+    private void restoreExpanded(SctTreeItem item, SimpleObjectProperty<SctTreeItem> scrollTo) throws InterruptedException {
+        if (expandedUUIDs_.contains(item.getConceptUuid())) {
+            item.blockUntilChildrenReady();
+            Platform.runLater(() -> item.setExpanded(true));
+            for (TreeItem<TaxonomyReferenceWithConcept> child : item.getChildren()) {
+                restoreExpanded((SctTreeItem) child, scrollTo);
+            }
+        }
+        if (selectedItem_.isPresent() && selectedItem_.get().equals(item.getConceptUuid())) {
+            scrollTo.set(item);
+        }
     }
 }
