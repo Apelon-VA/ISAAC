@@ -20,10 +20,10 @@ package gov.va.isaac.workflow.persistence;
 
 import gov.va.isaac.AppContext;
 import gov.va.isaac.interfaces.workflow.ProcessInstanceCreationRequestI;
+import gov.va.isaac.util.Utility;
 import gov.va.isaac.workflow.ProcessInstanceCreationRequest;
 import gov.va.isaac.workflow.ProcessInstanceServiceBI;
 import gov.va.isaac.workflow.exceptions.DatastoreException;
-
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -39,10 +39,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 import javax.inject.Singleton;
 import javax.sql.DataSource;
-
 import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -60,29 +58,39 @@ import org.slf4j.LoggerFactory;
 public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServiceBI {
 
     private final Logger log = LoggerFactory.getLogger(ProcessInstanceCreationRequestsAPI.class);
-    private DataSource ds;
+    private DataSource dataSource;
     
     private ProcessInstanceCreationRequestsAPI() {
         //For HK2 to construct
-        ds = AppContext.getService(DatastoreManager.class).getDataSource();
-        try
+        //start the init process
+        Utility.execute(() -> getDataSource());
+    }
+    
+    private DataSource getDataSource()
+    {
+        if (dataSource == null)
         {
-            createSchema();
+            dataSource = AppContext.getService(DatastoreManager.class).getDataSource();
+            try
+            {
+                createSchema();
+            }
+            catch (DatastoreException e)
+            {
+                log.error("Create schema failed during init", e);
+            }
         }
-        catch (DatastoreException e)
-        {
-            log.error("Create schema failed during init", e);
-        }
+        return dataSource;
     }
 
     @Override
     public ProcessInstanceCreationRequestI createRequest(String processName, UUID componentId, String componentName, String author, Map<String, String> variables) 
             throws DatastoreException {
-        try (Connection conn = ds.getConnection()) {
+        try (Connection conn = getDataSource().getConnection()) {
             PreparedStatement psInsert = conn.prepareStatement("insert into PINST_REQUESTS(component_id, component_name, process_name, user_id, status, sync_message,"
                 + " request_time, sync_time, wf_id, variables) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",PreparedStatement.RETURN_GENERATED_KEYS);
             if (componentId == null) {
-            	log.error("Setting null componentId for ProcessInstanceCreationRequestsAPI.createRequest(): user_id={}, process_name={}, component={}, map={}", author, processName, componentName, variables);
+                log.error("Setting null componentId for ProcessInstanceCreationRequestsAPI.createRequest(): user_id={}, process_name={}, component={}, map={}", author, processName, componentName, variables);
             }
             psInsert.setString(1, componentId != null ? componentId.toString() : null);
             psInsert.setString(2, componentName);
@@ -119,7 +127,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
     @Override
     public void updateRequestStatus(int id, ProcessInstanceCreationRequestI.RequestStatus status, String syncMessage, Long wfId) throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             PreparedStatement psUpdateRequest = conn.prepareStatement("update PINST_REQUESTS set sync_message = ?, status = ?, wf_id = ? where id = ?");
             psUpdateRequest.setString(1, syncMessage);
             psUpdateRequest.setString(2, status.name());
@@ -139,7 +147,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     @Override
     public List<ProcessInstanceCreationRequestI> getOpenOwnedRequests(String owner) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = '"
                     + ProcessInstanceCreationRequestI.RequestStatus.REQUESTED.name() + "'");
@@ -155,7 +163,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     @Override
     public List<ProcessInstanceCreationRequestI> getOwnedRequestsByStatus(String owner, ProcessInstanceCreationRequestI.RequestStatus status) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and status = '" + status.name() + "'");
             while (rs.next()) {
@@ -170,7 +178,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     @Override
     public List<ProcessInstanceCreationRequestI> getOpenOwnedRequestsByComponentId(String owner, UUID componentId) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where user_id = '" + owner + "' and component_id = '" + componentId + "' and status = '"
                     + ProcessInstanceCreationRequestI.RequestStatus.REQUESTED.name() + "'");
@@ -186,7 +194,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     @Override
     public List<ProcessInstanceCreationRequestI> getRequestsByComponentId(UUID componentId) throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where component_id = '" + componentId + "'");
             while (rs.next()) {
@@ -200,7 +208,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
     @Override
     public ProcessInstanceCreationRequestI getRequestByWfId(Long wfId) throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             ProcessInstanceCreationRequestI request = null;
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where wf_id = " + wfId);
@@ -220,7 +228,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
     @Override
     public List<ProcessInstanceCreationRequestI> getRequests() throws DatastoreException {
         List<ProcessInstanceCreationRequestI> requests = new ArrayList<>();
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS");
             while (rs.next()) {
@@ -234,7 +242,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
     @Override
     public ProcessInstanceCreationRequestI getRequest(int id) throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             ProcessInstanceCreationRequestI request = null;
             Statement s = conn.createStatement();
             ResultSet rs = s.executeQuery("SELECT * FROM PINST_REQUESTS where id = " + id);
@@ -290,7 +298,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
     @Override
     public void createSchema() throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             log.info("Creating Workflow Process Instance Schema");
             DatabaseMetaData dbmd = conn.getMetaData();
             ResultSet rs = dbmd.getTables(null, "WORKFLOW", "PINST_REQUESTS", null);
@@ -323,7 +331,7 @@ public class ProcessInstanceCreationRequestsAPI implements ProcessInstanceServic
 
     @Override
     public void dropSchema() throws DatastoreException {
-        try (Connection conn = ds.getConnection()){
+        try (Connection conn = getDataSource().getConnection()){
             log.info("Dropping PINST_REQUESTS");
             Statement s = conn.createStatement();
             s.execute("drop table PINST_REQUESTS");
