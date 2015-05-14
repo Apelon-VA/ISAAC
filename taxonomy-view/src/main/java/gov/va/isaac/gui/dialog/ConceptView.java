@@ -135,9 +135,6 @@ public class ConceptView implements PopupConceptViewI {
 		Utility.execute(task);
 	}
 
-	//TODO (artf231884) concept-view-tree is not stopping background threaded operations when this window is closed....
-	//TODO (artf231885) concept-view-tree also seems to fall into infinite loops at times...
-	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptViewI#setConcept(int)
 	 */

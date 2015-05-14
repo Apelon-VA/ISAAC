@@ -187,7 +187,6 @@ public class SnomedConceptViewController {
 			}
 		});
 		
-		
 		ConceptVersionBI conceptVersionBI = OTFUtility.getConceptVersion(concept.getPrimordialUuid());
 		AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
 
