@@ -36,11 +36,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Function;
 import org.ihtsdo.otf.query.implementation.Clause;
 import org.ihtsdo.otf.query.implementation.Query;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.StandardViewCoordinates;
 import org.ihtsdo.otf.tcc.api.nid.IntSet;
 import org.ihtsdo.otf.tcc.api.nid.NativeIdSetBI;
 import org.ihtsdo.otf.tcc.api.spec.ConceptSpec;
@@ -126,6 +128,18 @@ class QueryBasedSearchResultsIntersectionFilter implements Function<List<Composi
 				}
 			}
 
+
+			/**
+			 * @see org.ihtsdo.otf.query.implementation.Query#getVCLetDeclarations()
+			 */
+			@Override
+			public HashMap<String, Object> getVCLetDeclarations() throws IOException
+			{
+				HashMap<String, Object> letVCDeclarations = new HashMap<>();
+				letVCDeclarations.put(currentViewCoordinateKey, OTFUtility.getViewCoordinate());
+				return letVCDeclarations;
+			}
+
 			@Override
 			public Clause Where() {
 				//						return And(ConceptIsKindOf("Physical force"),
@@ -186,6 +200,7 @@ class QueryBasedSearchResultsIntersectionFilter implements Function<List<Composi
 		try {
 			SearchResultsFilterHelper.LOG.debug("Applying " + filters.size() + " clauses to " + finalInputNids.size() + " nids");
 
+			q.setViewCoordinate(OTFUtility.getViewCoordinate());
 			outputNids = q.compute();
 			
 			SearchResultsFilterHelper.LOG.debug(outputNids.size() + " nids remained after applying " + filters.size() + " clauses to filtering a total of " + finalInputNids + " nids");

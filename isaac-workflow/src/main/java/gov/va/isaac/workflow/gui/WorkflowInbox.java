@@ -59,6 +59,7 @@ public class WorkflowInbox implements DockedViewI, IsaacViewWithMenusI
 
 	private WorkflowInbox() throws IOException
 	{
+		LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", 0);
 	}
 
 	/**

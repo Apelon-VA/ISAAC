@@ -104,12 +104,16 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 				controlPersistedValueSetter, 
 				guiFormattingApplicator);
 	}
-
-	public PreferencesPluginTextFieldProperty(String name) {
-		this(new Label(name));
+	
+	public PreferencesPluginTextFieldProperty(String name, boolean emptyStringAllowed) {
+		this(new Label(name), emptyStringAllowed);
 	}
 
-	public PreferencesPluginTextFieldProperty(Label label) {
+	public PreferencesPluginTextFieldProperty(String name) {
+		this(new Label(name), false);
+	}
+
+	public PreferencesPluginTextFieldProperty(Label label, boolean emptyStringAllowed) {
 		super(
 				label, 
 				new TextField(), 
@@ -148,8 +152,8 @@ public abstract class PreferencesPluginTextFieldProperty extends PreferencesPlug
 			}
 			@Override
 			protected boolean computeValue() {
-				if (StringUtils.isBlank(getProperty().getValue())) {
-					this.setInvalidReason("null/unset/unselected " + name);
+				if (!emptyStringAllowed && StringUtils.isBlank(getProperty().getValue())) {
+					this.setInvalidReason("unspecified value for " + name);
 					logger.debug(getReasonWhyInvalid().get());
 
 					TextErrorColorHelper.setTextErrorColor(label);

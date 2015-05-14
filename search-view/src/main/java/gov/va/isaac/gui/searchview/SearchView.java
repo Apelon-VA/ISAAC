@@ -32,6 +32,8 @@ import javafx.stage.Window;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SearchView
@@ -44,11 +46,14 @@ import org.jvnet.hk2.annotations.Service;
 public class SearchView implements DockedViewI
 {
 	private SearchViewController svc_;
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
 	private SearchView() throws IOException
 	{
 		//created by HK2
+		long startTime = System.currentTimeMillis();
 		svc_ = SearchViewController.init();
+		LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", System.currentTimeMillis() - startTime);
 	}
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()

@@ -642,12 +642,7 @@ public class QueryBuilderHelper {
 			throw new RuntimeException(error);
 		}
 
-		ViewCoordinate viewCoordinate = null;
-		try {
-			viewCoordinate = StandardViewCoordinates.getSnomedInferredLatest();
-		} catch (IOException ex) {
-			logger.error("Failed getting default ViewCoordinate. Caught {} \"{}\"", ex.getClass().getName(), ex.getLocalizedMessage());
-		}
+		ViewCoordinate viewCoordinate = OTFUtility.getViewCoordinate();
 
 		Query syntheticQuery = new Query(viewCoordinate) {
 			
@@ -674,14 +669,14 @@ public class QueryBuilderHelper {
 		
 		if (results != null) {
 			NativeIdSetItrBI itr = results.getSetBitIterator();
-            while (itr.next()) {
-            	int nid = itr.nid();
-            	ConceptVersionBI con = OTFUtility.getConceptVersion(nid);
+			while (itr.next()) {
+				int nid = itr.nid();
+				ConceptVersionBI con = OTFUtility.getConceptVersion(nid);
 				CompositeSearchResult nidResult = new CompositeSearchResult(con, 0);
 				collection.add(nidResult);
 			}
-        }
+		}
 
-        return collection;
+		return collection;
 	}
 }

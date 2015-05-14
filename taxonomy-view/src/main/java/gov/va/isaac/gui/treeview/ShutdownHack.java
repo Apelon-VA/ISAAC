@@ -29,7 +29,6 @@ import org.jvnet.hk2.annotations.Service;
 @Service
 public class ShutdownHack implements ServicesToPreloadI
 {
-
 	/**
 	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
 	 */
@@ -37,7 +36,6 @@ public class ShutdownHack implements ServicesToPreloadI
 	public void loadRequested()
 	{
 		// noop
-		
 	}
 
 	/**
@@ -46,7 +44,6 @@ public class ShutdownHack implements ServicesToPreloadI
 	@Override
 	public void shutdown()
 	{
-		SctTreeView.globalShutdown();
-		
+		SctTreeView.globalShutdownRequested();
 	}
 }
