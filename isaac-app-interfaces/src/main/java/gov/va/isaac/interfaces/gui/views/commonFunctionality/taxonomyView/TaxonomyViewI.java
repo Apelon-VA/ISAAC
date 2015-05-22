@@ -41,10 +41,33 @@ public interface TaxonomyViewI extends EmbeddableViewI
 	 * and a busyIndicator is provided, it will be set to false, when the location process completes.
 	 */
 	public void locateConcept(UUID uuid, final BooleanProperty busyIndicator);
+	
+	/**
+	 * Locate and highlight the requested concept in the taxonomy view
+	 * @param nid
+	 * @param busyIndicator (optional) if this taxonomy view does the location in a background thread, 
+	 * and a busyIndicator is provided, it will be set to false, when the location process completes.
+	 */
 	public void locateConcept(int nid, final BooleanProperty busyIndicator);
 	
+	/**
+	 * Get the default implementation that computes the graphics for nodes, and allows 
+	 * nodes to be filtered out of the hierarchy
+	 */
 	public SctTreeItemDisplayPolicies getDefaultDisplayPolicies();
-	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies);
 	
+	/**
+	 * Replace the default behavior that computes the graphics for nodes and allows filtering of nodes with custom code 
+	 */
+	public void setDisplayPolicies(SctTreeItemDisplayPolicies policies);
+
+	/**
+	 * Rebuild the tree from scratch
+	 */
 	public void refresh();
+	
+	/**
+	 * Stop any operations occurring in a background thread
+	 */
+	public void cancelOperations();
 }

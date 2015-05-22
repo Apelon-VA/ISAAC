@@ -18,10 +18,12 @@
  */
 package gov.va.isaac.gui.treeview;
 
+import gov.va.isaac.interfaces.gui.constants.SharedServiceNames;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.SctTreeItemDisplayPolicies;
 import gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI;
 import gov.va.isaac.util.OTFUtility;
 import java.util.UUID;
+import javax.inject.Named;
 import javafx.beans.property.BooleanProperty;
 import javafx.scene.Node;
 import javafx.scene.layout.Region;
@@ -29,11 +31,11 @@ import org.glassfish.hk2.api.PerLookup;
 import org.jvnet.hk2.annotations.Service;
 
 /**
- * SctTreeViewDockedView
+ * SctTreeViewIsaacView
  *
  * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-@Service
+@Service @Named (value=SharedServiceNames.EMBEDDED)
 @PerLookup
 public class SctTreeViewIsaacView  implements TaxonomyViewI 
 {
@@ -55,6 +57,7 @@ public class SctTreeViewIsaacView  implements TaxonomyViewI
 	@Override
 	public Region getView()
 	{
+		sctTreeView_.init();
 		return sctTreeView_.getView();
 	}
 
@@ -64,7 +67,6 @@ public class SctTreeViewIsaacView  implements TaxonomyViewI
 	@Override
 	public void locateConcept(UUID uuid, BooleanProperty busyIndicator) {
 		sctTreeView_.showConcept(uuid, busyIndicator);
-		
 	}
 
 	/* (non-Javadoc)
@@ -107,5 +109,14 @@ public class SctTreeViewIsaacView  implements TaxonomyViewI
 	public void addToToolBar(Node node)
 	{
 		sctTreeView_.addToToolBar(node);
+	}
+
+	/**
+	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.taxonomyView.TaxonomyViewI#cancelOperations()
+	 */
+	@Override
+	public void cancelOperations()
+	{
+		sctTreeView_.shutdownInstance();
 	}
 }

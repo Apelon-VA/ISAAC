@@ -28,16 +28,14 @@ import gov.va.isaac.interfaces.gui.views.commonFunctionality.ListBatchViewI;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.layout.Region;
 import javafx.stage.Window;
-
 import javax.inject.Named;
 import javax.inject.Singleton;
-
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -51,10 +49,12 @@ import org.slf4j.LoggerFactory;
 public class ListBatchView implements ListBatchViewI, DockedViewI
 {
 	ListBatchViewController lbvc_;
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 
 	private ListBatchView()
 	{
 		// created by HK2
+		LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", 0);
 	}
 
 	/**

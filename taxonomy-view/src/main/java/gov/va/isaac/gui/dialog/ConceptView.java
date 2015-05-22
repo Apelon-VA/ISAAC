@@ -88,8 +88,9 @@ public class ConceptView implements PopupConceptViewI {
 	@Override
 	public void setConcept(UUID conceptUUID)
 	{
-		// TODO (artf231883) this needs to be rewritten so that the dialog displays immediately
+		// TODO (artf231886) this needs to be rewritten so that the dialog displays immediately
 		//but with a progress indicator while we wait for the concept to be found..
+		//Also need to make sure that errors are properly handled
 		Task<ConceptChronicleDdo> task = new Task<ConceptChronicleDdo>()
 		{
 
@@ -135,9 +136,6 @@ public class ConceptView implements PopupConceptViewI {
 		Utility.execute(task);
 	}
 
-	//TODO (artf231884) concept-view-tree is not stopping background threaded operations when this window is closed....
-	//TODO (artf231885) concept-view-tree also seems to fall into infinite loops at times...
-	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.commonFunctionality.ConceptViewI#setConcept(int)
 	 */
@@ -182,6 +180,7 @@ public class ConceptView implements PopupConceptViewI {
 		
 		s.onHiddenProperty().set((eventHandler) ->
 		{
+			controller.stopOperations();
 			s.setScene(null);
 			//No other way to force a timely release of all of the bindings that would still fire / still recalculate data..
 			try

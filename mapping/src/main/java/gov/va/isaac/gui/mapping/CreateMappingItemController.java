@@ -24,6 +24,7 @@ import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -76,6 +77,36 @@ import org.slf4j.LoggerFactory;
 public class CreateMappingItemController {
 	private static final Logger LOG = LoggerFactory.getLogger(CreateMappingItemController.class);
     
+	private class SearchResultConcept {
+		private ConceptVersionBI concept;
+		private final SimpleStringProperty conceptNameProperty		= new SimpleStringProperty("-");
+		private final SimpleStringProperty codeSystemNameProperty	= new SimpleStringProperty("-");
+		private final SimpleStringProperty statusNameProperty		= new SimpleStringProperty("-");
+		public SearchResultConcept(ConceptVersionBI concept) {
+			this.concept = concept;
+			try {
+				statusNameProperty.set(concept.isActive()? "Active":"Inactive");	
+			} catch (IOException e) {
+				statusNameProperty.set("-error-");
+				LOG.error("Error fetching isActive", e);
+			}
+			Utility.execute(() ->
+			{
+				String conceptName 	= OTFUtility.getDescription(concept);
+				String pathName 	= OTFUtility.getDescription(concept.getPathNid());
+				Platform.runLater(() -> {
+					conceptNameProperty.set(conceptName);
+					codeSystemNameProperty.set(pathName);
+				});
+			});
+		}
+		public ConceptVersionBI		getConcept()					{ return concept; }
+		public SimpleStringProperty getConceptNameProperty() 		{ return conceptNameProperty; }
+		public SimpleStringProperty getCodeSystemNameProperty() 	{ return codeSystemNameProperty; }
+		public SimpleStringProperty getStatusNameProperty() 		{ return statusNameProperty; }
+		
+	}
+	
     private static class SearchRestriction {
     	private LuceneDescriptionType descriptionType = null;
 		private SimpleDisplayConcept advancedDescriptionType = null; 
@@ -148,10 +179,10 @@ public class CreateMappingItemController {
 	@FXML private TextField 		criteriaText;
 	@FXML private Button 			searchButton;
 
-	@FXML private TableView<ConceptVersionBI> 		candidatesTableView;
-	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesConceptColumn;
-	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesCodeSystemColumn;
-	@FXML private TableColumn<ConceptVersionBI, ConceptVersionBI> candidatesStatusColumn;
+	@FXML private TableView<SearchResultConcept> candidatesTableView;
+	@FXML private TableColumn<SearchResultConcept, SearchResultConcept> candidatesConceptColumn;
+	@FXML private TableColumn<SearchResultConcept, SearchResultConcept> candidatesCodeSystemColumn;
+	@FXML private TableColumn<SearchResultConcept, SearchResultConcept> candidatesStatusColumn;
 
 	@FXML private VBox				filterVBox;
     @FXML private ToggleGroup 		showFilterToggleGroup;
@@ -324,7 +355,8 @@ public class CreateMappingItemController {
 			
 			if (mi != null) {
 				saveButton.getScene().getWindow().hide();
-				AppContext.getService(Mapping.class).refreshMappingItems();
+				//TODO need a proper wait for index update here... runLater helps
+				Platform.runLater(() -> AppContext.getService(Mapping.class).refreshMappingItems());
 			} else {
 				saveButton.getScene().getWindow().requestFocus();
 			}
@@ -372,14 +404,14 @@ public class CreateMappingItemController {
 			doSearch();
 		});
 
-		candidatesTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<ConceptVersionBI>()
+		candidatesTableView.getSelectionModel().getSelectedItems().addListener(new ListChangeListener<SearchResultConcept>()
 		{
 			@Override
-			public void onChanged(javafx.collections.ListChangeListener.Change<? extends ConceptVersionBI> c)
+			public void onChanged(javafx.collections.ListChangeListener.Change<? extends SearchResultConcept> c)
 			{
-				ConceptVersionBI concept = candidatesTableView.getSelectionModel().getSelectedItem();
-				if (concept != null) {
-					targetConceptNode.set(concept);
+				SearchResultConcept srConcept = candidatesTableView.getSelectionModel().getSelectedItem(); 
+				if (srConcept != null) {
+					targetConceptNode.set(srConcept.getConcept());
 				}
 			}
 		});
@@ -450,13 +482,14 @@ public class CreateMappingItemController {
 		candidatesTableView.setPlaceholder(LABEL_SEARCHING);
 		Utility.execute(() ->
 		{
-			ObservableList<ConceptVersionBI> conceptList = FXCollections.observableArrayList(); 
+			ObservableList<SearchResultConcept> resultList = FXCollections.observableArrayList(); 
 			try {
 				Collection<CompositeSearchResult> results = searchHandle.getResults();	
 				for (CompositeSearchResult result : results) {
 					ConceptVersionBI concept = result.getContainingConcept();
 					if (concept != null) {
-						conceptList.add(concept);
+						SearchResultConcept src = new SearchResultConcept(concept);
+						resultList.add(src);
 					}
 				}
 			} catch (Exception e) {
@@ -465,31 +498,31 @@ public class CreateMappingItemController {
 			}
 
 			Platform.runLater(() -> {			
-				if (conceptList.size() == 0) {
+				if (resultList.size() == 0) {
 					candidatesTableView.setPlaceholder(LABEL_NO_RESULTS);
 				} else {
-					candidatesTableView.getItems().addAll(conceptList);	
+					candidatesTableView.getItems().addAll(resultList);	
 				}
 			});
 		});
 	}
 
-	private Callback<TableColumn.CellDataFeatures<ConceptVersionBI, ConceptVersionBI>, ObservableValue<ConceptVersionBI>> conceptCellValueFactory = 
-			new Callback<TableColumn.CellDataFeatures<ConceptVersionBI, ConceptVersionBI>, ObservableValue<ConceptVersionBI>>()	{
+	private Callback<TableColumn.CellDataFeatures<SearchResultConcept, SearchResultConcept>, ObservableValue<SearchResultConcept>> conceptCellValueFactory = 
+			new Callback<TableColumn.CellDataFeatures<SearchResultConcept, SearchResultConcept>, ObservableValue<SearchResultConcept>>()	{
 		@Override
-		public ObservableValue<ConceptVersionBI> call(CellDataFeatures<ConceptVersionBI, ConceptVersionBI> param) {
-			return new SimpleObjectProperty<ConceptVersionBI>(param.getValue());
+		public ObservableValue<SearchResultConcept> call(CellDataFeatures<SearchResultConcept, SearchResultConcept> param) {
+			return new SimpleObjectProperty<SearchResultConcept>(param.getValue());
 		}
 	};
 	
-	private Callback<TableColumn<ConceptVersionBI, ConceptVersionBI>, TableCell<ConceptVersionBI, ConceptVersionBI>> conceptCellFactory =
-			new Callback<TableColumn<ConceptVersionBI, ConceptVersionBI>, TableCell<ConceptVersionBI, ConceptVersionBI>>() {
+	private Callback<TableColumn<SearchResultConcept, SearchResultConcept>, TableCell<SearchResultConcept, SearchResultConcept>> conceptCellFactory =
+			new Callback<TableColumn<SearchResultConcept, SearchResultConcept>, TableCell<SearchResultConcept, SearchResultConcept>>() {
 
 		@Override
-		public TableCell<ConceptVersionBI, ConceptVersionBI> call(TableColumn<ConceptVersionBI, ConceptVersionBI> param) {
-			return new TableCell<ConceptVersionBI, ConceptVersionBI>() {
+		public TableCell<SearchResultConcept, SearchResultConcept> call(TableColumn<SearchResultConcept, SearchResultConcept> param) {
+			return new TableCell<SearchResultConcept, SearchResultConcept>() {
 				@Override
-				public void updateItem(final ConceptVersionBI concept, boolean empty) {
+				public void updateItem(final SearchResultConcept concept, boolean empty) {
 					super.updateItem(concept, empty);
 					updateCell(this, concept);
 				}
@@ -513,13 +546,34 @@ public class CreateMappingItemController {
 		candidatesConceptColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.6)); 
 		candidatesCodeSystemColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.2)); 
 		candidatesStatusColumn.prefWidthProperty().bind(candidatesTableView.widthProperty().multiply(0.2)); 		
+
+		candidatesConceptColumn.setComparator(new Comparator<SearchResultConcept>() {
+			@Override
+			public int compare(SearchResultConcept o1, SearchResultConcept o2) {
+				return Utility.compareStringsIgnoreCase(o1.getConceptNameProperty().get(), o2.getConceptNameProperty().get());
+			}
+		});
+		
+		candidatesCodeSystemColumn.setComparator(new Comparator<SearchResultConcept>() {
+			@Override
+			public int compare(SearchResultConcept o1, SearchResultConcept o2) {
+				return Utility.compareStringsIgnoreCase(o1.getCodeSystemNameProperty().get(), o2.getCodeSystemNameProperty().get());
+			}
+		});
+		
+		candidatesStatusColumn.setComparator(new Comparator<SearchResultConcept>() {
+			@Override
+			public int compare(SearchResultConcept o1, SearchResultConcept o2) {
+				return Utility.compareStringsIgnoreCase(o1.getStatusNameProperty().get(), o2.getStatusNameProperty().get());
+			}
+		});
 	}
 	
-	private void updateCell(TableCell<?, ?> cell, ConceptVersionBI concept) {
-		if (!cell.isEmpty() && concept != null) {
+	private void updateCell(TableCell<?, ?> cell, SearchResultConcept srConcept) {
+		if (!cell.isEmpty() && srConcept != null) {
 			ContextMenu cm = new ContextMenu();
 			cell.setContextMenu(cm);
-			final SimpleStringProperty property = new SimpleStringProperty();
+			SimpleStringProperty property = null;
 			int conceptNid  = 0;
 			MappingColumnType columnType = (MappingColumnType) cell.getTableColumn().getUserData();
 
@@ -528,38 +582,17 @@ public class CreateMappingItemController {
 
 			switch (columnType) {
 			case CONCEPT:
-				property.set("-");
-				conceptNid = concept.getNid();
-				Utility.execute(() ->
-				{
-					String conceptName = OTFUtility.getDescription(concept);
-					Platform.runLater(() -> {
-						property.set(conceptName);
-					});
-				});
+				property = srConcept.getConceptNameProperty();
+				conceptNid = srConcept.getConcept().getNid();
 				break;
 				
 			case CODE_SYSTEM:
-				property.set("-");
-				final int pathNid = concept.getPathNid();
-				conceptNid = pathNid;
-				Utility.execute(() ->
-				{
-					String pathName = OTFUtility.getDescription(pathNid);
-					Platform.runLater(() -> {
-						property.set(pathName);
-					});
-				});
+				property = srConcept.getCodeSystemNameProperty();
+				conceptNid = srConcept.getConcept().getPathNid();
 				break;
 				
 			case STATUS_STRING:
-				try {
-					property.set(concept.isActive()? "Active":"Inactive");	
-				} catch (IOException e) {
-					property.set("-error-");
-					LOG.error("Error fetching isActive", e);
-				}
-				
+				property = srConcept.getStatusNameProperty();
 				break;
 			default:
 				// Nothing
@@ -594,7 +627,7 @@ public class CreateMappingItemController {
 				AppContext.getService(DragRegistry.class).setupDragOnly(text, new SingleConceptIdProvider() {
 					@Override
 					public String getConceptId() {
-						return Integer.toString(concept.getNid());
+						return Integer.toString(srConcept.getConcept().getNid());
 					}
 				});
 }

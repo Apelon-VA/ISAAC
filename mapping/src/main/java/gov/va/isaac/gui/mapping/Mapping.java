@@ -14,6 +14,8 @@ import javafx.stage.Window;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SearchView
@@ -26,19 +28,38 @@ import org.jvnet.hk2.annotations.Service;
 public class Mapping implements DockedViewI
 {
 	private boolean hasBeenInited_ = false;
-	private MappingController svc_;
+	private MappingController mappingController_;
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
 	
 	private Mapping() throws IOException
 	{
 		//created by HK2
-		svc_ = MappingController.init();
+		LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", 0);
 	}
+	
+	private MappingController getMappingController()
+	{
+		if (mappingController_ == null)
+		{
+			try
+			{
+				mappingController_ = MappingController.init();
+			}
+			catch (IOException e)
+			{
+				LOG.error("Unexpected", e);
+				throw new RuntimeException(e);
+			}
+		}
+		return mappingController_;
+	}
+	
 	/**
 	 * @see gov.va.isaac.interfaces.gui.views.DockedViewI#getView()
 	 */
 	@Override
 	public Region getView() {
-		return svc_.getRoot();
+		return getMappingController().getRoot();
 	}
 	
 	/**
@@ -65,7 +86,7 @@ public class Mapping implements DockedViewI
 				if (!hasBeenInited_)
 				{
 					//delay init till first display
-					svc_.refreshMappingSets();
+					getMappingController().refreshMappingSets();
 					hasBeenInited_ = true;
 				}
 			}
@@ -122,12 +143,12 @@ public class Mapping implements DockedViewI
 	 */
 	public void refreshMappingSets()
 	{
-		svc_.refreshMappingSets();
+		getMappingController().refreshMappingSets();
 	}
 	
 	public void refreshMappingItems()
 	{
-		svc_.refreshMappingItems();
+		getMappingController().refreshMappingItems();
 	}
 		
 }

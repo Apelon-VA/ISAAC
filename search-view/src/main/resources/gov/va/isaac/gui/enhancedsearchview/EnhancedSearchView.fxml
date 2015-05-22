@@ -5,12 +5,17 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<SplitPane fx:id="searchAndTaxonomySplitPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
-   <items>
-      <BorderPane fx:id="searchBorderPane" styleClass="defaultBackgroundColor">
-        <stylesheets>
-          <URL value="@EnhancedSearchView.css" />
-        </stylesheets>
-      </BorderPane>
-   </items>
-</SplitPane>
+<AnchorPane fx:id="mainPane" prefHeight="200.0" prefWidth="200.0" styleClass="defaultBackgroundColor" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewController">
+   <children>
+      <MenuBar fx:id="enhancedSearchMenuBar" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0" />
+		<SplitPane fx:id="searchAndTaxonomySplitPane" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0">
+		   <items>
+		      <BorderPane fx:id="searchBorderPane" minHeight="100.0" minWidth="100.0" styleClass="defaultBackgroundColor">
+		        <stylesheets>
+		          <URL value="@EnhancedSearchView.css" />
+		        </stylesheets>
+		      </BorderPane>
+		   </items>
+		</SplitPane>
+   </children>
+</AnchorPane>

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.isaacDbProcessingRules.loinc;
+package gov.va.isaac.isaacDbProcessingRules.spreadsheet;
 
 /**
  * {@link Operand}

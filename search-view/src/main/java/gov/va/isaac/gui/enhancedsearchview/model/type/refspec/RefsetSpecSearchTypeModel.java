@@ -474,11 +474,16 @@ public class RefsetSpecSearchTypeModel  extends SearchTypeModel {
 		try {
 			QueryBuilderHelper.executeQuery(QueryBuilderHelper.generateQuery(queryNodeTreeView), queryNodeTreeView);
 
+			setResults(QueryBuilderHelper.getResults());
+			
+			/*
 			SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(QueryBuilderHelper.getResults()));
 			
 			if (splitPane.getItems().contains(taxonomyPane)) {
 				ResultsToTaxonomy.resultsToSearchTaxonomy();
 			}
+			*/
+			
 		} catch (Exception e) {
 			logger.error("Failed executing query.  Caught {} {}.", e.getClass().getName(), e.getLocalizedMessage());
 

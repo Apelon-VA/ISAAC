@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -38,6 +39,8 @@ import javafx.scene.control.Control;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Tooltip;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
 
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -94,11 +97,7 @@ public class EnhancedSavedSearch {
 		saveSearchButton.setMinWidth(Control.USE_PREF_SIZE);
 
 		saveSearchButton.setOnAction((e) -> {
-			if (! SearchModel.getSearchTypeSelector().getTypeSpecificModel().isSavableSearch()) {
-				AppContext.getCommonDialogs().showErrorDialog("Save of Search Failed", "Search is not savable", SearchModel.getSearchTypeSelector().getTypeSpecificModel().getSearchSavabilityValidationFailureMessage());
-			} else {
-				saveSearch();
-			}
+			saveSearch();
 		});
 		
 		restoreSearchButton = new Button("Restore Search");
@@ -136,8 +135,12 @@ public class EnhancedSavedSearch {
 		}
 	}
 	
-	void loadSavedSearch() {
+	public void loadSavedSearch() {
 		SearchDisplayConcept searchToRestore = savedSearchesComboBox.getSelectionModel().getSelectedItem();
+		loadSavedSearch(searchToRestore);
+	}
+
+	public static void loadSavedSearch(SearchDisplayConcept searchToRestore) {
 		LOG.info("loadSavedSearch(" + searchToRestore + ")");
 
 		SearchModel model = null;
@@ -160,20 +163,24 @@ public class EnhancedSavedSearch {
 		}
 
 	}
+	
+	public void saveSearch() {
+		if (! SearchModel.getSearchTypeSelector().getTypeSpecificModel().isSavableSearch()) {
+			AppContext.getCommonDialogs().showErrorDialog("Save of Search Failed", "Search is not savable", SearchModel.getSearchTypeSelector().getTypeSpecificModel().getSearchSavabilityValidationFailureMessage());
+		} else {
+			LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
+			// Save Search popup
+			try {
+				String searchName = getSaveSearchRequest();
 
-	private void saveSearch() {
-		LOG.debug("saveSearch() called.  Search specified: " + savedSearchesComboBox.valueProperty().getValue());
-		// Save Search popup
-		try {
-			String searchName = getSaveSearchRequest();
-
-			if (searchName != null) {
-				AppContext.getCommonDialogs().showInformationDialog("Search Successfully Saved", "Saved new search:" + searchName);
+				if (searchName != null) {
+					AppContext.getCommonDialogs().showInformationDialog("Search Successfully Saved", "Saved new search:" + searchName);
+				}
+			} catch (Exception e) {
+				LOG.error("Failed saving search.  Caught {} \"{}\"", e.getClass().getName(), e.getLocalizedMessage());
+				e.printStackTrace();
+				AppContext.getCommonDialogs().showErrorDialog("Save Search Failure", "Save Search Failure", "Failed to save new search\n\n" + e.getLocalizedMessage()); 
 			}
-		} catch (Exception e) {
-			LOG.error("Failed saving search.  Caught {} \"{}\"", e.getClass().getName(), e.getLocalizedMessage());
-			e.printStackTrace();
-			AppContext.getCommonDialogs().showErrorDialog("Save Search Failure", "Save Search Failure", "Failed to save new search\n\n" + e.getLocalizedMessage()); 
 		}
 	}
 
@@ -239,12 +246,51 @@ public class EnhancedSavedSearch {
 		refreshSavedSearchComboBox();
 	}
 
+	
+	private static ObservableList<SearchDisplayConcept> getSavedSearches() {
+		ObservableList<SearchDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
+		
+		try {
+			Set<ConceptVersionBI> savedSearches = OTFUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
+
+			SearchType currentSearchType = SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
+			for (ConceptVersionBI concept : savedSearches) {
+				if (getCachedSearchTypeFromSearchConcept(concept) == currentSearchType) {
+					boolean addSearchToList = true;
+					if (currentSearchType == SearchType.TEXT) {
+						ComponentSearchType currentlyViewedComponentSearchType = TextSearchTypeModel.getCurrentComponentSearchType();
+						ComponentSearchType loadedComponentSearchType = getCachedComponentSearchTypeFromSearchConcept(concept);
+						
+						if (currentlyViewedComponentSearchType != null && loadedComponentSearchType != null) {
+							if (currentlyViewedComponentSearchType != loadedComponentSearchType) {
+								addSearchToList = false;
+							}
+						}
+					}
+					
+					if (addSearchToList) {
+						String fsn = OTFUtility.getFullySpecifiedName(concept);
+						String preferredTerm = OTFUtility.getConPrefTerm(concept.getNid());
+						searches.add(new SearchDisplayConcept(fsn, preferredTerm, concept.getNid()));
+					}
+				}
+			}
+		} catch (Exception e) {
+			LOG.error("Error reading saved searches", e);
+		}
+
+		return searches;
+	}
+	
 	public static void refreshSavedSearchComboBox() {
 		Task<List<SearchDisplayConcept>> loadSavedSearches = new Task<List<SearchDisplayConcept>>() {
 			private ObservableList<SearchDisplayConcept> searches = FXCollections.observableList(new ArrayList<>());
 
 			@Override
 			protected List<SearchDisplayConcept> call() throws Exception {
+				searches = getSavedSearches();
+				return searches;
+				/*
 				Set<ConceptVersionBI> savedSearches = OTFUtility.getAllChildrenOfConcept(Search.SEARCH_PERSISTABLE.getNid(), true);
 
 				SearchType currentSearchType = SearchModel.getSearchTypeSelector().getSearchTypeComboBox().getSelectionModel().getSelectedItem();
@@ -271,6 +317,7 @@ public class EnhancedSavedSearch {
 				}
 
 				return searches;
+				*/
 			}
 
 			@Override
@@ -283,6 +330,22 @@ public class EnhancedSavedSearch {
 
 		savedSearchesComboBox.getItems().clear();
 		Utility.execute(loadSavedSearches);
+	}
+	
+	public static void refreshSavedSearchMenu(Menu menu) {
+		Utility.execute(() -> {
+			ObservableList<SearchDisplayConcept> searches = getSavedSearches();
+			Platform.runLater(() -> {
+				menu.getItems().clear();
+				for (SearchDisplayConcept search : searches) {
+					MenuItem item = new MenuItem(search.getFullySpecifiedName());
+					item.setOnAction((e) -> {
+						loadSavedSearch(search);
+					});
+					menu.getItems().add(item);
+				}
+			});
+		});
 	}
 
 	void refreshSearchViewModelBindings() {

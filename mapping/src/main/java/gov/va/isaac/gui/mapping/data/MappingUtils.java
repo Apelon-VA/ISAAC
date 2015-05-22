@@ -28,7 +28,9 @@ import gov.va.isaac.search.SearchHandle;
 import gov.va.isaac.search.SearchHandler;
 import gov.va.isaac.search.SearchResultsIntersectionFilter;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.SearchStringProcessor;
 import gov.va.isaac.util.TaskCompleteCallback;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -38,6 +40,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
@@ -215,6 +218,11 @@ public class MappingUtils
 		
 		SearchResultsIntersectionFilter filterSet = (filters.size() > 0 ? new SearchResultsIntersectionFilter(filters) : null);
 		
+		//TODO At some point, Dan needs to update this to avoid the query processor when we are automating the query generation
+		//we also need to more consistently handle characters like [ and ( when they are going into the query parser
+		//but that is a problem bigger than just the usage in mapping.
+		searchString = SearchStringProcessor.prepareSearchString(searchString);
+		
 		if (descriptionType == null && advancedDescriptionType == null)
 		{
 			return SearchHandler.descriptionSearch(searchString, 500, false, (UUID)null, callback, null, filterSet, null, true);
@@ -258,8 +266,14 @@ public class MappingUtils
 			
 			for (DescriptionVersionBI<?> desc : cv.getDescriptionsActive())
 			{
+				/*
+				 * No need for processing brackets.  SearchStringProcessor function called in main search function deals with them.
+				 * DT 4/30/15
+				 * 
 				//brackets are somewhat common, and choke the query parser
 				searchString.append(desc.getText().replaceAll("\\[", "\\\\[").replaceAll("\\]", "\\\\]"));
+				*/
+				searchString.append(desc.getText());
 				searchString.append(" ");
 			}
 		}

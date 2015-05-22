@@ -52,6 +52,7 @@ public class EnhancedSearchView implements DockedViewI
 	protected EnhancedSearchView() throws IOException
 	{
 		//created by HK2
+		LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", 0);
 	}
 	
 	//TODO Dans big list of Enhanced Search View cleanup things.....

@@ -550,6 +550,8 @@ public class DescriptionTableView
 				}
 			});
 			tc.setCellFactory(cellFactory);
+			
+			//TODO Dan forgot to put comparators on these columns
 
 			//off by default
 			if (col == DescriptionColumnType.UUID)

@@ -20,9 +20,11 @@ package gov.va.isaac.gui.mapping.data;
 
 import gov.va.isaac.constants.ISAAC;
 import gov.va.isaac.util.OTFUtility;
+import gov.va.isaac.util.Utility;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -247,4 +249,26 @@ public class MappingSet extends MappingObject
 			throw new IOException("internal error");
 		}
 	}
+	
+	public static final Comparator<MappingSet> nameComparator = new Comparator<MappingSet>() {
+		@Override
+		public int compare(MappingSet o1, MappingSet o2) {
+			return Utility.compareStringsIgnoreCase(o1.getName(), o2.getName());
+		}
+	};
+	
+	public static final Comparator<MappingSet> purposeComparator = new Comparator<MappingSet>() {
+		@Override
+		public int compare(MappingSet o1, MappingSet o2) {
+			return Utility.compareStringsIgnoreCase(o1.getPurpose(), o2.getPurpose());
+		}
+	};
+	
+	public static final Comparator<MappingSet> descriptionComparator = new Comparator<MappingSet>() {
+		@Override
+		public int compare(MappingSet o1, MappingSet o2) {
+			return Utility.compareStringsIgnoreCase(o1.getDescription(), o2.getDescription());
+		}
+	};
+	
 }

@@ -5,11 +5,11 @@ import gov.va.isaac.gui.mapping.data.MappingItem;
 import gov.va.isaac.gui.mapping.data.MappingItemComment;
 import gov.va.isaac.gui.mapping.data.MappingItemCommentDAO;
 import gov.va.isaac.gui.mapping.data.MappingSet;
+import gov.va.isaac.gui.util.ErrorMarkerUtils;
+import gov.va.isaac.gui.util.WrappedLabeled;
 import gov.va.isaac.util.TaskCompleteCallback;
-
 import java.io.IOException;
 import java.util.List;
-
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.ObservableList;
@@ -27,9 +27,10 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
 
 /**
  * Controller class for the Comment Dialog View.
@@ -41,13 +42,11 @@ import org.slf4j.LoggerFactory;
 public class CommentDialogController implements TaskCompleteCallback {
 	private static final Logger LOG = LoggerFactory.getLogger(MappingController.class);
 
-    @FXML    private AnchorPane titlePane;
-    @FXML    private AnchorPane detailPane;
-    @FXML    private Button 	closeButton;
+	@FXML    private Button 	closeButton;
     @FXML    private TextArea 	newCommentTextArea;
     @FXML    private ScrollPane commentsPane;
     @FXML    private Label 		mappingSetLabel;
-    @FXML    private AnchorPane mainPane;
+    @FXML    private VBox 		mainPane;
     @FXML    private AnchorPane newCommentPane;
     @FXML    private Button 	saveButton;
     @FXML    private VBox 		commentListVBox;
@@ -76,11 +75,10 @@ public class CommentDialogController implements TaskCompleteCallback {
 		assert commentsPane 		!= null : "fx:id=\"commentsPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert mappingSetLabel 		!= null : "fx:id=\"mappingSetLabel\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert mainPane 			!= null : "fx:id=\"mainPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
-		assert detailPane 			!= null : "fx:id=\"detailPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert newCommentPane 		!= null : "fx:id=\"newCommentPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert saveButton 			!= null : "fx:id=\"saveButton\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		assert commentListVBox 		!= null : "fx:id=\"commentListVBox\" was not injected: check your FXML file 'CommentDialog.fxml'.";
-        assert titleGridPane 		!= null : "fx:id=\"titleGridPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
+		assert titleGridPane 		!= null : "fx:id=\"titleGridPane\" was not injected: check your FXML file 'CommentDialog.fxml'.";
 		
 		commentListVBox.setPrefHeight(0);
 		commentsPane.setFitToWidth(true);
@@ -109,7 +107,8 @@ public class CommentDialogController implements TaskCompleteCallback {
 					if (mappingItems_.size() > 1) {
 						close();
 					} else {
-						refreshComments();
+						//TODO fix the index issue - need to wait for the index to complete.  This gives us a better chance at refreshing properly...
+						Platform.runLater(() -> refreshComments());
 						newCommentTextArea.setText("");
 					}
 				}
@@ -150,8 +149,10 @@ public class CommentDialogController implements TaskCompleteCallback {
 		mappingItems_ = mappingItems;
 		if (mappingItems.size() > 1) {
 			double height = newCommentPane.getHeight();
-			detailPane.setVisible(false);
-			AnchorPane.setTopAnchor(newCommentPane, 0.0);
+			titleGridPane.setVisible(false);
+			titleGridPane.setManaged(false);
+			commentsPane.setVisible(false);
+			commentsPane.setManaged(false);
 			mainPane.setPrefHeight(height);
 			
 		} else if (mappingItems.size() > 0) {
@@ -167,14 +168,11 @@ public class CommentDialogController implements TaskCompleteCallback {
 	private void addCommentToList(MappingItemComment comment) {
 		CommentControl cc = new CommentControl();
 		cc.set(this, mappingItems_.get(0), comment);
-		cc.setPrefWidth(commentListVBox.getPrefWidth());
-		commentListVBox.setPrefHeight(commentListVBox.getPrefHeight() + cc.getPrefHeight());
 		commentListVBox.getChildren().add(cc);
 	}
 	
 	private void clearComments() {
 		commentListVBox.getChildren().clear();
-		commentListVBox.setPrefHeight(0);
 	}
 	
 	public void refreshComments() {

@@ -1,9 +1,14 @@
 package gov.va.isaac.gui.enhancedsearchview.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import gov.va.isaac.AppContext;
 import gov.va.isaac.gui.enhancedsearchview.EnhancedSearchViewBottomPane;
 import gov.va.isaac.gui.enhancedsearchview.IntegerField;
 import gov.va.isaac.gui.enhancedsearchview.SearchTypeEnums.ResultsType;
+import gov.va.isaac.gui.enhancedsearchview.resulthandler.ResultsToTaxonomy;
+import gov.va.isaac.search.CompositeSearchResult;
 import gov.va.isaac.util.OTFUtility;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
@@ -15,6 +20,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.BorderPane;
 
@@ -211,4 +217,32 @@ public abstract class SearchTypeModel {
 		SearchTypeModel.splitPane = splitPane;
 		SearchTypeModel.taxonomyPane = taxonomyPane;
 	}
+	
+	public static int removeNullResults(Collection<CompositeSearchResult> results) {
+		Collection<CompositeSearchResult> nullResults = new ArrayList<>();
+		if (results != null) {
+			for (CompositeSearchResult result : results) {
+				if (result.getContainingConcept() == null) {
+					nullResults.add(result);
+				}
+			}
+			results.removeAll(nullResults);
+		}
+		return nullResults.size();
+	}
+	
+	public static void setResults(Collection<CompositeSearchResult> results) {
+		int filteredResults = removeNullResults(results);
+		
+		SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(results));
+		SearchModel.setResultsOffPathCount(filteredResults);
+		
+		bottomPane.refreshBottomPanel();
+		bottomPane.refreshTotalResultsSelectedLabel();
+
+		if (splitPane.getItems().contains(taxonomyPane)) {
+			ResultsToTaxonomy.resultsToSearchTaxonomy();
+		}
+	}
+
 }

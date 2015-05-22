@@ -187,7 +187,6 @@ public class SnomedConceptViewController {
 			}
 		});
 		
-		
 		ConceptVersionBI conceptVersionBI = OTFUtility.getConceptVersion(concept.getPrimordialUuid());
 		AppContext.getService(CommonlyUsedConcepts.class).addConcept(new SimpleDisplayConcept(conceptVersionBI));
 
@@ -410,5 +409,13 @@ public class SnomedConceptViewController {
 		}
 		
 		return conceptNid;
+	}
+
+	/**
+	 * See  {@link SctTreeViewIsaacView#cancelOperations()}
+	 */
+	public void stopOperations()
+	{
+		sctTree.cancelOperations();
 	}
 }

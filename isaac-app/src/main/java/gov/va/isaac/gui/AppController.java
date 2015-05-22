@@ -170,6 +170,8 @@ public class AppController {
                 });
             }
         }
+        
+        LOG.debug("Menus configured");
 
         for (final DockedViewI dv : dockedViews_)
         {
@@ -218,6 +220,7 @@ public class AppController {
                 LOG.error("Unexpected error configuring DockedViewI " + (dv == null ? "?" : dv.getViewTitle()), e);
             }
         }
+        LOG.debug("Docked Views configured");
     }
     
     public BorderPane getRoot()
@@ -236,6 +239,7 @@ public class AppController {
             service.loadRequested();
         }
         preloadExecuted = true;
+        LOG.debug("Preloads complete");
         
         loadWait.getChildren().clear();
         
