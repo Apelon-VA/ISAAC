@@ -44,6 +44,7 @@ public enum Images {
     TAXONOMY_SEARCH_RESULT_ANCESTOR(setupImage("/icons/fugue/16x16/icons-shadowless/search-result-ancestor-transparent.png")),
     
     //Other GUI Icons
+    FOLDER(setupImage("/icons/silk/16x16/folder.png")),
     LEGO_ADD(setupImage("/icons/silk/16x16/brick_add.png")),
     LEGO_DELETE(setupImage("/icons/silk/16x16/brick_delete.png")),
     LEGO_EDIT(setupImage("/icons/silk/16x16/brick_edit.png")),

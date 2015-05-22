@@ -378,6 +378,10 @@ public class USCRSBatchTemplate
 		out.flush();
 		out.close();
 	}
+	
+	public Workbook getExcel() {
+		return wb;
+	}
 
 	private static String toString(Cell cell)
 	{
