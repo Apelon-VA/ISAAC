@@ -8,7 +8,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *	 http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -35,9 +35,14 @@ import gov.va.isaac.request.uscrs.USCRSBatchTemplate.PICKLIST_Source_Terminology
 import gov.va.isaac.request.uscrs.USCRSBatchTemplate.SHEET;
 import gov.va.isaac.util.OTFUtility;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -56,6 +61,7 @@ import javax.management.RuntimeErrorException;
 import org.glassfish.hk2.api.PerLookup;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.coordinate.Position;
 import org.ihtsdo.otf.tcc.api.coordinate.Status;
 import org.ihtsdo.otf.tcc.api.coordinate.ViewCoordinate;
 import org.ihtsdo.otf.tcc.api.description.DescriptionChronicleBI;
@@ -65,6 +71,8 @@ import org.ihtsdo.otf.tcc.api.metadata.binding.TermAux;
 import org.ihtsdo.otf.tcc.api.relationship.RelAssertionType;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.relationship.RelationshipVersionBI;
+import org.ihtsdo.otf.tcc.datastore.Bdb;
+import org.ihtsdo.otf.tcc.datastore.stamp.StampBdb;
 import org.jfree.util.Log;
 import org.jvnet.hk2.annotations.Service;
 import org.slf4j.Logger;
@@ -83,26 +91,45 @@ import org.slf4j.LoggerFactory;
 @PerLookup
 public class UscrsContentRequestHandler implements ExportTaskHandlerI
 {
+	Properties prop = new Properties();
+	boolean filter = false;
+	Date date;
+	Date setDate;
 	
 	private UscrsContentRequestHandler() {
 		//hk2
 	}
 	
+	//TODO: Document these options in JavaDoc VERY well because ppl just look at javadocs
+	//TODO: Specify all instructions here, because this is how to config everything
+	//TODO: Throw an exception if an option was passed in that is unknown. Same with a 
+	//		required option, if not passed in, then throw an error again.
 	@Override
-    public void setOptions(Properties options) {
-	    // No Options yet
-	    
-    }
+	public void setOptions(Properties options) {
+		prop = options;
+		prop.getProperty("date", "none"); //This is a long
+		prop.getProperty("mode", "none"); //IE: ListView, BatchExport
+		//IE: If an author property is set, use an author filter. Everytying can be optional
+		//IE: Path
+		// TODO: If nothing is set then just go with default, export everything
+		
+		if(!prop.get("date").equals("none")) { 
+			filter = true; 
+			setDate = new Date(Integer.parseInt(prop.getProperty("date"))); 
+			}
+//		if(!prop.get("mode").equals("none")) { filter = true; }
+		
+	}
 
 	@Override
-    public String getTitle() {
-	    return "USCRS Content Request Handler";
-    }
+	public String getTitle() {
+		return "USCRS Content Request Handler";
+	}
 
 	@Override
-    public String getDescription() {
-	    return "Exports a USCRS Content Request Excel file";
-    }
+	public String getDescription() {
+		return "Exports a USCRS Content Request Excel file";
+	}
 	
 	/** The request id counter. */
 	private static AtomicInteger globalRequestCounter = new AtomicInteger(1);
@@ -117,6 +144,19 @@ public class UscrsContentRequestHandler implements ExportTaskHandlerI
 	
 	private IntStream conceptStream;
 	
+	public static void main(String[] args) {
+		UscrsContentRequestHandler ucrh = new UscrsContentRequestHandler();
+		
+		IntStream is = IntStream.of(-2147374144, 2143494493, -2147483620, -2147418042);
+		Properties p = new Properties();
+		p.setProperty("date", String.valueOf(System.currentTimeMillis()));
+		
+		ucrh.createTask(is, new File("C:\\Users\\vkaloidis\\Desktop\\").toPath());
+		
+	}
+	
+	//TODO: Document EVERYTHING
+	//TODO: Check everything passed in, and 
 	@Override
 	public Task<Integer> createTask(IntStream intStream, Path file) 
 	{
@@ -137,19 +177,97 @@ public class UscrsContentRequestHandler implements ExportTaskHandlerI
 				
 				conceptStream
 					.forEach( nid -> {
-						if(count % 50 == 0) {
-							updateTitle("Uscrs Content Request Exported " + count + " components");
+						if(prop.equals("none")) {
+							//Modify this based on what options are passed in above
+							if(count % 50 == 0) {
+								updateTitle("Uscrs Content Request Exported " + count + " components");
+							}
 						}
+						
 						
 						if(isCancelled()) {
 							LOG.info("User canceled Uscrs Export Operation");
 							throw new RuntimeException("User canceled operation");
 						}
+						
 						ConceptChronicleBI concept = OTFUtility.getConceptVersion(nid); 
+						
+						ArrayList<RelationshipVersionBI> exportRels = null;
 						try {
-							ArrayList<RelationshipVersionBI> extraRels = handleNewConcept(concept, bt); 
-							handleNewParent(extraRels, bt);
-							handleNewRels(extraRels, bt);
+							exportRels.addAll(handleNewConcept(concept, bt));
+							
+						} catch (Exception e1) {
+							LOG.error("Could not export concept " + nid);
+							e1.printStackTrace();
+						} 
+						
+						//Check if concept fits this criteria
+						//First check if the concept is valid
+						// If the date was passed in, we check if this is on that date
+						// Look at all the components of the concept, and all the versions of 
+						//		the concept. If any versions of the concept are newer than the date, t
+						//		then we export. We also go throug the descriptions to see if the desc
+						//		is newer than the date then we export that.
+						//	Also look at the relationships of the concept to see if any newer than the 
+						//		date passed in. If yes then export.
+						// If a description has been edited, then edited again, we are not sure if we
+						// 		put both in the export  or if we just want to export the latest version.
+						
+						
+						
+						if(filter) {
+							try {
+								Collection<? extends DescriptionChronicleBI> descriptions = concept.getDescriptions();
+								for(DescriptionChronicleBI d : descriptions) {
+									if(!prop.getProperty("date").equals("none")) {
+										StampBdb stampDb = Bdb.getStampDb();
+										
+										DescriptionVersionBI<?> dv = d.getVersion(OTFUtility.getViewCoordinate());
+										
+										ViewCoordinate vc = new ViewCoordinate();
+										
+										
+										
+										Integer stamp = dv.getStamp();
+										Position stampPosition = stampDb.getPosition(stamp);
+										date = new Date(stampPosition.getTime());
+										
+										if(date.before(setDate) && !date.equals(setDate)) {
+											
+										}
+										
+									
+									//TODO: After this, check if the desc.getVersion(OTF.GetVC(release date VC)), check to see if they differ
+										//	to see if you have any changes between the two. If not then no problem. If so then ask Dan..?
+									}
+								
+								}
+								
+							} catch (Exception e) {
+								LOG.error("Error retreiving the descriptions: " + e.getMessage());
+								e.printStackTrace();
+							}
+								
+							try {
+								Collection<? extends RelationshipChronicleBI> relsIncoming = concept.getRelationshipsIncoming();
+							} catch (Exception e) {
+								LOG.error("Error retreiving the incoming relationshios: " + e.getMessage());
+								e.printStackTrace();
+							}
+							try {
+								Collection<? extends RelationshipChronicleBI> relsOutgoing = concept.getRelationshipsOutgoing();
+							} catch (Exception e) {
+								LOG.error("Error retreiving the incoming relationshios: " + e.getMessage());
+								e.printStackTrace();
+							}
+						}
+						
+
+						
+						try {
+							handleNewParent(exportRels, bt);
+							handleNewRels(exportRels, bt);
+							//TODO: THURSDAY TODO: **MAKE THIS DESC TAKE AN ARRAY LIST AND ADD TO IT. CHANGE THESE***
 							for (DescriptionChronicleBI desc : concept.getDescriptions())
 							{
 								DescriptionVersionBI<?> thisDesc = desc.getVersion(OTFUtility.getViewCoordinate());
@@ -545,7 +663,7 @@ public class UscrsContentRequestHandler implements ExportTaskHandlerI
 	 * @throws Exception the exception
 	 */
 	@SuppressWarnings("rawtypes")
-    public void handleNewRels(ArrayList<RelationshipVersionBI> extraRels, USCRSBatchTemplate bt) throws Exception {
+	public void handleNewRels(ArrayList<RelationshipVersionBI> extraRels, USCRSBatchTemplate bt) throws Exception {
 		bt.selectSheet(SHEET.New_Relationship);
 		for(RelationshipVersionBI rel : extraRels) {
 			if (rel.isActive() && (rel.getTypeNid() != Snomed.IS_A.getLenient().getNid())) 

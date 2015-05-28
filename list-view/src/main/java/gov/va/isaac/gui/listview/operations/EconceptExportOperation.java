@@ -30,8 +30,11 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.stream.IntStream;
 
 import javafx.beans.binding.BooleanExpression;
@@ -68,11 +71,10 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:vkaloidis@apelon.com">Vas Kaloidis</a>
  */
 @Service
-@PerLookup //TODO: Create an Exporter interface, 
-public class EconceptExportOperation extends Operation implements ExportTaskHandlerI
+public class EconceptExportOperation extends Operation
 {
 	private Logger logger_ = LoggerFactory.getLogger(this.getClass());
-//	private Map<String, Set<String>> successCons = new HashMap<>(); - we aren't returning anything
+	private Map<String, Set<String>> successCons = new HashMap<>(); // we aren't returning anything
 	
 	private final FileChooser fileChooser = new FileChooser();
 	private final Button openFileChooser = new Button(null, Images.FOLDER.createImageView());
@@ -91,7 +93,8 @@ public class EconceptExportOperation extends Operation implements ExportTaskHand
 	public enum ExportFileExtensionEnum
 	{
 		Econcept ("EConcept", "EConcept Files .jbin", ".jbin"),
-		Changeset ("Changeset", "Changeset Files .eccs", ".eccs");
+		Changeset ("Changeset", "Changeset Files .eccs", ".eccs"),
+		Xml ("Xml", "Xml Files .xml", ".xml");
 		
 		private final String name;
 		private final String extensionDesc;
@@ -224,6 +227,12 @@ public class EconceptExportOperation extends Operation implements ExportTaskHand
 		changesetRadioButton.setToggleGroup(toggleGroup);
 		changesetRadioButton.setTooltip(new Tooltip("Export selected concepts as a Changeset (.eccs) file. Difference: export time placed in-between each concept exported."));
 		EconceptChangesetRadioVbox.getChildren().add(changesetRadioButton);
+		
+		RadioButton xmlRadioButton = new RadioButton();
+		xmlRadioButton.setText("XML");
+		xmlRadioButton.setToggleGroup(toggleGroup);
+		xmlRadioButton.setTooltip(new Tooltip("Export selected concepts as an XML (.xml) file."));
+		EconceptChangesetRadioVbox.getChildren().add(xmlRadioButton);
 		root.add(EconceptChangesetRadioVbox, 1, 1);
 		
 		toggleGroup.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
@@ -262,6 +271,21 @@ public class EconceptExportOperation extends Operation implements ExportTaskHand
 						toggleSelected = ExportFileExtensionEnum.Changeset.name;
 						logger_.info("Export File Type Changed to Changeset");
 					}
+					else if(theSelectedValue.equalsIgnoreCase("xml")) 
+					{
+						fileChooser.getExtensionFilters().addAll(new ExtensionFilter(ExportFileExtensionEnum.Xml.extensionDesc, ExportFileExtensionEnum.Xml.extensionFormat));
+						fileName = ExportFileExtensionEnum.Xml.name + "_Export";
+						fileExtension =	ExportFileExtensionEnum.Xml.extensionFormat;
+						fileChooser.setInitialFileName(fileName);
+						filePath = plainFilePath +  ExportFileExtensionEnum.Xml.extensionFormat;
+						file = new File(filePath);
+						outputField.clear();
+						outputField.setText(filePath);
+						toggleSelected = ExportFileExtensionEnum.Xml.name;
+						logger_.info("Export File Type Changed to Changeset");
+					}
+					
+					
 					if(file == null) {
 						logger_.error("Could not create a file object, this is fatal");
 					}
@@ -322,6 +346,7 @@ public class EconceptExportOperation extends Operation implements ExportTaskHand
 				if(file != null) 
 				{
 					double i = 0;
+					boolean firstValue = true;
 					dos_ = new DataOutputStream(new BufferedOutputStream(new FileOutputStream(file)));
 					for (SimpleDisplayConcept concept : conceptList_)
 					{
@@ -341,7 +366,15 @@ public class EconceptExportOperation extends Operation implements ExportTaskHand
 							new TtkConceptChronicle(OTFUtility.getConceptVersion(concept.getNid())).writeExternal(dos_);
 							
 							if(toggleSelected.equalsIgnoreCase("changeset")) {
+								new TtkConceptChronicle(OTFUtility.getConceptVersion(concept.getNid())).writeExternal(dos_);
 								dos_.writeLong(System.currentTimeMillis());
+							} else if(toggleSelected.equalsIgnoreCase("econcept")) {
+								new TtkConceptChronicle(OTFUtility.getConceptVersion(concept.getNid())).writeExternal(dos_);
+							} else {
+								//new TtkConceptChronicle(OTFUtility.getConceptVersion(concept.getNid())).toXml(firstValue);
+								if(firstValue) {
+									firstValue = false;
+								}
 							}
 
 							if (cancelRequested_) {
@@ -370,22 +403,4 @@ public class EconceptExportOperation extends Operation implements ExportTaskHand
 			}
 		};
 	}
-
-	@Override
-    public void setOptions(Properties options) {
-	    // TODO Auto-generated method stub
-	    
-    }
-
-	@Override
-    public String getDescription() {
-	    // TODO Auto-generated method stub
-	    return null;
-    }
-
-	@Override
-    public Task<Integer> createTask(IntStream nidList, Path file) {
-	    // TODO Auto-generated method stub
-	    return null;
-    }
 }

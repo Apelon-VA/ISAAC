@@ -46,6 +46,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.HPos;
 import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
@@ -213,6 +214,13 @@ public class UscrsExportOperation extends Operation
 		StackPane sp = ErrorMarkerUtils.setupErrorMarker(outputField, null, allFieldsValid);
 		root.add(sp, 1, 0);
 		GridPane.setHalignment(sp, HPos.LEFT);
+		
+		DatePicker datePicker = new DatePicker();
+		
+		Label datePickerLabel = new Label("Export Dates");
+		root.add(datePickerLabel, 0, 1); //Row 3
+		GridPane.setHalignment(datePickerLabel, HPos.LEFT);
+		root.add(datePicker, 1, 1); //Row 4
 		
 		super.root_ = root;
 	}
