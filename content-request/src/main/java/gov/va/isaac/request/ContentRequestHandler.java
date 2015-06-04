@@ -1,5 +1,7 @@
 package gov.va.isaac.request;
 
+import java.io.File;
+
 
 /**
  * Generically represents a handler for content request submission.
@@ -16,6 +18,9 @@ public interface ContentRequestHandler {
    * @throws Exception 
    */
   public ContentRequestTrackingInfo submitContentRequest(int nid) throws Exception;
+	
+//  public ContentRequestTrackingInfo submitContentRequest(int nid, File file) throws Exception;
+
   
   /**
    * Returns the content request status.

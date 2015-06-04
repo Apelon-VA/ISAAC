@@ -34,6 +34,7 @@ import javafx.stage.Window;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -46,10 +47,12 @@ import org.slf4j.LoggerFactory;
 public class DynamicRefexListView implements DockedViewI
 {
 	DynamicRefexListViewController drlvc_;
-
+	private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+	
 	private DynamicRefexListView()
 	{
 		// created by HK2
+		LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", 0);
 	}
 
 	/**

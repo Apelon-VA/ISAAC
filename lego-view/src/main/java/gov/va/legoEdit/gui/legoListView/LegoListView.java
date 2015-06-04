@@ -69,6 +69,7 @@ public class LegoListView implements DockedViewI
 	{
 		//Created by HK2
 		//delay init of lfpc_
+		logger.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", 0);
 	}
 
 	/**

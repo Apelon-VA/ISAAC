@@ -32,6 +32,8 @@ import javafx.stage.Window;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import org.jvnet.hk2.annotations.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A {@link DockedViewI} for displaying the "Imported Information Models" panel.
@@ -43,14 +45,16 @@ import org.jvnet.hk2.annotations.Service;
 public class ImportedModelsView implements DockedViewI {
 
     private final ImportedModelsViewController controller;
-
+    private final Logger LOG = LoggerFactory.getLogger(this.getClass());
+    
     private ImportedModelsView() throws IOException {
-
+        long startTime = System.currentTimeMillis();
         // Load from FXML.
         URL resource = ImportedModelsView.class.getResource("ImportedModelsView.fxml");
         FXMLLoader loader = new FXMLLoader(resource);
         loader.load();
         controller = loader.getController();
+        LOG.debug(this.getClass().getSimpleName() + " construct time (blocking GUI): {}", System.currentTimeMillis() - startTime);
     }
 
     /**

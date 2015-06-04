@@ -20,13 +20,12 @@ package gov.va.isaac.gui.treeview;
 
 import gov.va.isaac.ExtendedAppContext;
 import gov.va.isaac.util.OTFUtility;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
-
+import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
-
+import javafx.concurrent.Task;
 import org.ihtsdo.otf.tcc.datastore.BdbTerminologyStore;
 import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
@@ -36,7 +35,6 @@ import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipVersion
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RefexPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.RelationshipPolicy;
 import org.ihtsdo.otf.tcc.ddo.fetchpolicy.VersionPolicy;
-import org.jfree.util.Log;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,8 +43,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author ocarlsen
  * @author kec
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
-public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
+public class GetSctTreeItemConceptCallable extends Task<Boolean> {
     private static final Logger LOG = LoggerFactory.getLogger(GetSctTreeItemConceptCallable.class);
 
     private final SctTreeItem treeItem;
@@ -78,79 +77,102 @@ public class GetSctTreeItemConceptCallable implements Callable<Boolean> {
 
     @Override
     public Boolean call() throws Exception {
-        ComponentReference reference;
-
-        if (treeItem == null || treeItem.getValue() == null || treeItem.getValue().getRelationshipVersion() == null)
+        try
         {
-            return false;
-        }
-        
-        if (addChildren) {
-            reference = treeItem.getValue().getRelationshipVersion().getOriginReference();
-        } else {
-            reference = treeItem.getValue().getRelationshipVersion().getDestinationReference();
-        }
-
-        if (SctTreeView.shutdownRequested || reference == null) {
-            return false;
-        }
-
-        BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
-        concept = dataStore.getFxConcept(reference,
-                OTFUtility.getViewCoordinate(),
-                versionPolicy, refexPolicy, relationshipPolicy);
-
-        if ((concept.getConceptAttributes() == null)
-                || concept.getConceptAttributes().getVersions().isEmpty()
-                || concept.getConceptAttributes().getVersions().get(0).isDefined()) {
-            treeItem.setDefined(true);
-        }
-
-        if (concept.getOriginRelationships().size() > 1) {
-        	//LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
-            treeItem.setMultiParent(true);
-        } else if (concept.getOriginRelationships().size() == 1) {
-        	//LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
-        } else if (concept.getOriginRelationships().size() == 0) {
-        	// TODO (artf231888): remove this debug statement when this tracker is closed
-        	LOG.debug("Concept {} has {} origin relationships in {} mode", OTFUtility.getDescription(concept), concept.getOriginRelationships().size(), OTFUtility.getViewCoordinate().getRelationshipAssertionType());
-        }
-
-        if (addChildren) {
-            for (RelationshipChronicleDdo destRel : concept.getDestinationRelationships()) {
-                if (SctTreeView.shutdownRequested) {
-                    return false;
-                }
-                for (RelationshipVersionDdo rv : destRel.getVersions()) {
-                    TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
-                    SctTreeItem childItem = new SctTreeItem(taxRef, treeItem.getDisplayPolicies());
-                    if (childItem.shouldDisplay()) {
-                    	childrenToAdd.add(childItem);
+            ComponentReference reference;
+    
+            if (treeItem == null || treeItem.getValue() == null || treeItem.getValue().getRelationshipVersion() == null)
+            {
+                return false;
+            }
+            
+            if (SctTreeView.wasGlobalShutdownRequested() || treeItem.isCancelRequested()) {
+                return false;
+            }
+            
+            if (addChildren) {
+                reference = treeItem.getValue().getRelationshipVersion().getOriginReference();
+            } else {
+                reference = treeItem.getValue().getRelationshipVersion().getDestinationReference();
+            }
+    
+            if (SctTreeView.wasGlobalShutdownRequested() || treeItem.isCancelRequested()|| reference == null) {
+                return false;
+            }
+    
+            BdbTerminologyStore dataStore = ExtendedAppContext.getDataStore();
+            concept = dataStore.getFxConcept(reference,
+                    OTFUtility.getViewCoordinate(),
+                    versionPolicy, refexPolicy, relationshipPolicy);
+    
+            if ((concept.getConceptAttributes() == null)
+                    || concept.getConceptAttributes().getVersions().isEmpty()
+                    || concept.getConceptAttributes().getVersions().get(0).isDefined()) {
+                treeItem.setDefined(true);
+            }
+            
+            if (SctTreeView.wasGlobalShutdownRequested() || treeItem.isCancelRequested()) {
+                return false;
+            }
+    
+            if (concept.getOriginRelationships().size() > 1) {
+                treeItem.setMultiParent(true);
+            } 
+    
+            if (addChildren) {
+                //TODO it would be nice to show progress here, by binding this status to the 
+                //progress indicator in the SctTreeItem - However -that progress indicator displays at 16x16,
+                //and ProgressIndicator has a bug, that is vanishes for anything other than indeterminate for anything less than 32x32
+                //need a progress indicator that works at 16x16
+                for (RelationshipChronicleDdo destRel : concept.getDestinationRelationships()) {
+                    if (SctTreeView.wasGlobalShutdownRequested() || treeItem.isCancelRequested()) {
+                        return false;
+                    }
+                    for (RelationshipVersionDdo rv : destRel.getVersions()) {
+                        TaxonomyReferenceWithConcept taxRef = new TaxonomyReferenceWithConcept(rv);
+                        SctTreeItem childItem = new SctTreeItem(taxRef, treeItem.getDisplayPolicies());
+                        if (childItem.shouldDisplay()) {
+                            childrenToAdd.add(childItem);
+                        }
+                        if (SctTreeView.wasGlobalShutdownRequested() || treeItem.isCancelRequested()) {
+                            return false;
+                        }
                     }
                 }
+                Collections.sort(childrenToAdd);
             }
-        }
-
-        if (SctTreeView.shutdownRequested) {
-            return false;
-        }
-
-        Collections.sort(childrenToAdd);
-
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
+            
+            CountDownLatch temp = new CountDownLatch(1);
+    
+            Platform.runLater(() -> 
+            {
                 TaxonomyReferenceWithConcept itemValue = treeItem.getValue();
 
                 treeItem.setValue(null);
-                treeItem.getChildren().clear();
-                treeItem.computeGraphic();
-                treeItem.getChildren().addAll(childrenToAdd);
+                if (addChildren)
+                {
+                    treeItem.getChildren().clear();
+                    treeItem.getChildren().addAll(childrenToAdd);
+                }
                 treeItem.setValue(itemValue);
                 treeItem.getValue().conceptProperty().set(concept);
+                temp.countDown();
+            });
+            temp.await();
+            
+            return true;
+        }
+        catch (Exception e)
+        {
+            LOG.error("Unexpected", e);
+            throw e;
+        }
+        finally
+        {
+            if (!SctTreeView.wasGlobalShutdownRequested() && !treeItem.isCancelRequested()) 
+            {
+                treeItem.childLoadComplete();
             }
-        });
-
-        return true;
+        }
     }
 }

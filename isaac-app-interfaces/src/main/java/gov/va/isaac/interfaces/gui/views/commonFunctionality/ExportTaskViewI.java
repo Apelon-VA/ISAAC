@@ -16,34 +16,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package gov.va.isaac.gui.treeview;
+package gov.va.isaac.interfaces.gui.views.commonFunctionality;
 
-import gov.va.isaac.interfaces.utility.ServicesToPreloadI;
-import org.jvnet.hk2.annotations.Service;
+import gov.va.isaac.interfaces.gui.views.PopupViewI;
+
+import java.util.stream.IntStream;
+
+import javafx.stage.Window;
+
+import org.jvnet.hk2.annotations.Contract;
 
 /**
- * {@link ShutdownHack}
+ * {@link ContentRequestHandlerI}
+ * 
+ * An interface that represents data Exports GUI.
  *
- * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
+* @author <a href="mailto:vkaloidis@apelon.com">Vas Kaloidis</a>
  */
-@Service
-public class ShutdownHack implements ServicesToPreloadI
-{
-	/**
-	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#loadRequested()
-	 */
-	@Override
-	public void loadRequested()
-	{
-		// noop
-	}
+@Contract
+public interface ExportTaskViewI extends PopupViewI {
+	
+	public void showView(Window parent);
 
-	/**
-	 * @see gov.va.isaac.interfaces.utility.ServicesToPreloadI#shutdown()
-	 */
-	@Override
-	public void shutdown()
-	{
-		SctTreeView.globalShutdownRequested();
-	}
+	public IntStream getConcepts();
+	
+	public void setConcepts(IntStream conceptInput);
+	
+	
 }

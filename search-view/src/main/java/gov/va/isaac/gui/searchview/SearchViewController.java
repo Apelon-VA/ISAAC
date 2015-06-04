@@ -26,6 +26,7 @@ import gov.va.isaac.gui.IndexStatusListener;
 import gov.va.isaac.gui.SimpleDisplayConcept;
 import gov.va.isaac.gui.dragAndDrop.DragRegistry;
 import gov.va.isaac.gui.dragAndDrop.SingleConceptIdProvider;
+import gov.va.isaac.gui.enhancedsearchview.model.SearchTypeModel;
 import gov.va.isaac.gui.util.Images;
 import gov.va.isaac.refexDynamic.RefexDynamicUtil;
 import gov.va.isaac.search.CompositeSearchResult;
@@ -41,10 +42,13 @@ import gov.va.isaac.util.OTFUtility;
 import gov.va.isaac.util.TaskCompleteCallback;
 import gov.va.isaac.util.Utility;
 import gov.va.isaac.util.ValidBooleanBinding;
+
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -52,6 +56,8 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.function.Consumer;
+
+
 import javafx.application.Platform;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -90,6 +96,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.util.Callback;
 import javafx.util.StringConverter;
+
+
 import org.ihtsdo.otf.query.lucene.LuceneDescriptionType;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexer;
 import org.ihtsdo.otf.query.lucene.LuceneDynamicRefexIndexerConfiguration;
@@ -108,6 +116,8 @@ import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 import com.sun.javafx.collections.ObservableListWrapper;
 
 
@@ -667,11 +677,21 @@ public class SearchViewController implements TaskCompleteCallback
 			{
 				if (!ssh.isCancelled())
 				{
-					searchResults.getItems().addAll(ssh.getResults());
+					//Remove off path results
+					Collection<CompositeSearchResult> results = ssh.getResults();
+					int offPathResults = SearchTypeModel.removeNullResults(results);
+					
+					searchResults.getItems().addAll(results);
+					//searchResults.getItems().addAll(ssh.getResults());
 					long time = System.currentTimeMillis() - ssh.getSearchStartTime();
 					float inSeconds = (float)time / 1000f;
 					inSeconds = ((float)((int)(inSeconds * 100f)) / 100f);
-					statusLabel.setText(ssh.getHitCount() + " in " + inSeconds + " seconds");
+					
+					String statusMsg = ssh.getHitCount() + " in " + inSeconds + " seconds";
+					if (offPathResults > 0) {
+						statusMsg += "; " + offPathResults + " off-path entries ignored";
+					}
+					statusLabel.setText(statusMsg);
 				}
 				else
 				{

@@ -343,15 +343,19 @@ public class SememeSearchTypeModel extends SearchTypeModel implements TaskComple
 				if (!ssh.isCancelled())
 				{
 					Collection<CompositeSearchResult> results = createSingleEntryPerResults(ssh.getResults());
+					setResults(results);
+
+					/*
 					SearchModel.getSearchResultsTable().getResults().getItems().clear();
 					SearchModel.getSearchResultsTable().getResults().setItems(FXCollections.observableArrayList(results));
-					
+
 					bottomPane.refreshBottomPanel();
 					bottomPane.refreshTotalResultsSelectedLabel();
 					
 					if (splitPane.getItems().contains(taxonomyPane)) {
 						ResultsToTaxonomy.resultsToSearchTaxonomy();
 					}
+					*/
 				}
 			} catch (Exception ex) {
 				getSearchRunning().set(false);

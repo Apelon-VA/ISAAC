@@ -28,16 +28,17 @@ import gov.va.isaac.util.CommonMenus;
 import gov.va.isaac.util.CommonMenus.CommonMenuItem;
 import gov.va.isaac.util.CommonMenusNIdProvider;
 import gov.va.isaac.util.OTFUtility;
-
+import gov.va.isaac.util.Utility;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.UUID;
-
 import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeCell;
@@ -45,11 +46,11 @@ import javafx.scene.control.TreeItem;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.RectangleBuilder;
-
-import org.ihtsdo.otf.tcc.api.concurrency.FutureHelper;
 import org.ihtsdo.otf.tcc.api.contradiction.ContradictionException;
+import org.ihtsdo.otf.tcc.ddo.ComponentReference;
 import org.ihtsdo.otf.tcc.ddo.TaxonomyReferenceWithConcept;
 import org.ihtsdo.otf.tcc.ddo.concept.ConceptChronicleDdo;
 import org.ihtsdo.otf.tcc.ddo.concept.component.relationship.RelationshipChronicleDdo;
@@ -62,6 +63,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author kec
  * @author ocarlsen
+ * @author <a href="mailto:daniel.armbrust.list@gmail.com">Dan Armbrust</a> 
  */
 @SuppressWarnings("deprecation")
 final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
@@ -115,16 +117,8 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (RelationshipChronicleDdo extraParent : extraParents) {
                     for (RelationshipVersionDdo extraParentVersion : extraParent.getVersions()) {
                         SctTreeItem extraParentItem =
-                                new SctTreeItem(
-                                        new TaxonomyReferenceWithConcept(extraParentVersion,
-                                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION),
-                                                treeItem.getDisplayPolicies());
-                        ProgressIndicator indicator = new ProgressIndicator();
-//TODO (artf231878) figure out what we will do with this indicator skin
-//                        indicator.setSkin(new TaxonomyProgressIndicatorSkin(indicator));
-                        indicator.setPrefSize(16, 16);
-                        indicator.setProgress(-1);
-                        extraParentItem.setGraphic(indicator);
+                                new SctTreeItem(new TaxonomyReferenceWithConcept(extraParentVersion,
+                                                TaxonomyReferenceWithConcept.WhichConcept.DESTINATION), treeItem.getDisplayPolicies());
                         extraParentItem.setMultiParentDepth(treeItem.getMultiParentDepth() + 1);
                         extraParentItems.add(extraParentItem);
                     }
@@ -138,8 +132,7 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 for (SctTreeItem extraParent : extraParentItems) {
                     parentItem.getChildren().add(startIndex++, extraParent);
                     treeItem.getExtraParents().add(extraParent);
-                    GetSctTreeItemConceptCallable fetcher = new GetSctTreeItemConceptCallable(extraParent, false);
-                    FutureHelper.addFuture(SctTreeItem.conceptFetcherService.submit(fetcher));
+                    Utility.execute(new GetSctTreeItemConceptCallable(extraParent, false));
                 }
             }
 
@@ -161,6 +154,8 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
         }
         else if (!empty && taxRef == null) {
             LOG.debug("TaxonomyReferenceWithConcept is null");
+            setText("");
+            setGraphic(null);
         }
         else if (!empty && taxRef != null) {
             final SctTreeItem treeItem = (SctTreeItem) getTreeItem();
@@ -168,12 +163,24 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             if (treeItem.getMultiParentDepth() > 0) {
                 if (treeItem.isLeaf()) {
                     BorderPane graphicBorderPane = new BorderPane();
-                    int multiParentInset = treeItem.getMultiParentDepth() * 16;
-                    Rectangle leftRect =
-                            RectangleBuilder.create().width(multiParentInset).height(16).build();
+                    int multiParentInset = (treeItem.getMultiParentDepth() * 16) + 10;
+                    Rectangle leftRect = RectangleBuilder.create().width(multiParentInset).height(16).build();
 
                     leftRect.setOpacity(opacity);
-                    graphicBorderPane.setLeft(leftRect);
+                    
+                    StackPane spacerProgressStack = new StackPane();
+                    spacerProgressStack.getChildren().add(leftRect);
+                    
+                    ProgressIndicator pi = new ProgressIndicator();
+                    pi.setPrefSize(16, 16);
+                    pi.setMaxSize(16, 16);
+                    pi.progressProperty().bind(treeItem.getChildLoadPercentComplete());
+                    pi.visibleProperty().bind(treeItem.getChildLoadPercentComplete().lessThan(1.0));
+                    pi.setMouseTransparent(true);
+                    spacerProgressStack.getChildren().add(pi);
+                    StackPane.setAlignment(pi, Pos.CENTER_RIGHT);
+                    StackPane.setMargin(pi, new Insets(0, 10, 0, 0));
+                    graphicBorderPane.setLeft(spacerProgressStack);
                     graphicBorderPane.setCenter(treeItem.computeGraphic());
                     setGraphic(graphicBorderPane);
                 }
@@ -183,29 +190,11 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 return;
             }
 
-            BorderPane disclosureBorderPane = new BorderPane();
+            ImageView iv = treeItem.isExpanded() ? Images.TAXONOMY_CLOSE.createImageView() : Images.TAXONOMY_OPEN.createImageView();
+            iv.setFitHeight(16.0);
+            iv.setFitWidth(16.0);
 
-            if (treeItem.isExpanded()) {
-                ImageView iv = Images.TAXONOMY_CLOSE.createImageView();
-
-                if (treeItem.getProgressIndicator() != null) {
-                    disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
-                } else {
-                    disclosureBorderPane.setCenter(iv);
-                }
-
-                setDisclosureNode(disclosureBorderPane);
-            } else {
-                ImageView iv = Images.TAXONOMY_OPEN.createImageView();
-                
-                if (treeItem.getProgressIndicator() != null) {
-                    disclosureBorderPane.setCenter(treeItem.getProgressIndicator());
-                } else {
-                    disclosureBorderPane.setCenter(iv);
-                }
-
-                setDisclosureNode(disclosureBorderPane);
-            }
+            setDisclosureNode(iv);
 
             if (taxRef.getConcept() == null) {
                 setText(taxRef.toString());
@@ -213,26 +202,26 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
                 setText(OTFUtility.getDescription(taxRef.getConcept()));
             }
 
+            Rectangle leftRect = RectangleBuilder.create().width(treeItem.isLeaf() ? 16 : 18).height(16).build();
+            leftRect.setOpacity(opacity);
+
             BorderPane graphicBorderPane = new BorderPane();
-
-            if (treeItem.isLeaf()) {
-                int multiParentInset = treeItem.getMultiParentDepth() * 16 + 4;
-                Rectangle leftRect =
-                        RectangleBuilder.create().width(multiParentInset).height(16).build();
-
-                leftRect.setOpacity(opacity);
-                graphicBorderPane.setLeft(leftRect);
-                    graphicBorderPane.setCenter(treeItem.computeGraphic());
-                setGraphic(graphicBorderPane);
-            } else {
-
-                Rectangle leftRect = RectangleBuilder.create().width(6).height(16).build();
-
-                leftRect.setOpacity(opacity);
-                graphicBorderPane.setLeft(leftRect);
-                    graphicBorderPane.setCenter(treeItem.computeGraphic());
-                setGraphic(graphicBorderPane);
-            }
+            StackPane spacerProgressStack = new StackPane();
+            spacerProgressStack.getChildren().add(leftRect);
+            
+            graphicBorderPane.setLeft(spacerProgressStack);
+            graphicBorderPane.setCenter(treeItem.computeGraphic());
+            
+            ProgressIndicator pi = new ProgressIndicator();
+            pi.setPrefSize(16, 16);
+            pi.setMaxSize(16, 16);
+            pi.progressProperty().bind(treeItem.getChildLoadPercentComplete());
+            pi.visibleProperty().bind(treeItem.getChildLoadPercentComplete().lessThan(1.0));
+            pi.setMouseTransparent(true);
+            spacerProgressStack.getChildren().add(pi);
+            StackPane.setAlignment(pi, Pos.CENTER_LEFT);
+            
+            setGraphic(graphicBorderPane);
         }
     }
 
@@ -257,15 +246,13 @@ final class SctTreeCell extends TreeCell<TaxonomyReferenceWithConcept> {
             @Override
             public Collection<Integer> getNIds()
             {
-                ConceptChronicleDdo concept = SctTreeCell.this.getItem().getConcept();
+                ComponentReference item = SctTreeCell.this.getItem().getConceptFromRelationshipOrConceptProperties();
                 try
                 {
-                    UUID uuid = null;
-                    
-                    if (concept != null ) {
-                        uuid = concept.getPrimordialUuid();
-                        return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(uuid)});
+                    if (item != null ) {
+                        return Arrays.asList(new Integer[] {ExtendedAppContext.getDataStore().getNidForUuids(item.getUuid())});
                     } else {
+                        LOG.warn("Couldn't locate an identifer for the node {}", SctTreeCell.this);
                         return Arrays.asList(new Integer[] {});
                     }
                 }

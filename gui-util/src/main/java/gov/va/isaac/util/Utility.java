@@ -44,7 +44,7 @@ public class Utility {
 
         // Thread pool settings.
         int corePoolSize = 10;
-        int maximumPoolSize = 30;
+        int maximumPoolSize = 60;
         int keepAliveTime = 60;
         TimeUnit timeUnit = TimeUnit.SECONDS;
         LinkedBlockingQueue<Runnable> workQueue = new LinkedBlockingQueue<Runnable>();
