@@ -65,13 +65,16 @@ public class SpreadsheetReader
 		{
 			Row r = sheet.getRow(i);
 			
-			ArrayList<Cell> values = new ArrayList<>();
-			
-			for (int col = 0; col < columnHeaders.size(); col++)
+			if (r != null)
 			{
-				values.add(r.getCell(col));
+				ArrayList<Cell> values = new ArrayList<>();
+				
+				for (int col = 0; col < columnHeaders.size(); col++)
+				{
+					values.add(r.getCell(col));
+				}
+				data.add(values);
 			}
-			data.add(values);
 		}
 
 		//Have read the entire spreadsheet - now process into our 'rule' format
