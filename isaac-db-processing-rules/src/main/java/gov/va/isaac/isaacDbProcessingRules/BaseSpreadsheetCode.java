@@ -155,24 +155,26 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 		//Create a TtkConcept of the thing we want to merge - but change the primary UUID to the thing we want to merge onto.
 		//Keep our UUID as a secondary.
 		//TRY 1 - this still doesn't seem quite right - the other id ends up as an alternate identifier, instead of a primary... which seems wrong.
-		TtkConceptChronicle tcc = new TtkConceptChronicle(source);
 		
-		UUID temp = tcc.getPrimordialUuid();
-		tcc.setPrimordialUuid(mergeOnto);
-		if (tcc.getConceptAttributes().getAdditionalIdComponents() == null)
-		{
-			tcc.getConceptAttributes().setAdditionalIdComponents(new ArrayList<TtkIdentifier>());
-		}
-		
-		TtkIdentifier id = new TtkIdentifierUuid(temp);
-		id.setStatus(tcc.getConceptAttributes().getStatus());
-		id.setTime(tcc.getConceptAttributes().getTime());
-		id.setAuthorUuid(tcc.getConceptAttributes().getAuthorUuid());
-		id.setModuleUuid(tcc.getConceptAttributes().getModuleUuid());
-		id.setPathUuid(tcc.getConceptAttributes().getPathUuid());
-		id.setAuthorityUuid(path);
-
-		tcc.getConceptAttributes().getAdditionalIdComponents().add(id);
+		//Getting null pointers during merge with this approach on concepts with dynamic refexes.  Sigh.  Just disable for now.
+//		TtkConceptChronicle tcc = new TtkConceptChronicle(source);
+//		
+//		UUID temp = tcc.getPrimordialUuid();
+//		tcc.setPrimordialUuid(mergeOnto);
+//		if (tcc.getConceptAttributes().getAdditionalIdComponents() == null)
+//		{
+//			tcc.getConceptAttributes().setAdditionalIdComponents(new ArrayList<TtkIdentifier>());
+//		}
+//		
+//		TtkIdentifier id = new TtkIdentifierUuid(temp);
+//		id.setStatus(tcc.getConceptAttributes().getStatus());
+//		id.setTime(tcc.getConceptAttributes().getTime());
+//		id.setAuthorUuid(tcc.getConceptAttributes().getAuthorUuid());
+//		id.setModuleUuid(tcc.getConceptAttributes().getModuleUuid());
+//		id.setPathUuid(tcc.getConceptAttributes().getPathUuid());
+//		id.setAuthorityUuid(path);
+//
+//		tcc.getConceptAttributes().getAdditionalIdComponents().add(id);
 		
 		//THIS didn't work either
 //		ConceptVersionBI sourceVersion = source.getVersion(vc);
@@ -183,7 +185,7 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 //				loincPathNid), StandardViewCoordinates.getWbAuxiliary()).construct(cab);
 //		ts.addUncommitted(sourceVersion);
 		
-		ConceptChronicle.mergeAndWrite(tcc);
+//		ConceptChronicle.mergeAndWrite(tcc);
 		
 		
 		
