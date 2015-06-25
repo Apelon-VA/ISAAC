@@ -25,7 +25,7 @@ package gov.va.isaac.isaacDbProcessingRules.spreadsheet;
  */
 public enum Action
 {
-	CHILD_OF("Child of"), SAME_AS("Same as");
+	CHILD_OF("Child of"), SAME_AS("Same as"), MERGE("Merge");
 	
 	private String altName_;
 	

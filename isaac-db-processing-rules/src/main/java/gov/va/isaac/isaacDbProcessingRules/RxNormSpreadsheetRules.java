@@ -74,7 +74,7 @@ public class RxNormSpreadsheetRules extends BaseSpreadsheetCode implements Trans
 	@Override
 	public void configure(File configFile, TerminologyStoreDI ts) throws IOException
 	{
-		configure("/SOLOR RxNorm Rules.xlsx", RXNORM_PATH, ts);
+		configure("/SOLOR RxNorm Rules v2.xlsx", RXNORM_PATH, ts);
 	}
 	
 
@@ -90,8 +90,8 @@ public class RxNormSpreadsheetRules extends BaseSpreadsheetCode implements Trans
 		ConceptAttributeVersionBI<?> latest = OTFUtility.getLatestAttributes(cc.getConceptAttributes().getVersions());
 		if (latest.getPathNid() == getNid(RXNORM_PATH))
 		{
-			//Rule for all other rules:
-			if (ttyIs(IN, cc))
+			//Rule for all other rules - but only check for v 1
+			if (spreadsheetVersion_ == 2 || ttyIs(IN, cc))
 			{
 				boolean commitRequired = false;
 				
@@ -107,7 +107,9 @@ public class RxNormSpreadsheetRules extends BaseSpreadsheetCode implements Trans
 					}
 					catch (Exception e)
 					{
-						throw new RuntimeException("Failure processing rule " + rd.getId(), e);
+						rulesFailed.incrementAndGet();
+						System.err.println("!!! Failure processing rule " + rd.getId());
+						e.printStackTrace();
 					}
 				}
 				return commitRequired;
@@ -168,6 +170,10 @@ public class RxNormSpreadsheetRules extends BaseSpreadsheetCode implements Trans
 			case CHILD_OF:
 				addRel(cc, sctTargetConcept, RXNORM_PATH);
 				generatedRels.get(rd.getId()).getAndIncrement();
+				break;
+			case MERGE:
+				mergeConcepts(cc, sctTargetConcept, RXNORM_PATH);
+				mergedConcepts.get(rd.getId()).incrementAndGet();
 				break;
 			default :
 				throw new RuntimeException("Unhandled Action");
