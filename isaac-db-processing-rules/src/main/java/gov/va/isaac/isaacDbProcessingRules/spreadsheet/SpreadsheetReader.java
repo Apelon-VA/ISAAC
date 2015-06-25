@@ -38,10 +38,16 @@ public class SpreadsheetReader
 {
 	ArrayList<String> columnHeaders = new ArrayList<>();
 	ArrayList<ArrayList<Cell>> data = new ArrayList<>();
+	private short version = 0;
 	
 	public SpreadsheetReader()
 	{
 		
+	}
+	
+	public int getVersion()
+	{
+		return version;
 	}
 	
 	public List<RuleDefinition> readSpreadSheet(InputStream is) throws IOException
@@ -50,18 +56,9 @@ public class SpreadsheetReader
 		
 		Sheet sheet = ss.getSheetAt(1);
 		
-		{
-			//row 0 is just a comment
-			//row 1 has headers
-			Row row = sheet.getRow(1);
-			for (int i = 0; i < row.getLastCellNum(); i++)
-			{
-				Cell c = row.getCell(i);
-				columnHeaders.add(c ==  null ? "" : toString(c));
-			}
-		}
+		int i = readHeaders(sheet);
 		
-		for (int i = 2; i <= sheet.getLastRowNum(); i++)
+		for (; i <= sheet.getLastRowNum(); i++)
 		{
 			Row r = sheet.getRow(i);
 			
@@ -91,23 +88,27 @@ public class SpreadsheetReader
 				continue;
 			}
 			rd.id = id;
-			rd.date = readDateColumn(rowNum, "Date");
+			rd.date = readDateColumn(rowNum, version == 1 ? "Date" : "Timestamp");
+
 			rd.action = Action.parse(readStringColumn(rowNum, "Action"));
-			rd.sctFSN = readStringColumn(rowNum, "SCT FSN");
+			rd.sctFSN = readStringColumn(rowNum, version == 1 ? "SCT FSN" : "FSN");
 			try
 			{
-				rd.sctID = readLongColumn(rowNum, "SCT ID");
+				rd.sctID = readLongColumn(rowNum, version == 1 ? "SCT ID" : "SCT_ID");
 			}
 			catch (IllegalStateException e)
 			{
-				String temp = readStringColumn(rowNum, "SCT ID");
+				String temp = readStringColumn(rowNum, version == 1 ? "SCT ID" : "SCT_ID");
 				if (temp != null)
 				{
 					rd.sctID = Long.parseLong(temp);
 				}
 			}
 			rd.author = readStringColumn(rowNum, "Author");
-			rd.comments = readStringColumn(rowNum, "Comments");
+			if (version == 1)
+			{
+				rd.comments = readStringColumn(rowNum, "Comments");
+			}
 			
 			
 			ArrayList<SelectionCriteria> criteria = new ArrayList<>();
@@ -115,18 +116,28 @@ public class SpreadsheetReader
 			while (true)
 			{
 				SelectionCriteria sc = new SelectionCriteria();
-				sc.operand = readOperand(rowNum);
-				sc.type = SelectionCriteriaType.parse(readStringColumn(rowNum, "Type"));
+				if (version == 1)
+				{
+					sc.operand = readOperand(rowNum);
+					sc.type = SelectionCriteriaType.parse(readStringColumn(rowNum, "Type"));
+				}
+				else
+				{
+					sc.type = SelectionCriteriaType.RXCUI;
+				}
 				try
 				{
 					//If we read a long, as a string, we get an extra .0 on the end - so read as a long first, if it is one.
-					sc.value = readLongColumn(rowNum, "Value").toString();
+					sc.value = readLongColumn(rowNum, version == 1 ? "Value" : "RXCUI").toString();
 				}
 				catch (IllegalStateException e)
 				{
-					sc.value = readStringColumn(rowNum, "Value");
+					sc.value = readStringColumn(rowNum, version == 1 ? "Value" : "RXCUI");
 				}
-				sc.valueId = readStringColumn(rowNum, "Value ID");
+				if (version == 1)
+				{
+					sc.valueId = readStringColumn(rowNum, "Value ID");
+				}
 				
 				criteria.add(sc);
 				//peak at the next row, see if it is an additional criteria, or a new rule
@@ -148,6 +159,56 @@ public class SpreadsheetReader
 		return result;
 	}
 	
+	/**
+	 * returns the index of the next row to read
+	 * @param sheet
+	 * @return
+	 * @throws IOException 
+	 */
+	private int readHeaders(Sheet sheet) throws IOException
+	{
+		//in version 1 of the spreadsheet - 
+		//row 0 is just a comment
+		//row 1 has headers
+		//in version 2 of the spreadsheet, row 0 has headers (different headers) than v1
+		
+		int rowIndex = 0;
+		while (true)
+		{
+			Row row = sheet.getRow(rowIndex++);
+			for (int i = 0; i < row.getLastCellNum(); i++)
+			{
+				Cell c = row.getCell(i);
+				String cellText = (c ==  null ? "" : toString(c).trim());
+				
+				if (i == 1)
+				{
+					if (cellText.equals("Timestamp"))
+					{
+						version = 2;
+					}
+					else if (cellText.equals("Date"))
+					{
+						version = 1;
+					}
+					else if (cellText.length() > 0)
+					{
+						throw new IOException("Unsupported spreadsheet format!");
+					}
+				}
+				columnHeaders.add(cellText);
+			}
+			if (version > 0)
+			{
+				break;
+			}
+			if (rowIndex > 2)
+			{
+				throw new IOException("Failure finding headers!");
+			}
+		}
+		return rowIndex;
+	}
 	
 	private List<Cell> findMatchingCellsOnRow(int row, String requestedColumnName)
 	{

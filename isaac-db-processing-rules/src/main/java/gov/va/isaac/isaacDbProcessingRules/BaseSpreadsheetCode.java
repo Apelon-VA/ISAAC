@@ -77,6 +77,7 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 	protected ViewCoordinate vc_;
 	
 	private String name_;
+	protected int spreadsheetVersion_;
 	
 	public BaseSpreadsheetCode(String name)
 	{
@@ -103,7 +104,9 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 		Position position = ts.newPosition(ts.getPath(getNid(path)), Long.MAX_VALUE);
 		vc_.setViewPosition(position);
 		
-		rules = new SpreadsheetReader().readSpreadSheet(SpreadsheetReader.class.getResourceAsStream(spreadsheetFileName));
+		SpreadsheetReader sr = new SpreadsheetReader(); 
+		rules = sr.readSpreadSheet(SpreadsheetReader.class.getResourceAsStream(spreadsheetFileName));
+		spreadsheetVersion_ = sr.getVersion();
 		for (RuleDefinition rd : rules)
 		{
 			ruleHits.put(rd.getId(), Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>()));
