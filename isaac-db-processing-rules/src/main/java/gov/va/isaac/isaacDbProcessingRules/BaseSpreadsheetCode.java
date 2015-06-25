@@ -67,6 +67,7 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 	protected HashMap<Integer, AtomicInteger> generatedRels = new HashMap<>();
 	protected HashMap<Integer, AtomicInteger> mergedConcepts = new HashMap<>();
 	protected AtomicInteger examinedConcepts = new AtomicInteger();
+	protected AtomicInteger rulesFailed = new AtomicInteger();
 	//Value of the hashmap isn't used
 	protected TreeMap<Integer, Set<String>> ruleHits = new TreeMap<>();
 	protected ConcurrentHashMap<String, Set<Integer>> conceptHitsByRule = new ConcurrentHashMap<>();
@@ -279,6 +280,10 @@ public abstract class BaseSpreadsheetCode implements TransformConceptIterateI
 		
 		sb.append("Examined " + examinedConcepts.get() + " concepts and added hierarchy linkages to " + totalRelCount + " concepts.  "
 				+ "Merged " + totalMergedCount + " concepts" + eol);
+		if (rulesFailed.get() > 0)
+		{
+			sb.append("!!! - " + rulesFailed.get() + " Rules failed processing!" + eol);
+		}
 		
 		sb.append("Rule,Concept Count,Concept UUID,Concept FSN,Concept UUID,Concept FSN" + eol);
 		for (Entry<Integer, Set<String>> x : ruleHits.entrySet())

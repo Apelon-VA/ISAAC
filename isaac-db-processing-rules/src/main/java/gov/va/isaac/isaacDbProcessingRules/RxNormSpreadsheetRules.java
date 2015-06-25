@@ -107,7 +107,9 @@ public class RxNormSpreadsheetRules extends BaseSpreadsheetCode implements Trans
 					}
 					catch (Exception e)
 					{
-						throw new RuntimeException("Failure processing rule " + rd.getId(), e);
+						rulesFailed.incrementAndGet();
+						System.err.println("!!! Failure processing rule " + rd.getId());
+						e.printStackTrace();
 					}
 				}
 				return commitRequired;
