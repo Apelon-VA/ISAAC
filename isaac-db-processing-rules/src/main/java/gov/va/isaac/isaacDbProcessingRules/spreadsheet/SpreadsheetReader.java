@@ -175,6 +175,7 @@ public class SpreadsheetReader
 		int rowIndex = 0;
 		while (true)
 		{
+			columnHeaders.clear();
 			Row row = sheet.getRow(rowIndex++);
 			for (int i = 0; i < row.getLastCellNum(); i++)
 			{
